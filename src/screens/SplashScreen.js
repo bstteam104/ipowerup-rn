@@ -6,23 +6,26 @@ import {
   StyleSheet,
   Animated,
   StatusBar,
+  Dimensions,
 } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import {Colors} from '../constants/Constants';
 
+const {width, height} = Dimensions.get('window');
+
 const SplashScreen = ({navigation}) => {
   const [progress, setProgress] = useState(0);
-  const logoAnim = useRef(new Animated.Value(-300)).current;
+  const logoAnim = useRef(new Animated.Value(-width)).current;
 
   useEffect(() => {
-    // Logo animation from left
+    // Logo animation from left - matching iOS animation
     Animated.timing(logoAnim, {
       toValue: 0,
       duration: 1000,
       useNativeDriver: true,
     }).start();
 
-    // Progress bar animation
+    // Progress bar animation - matching iOS timer interval of 0.05
     const timer = setInterval(() => {
       setProgress(prev => {
         const newProgress = prev + 0.04;
@@ -62,13 +65,14 @@ const SplashScreen = ({navigation}) => {
 
   return (
     <View style={styles.container}>
-      <StatusBar barStyle="light-content" backgroundColor="#57AEE3" />
-      {/* Background overlay */}
+      <StatusBar barStyle="light-content" backgroundColor={Colors.splashBlue} />
+      
+      {/* Background - matching iOS gradient look */}
       <View style={styles.backgroundContainer}>
         <View style={styles.backgroundOverlay} />
       </View>
 
-      {/* Logo with animation */}
+      {/* Logo with animation - matching iOS exactly */}
       <Animated.View
         style={[
           styles.logoContainer,
@@ -78,18 +82,23 @@ const SplashScreen = ({navigation}) => {
         ]}>
         <Image
           source={require('../../assets/logo.png')}
-          style={[styles.logo, {tintColor: '#FFFFFF'}]}
+          style={styles.logo}
           resizeMode="contain"
         />
       </Animated.View>
 
-      {/* Loading Text */}
+      {/* Loading Text - matching iOS */}
       <Text style={styles.loadingText}>Loading</Text>
 
-      {/* Progress Bar */}
+      {/* Progress Bar - matching iOS progressView styling */}
       <View style={styles.progressContainer}>
         <View style={styles.progressBarBackground}>
-          <View style={[styles.progressBarFill, {width: `${progress * 100}%`}]} />
+          <Animated.View 
+            style={[
+              styles.progressBarFill, 
+              {width: `${progress * 100}%`}
+            ]} 
+          />
         </View>
       </View>
     </View>
@@ -99,7 +108,7 @@ const SplashScreen = ({navigation}) => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#57AEE3',
+    backgroundColor: Colors.splashBlue,
     justifyContent: 'center',
     alignItems: 'center',
   },
@@ -112,18 +121,19 @@ const styles = StyleSheet.create({
   },
   backgroundOverlay: {
     flex: 1,
-    backgroundColor: '#7AC5EA',
+    backgroundColor: Colors.splashLightBlue,
     opacity: 0.7,
   },
   logoContainer: {
-    width: '61%',
-    height: '15%',
+    width: width * 0.61, // 61% as per iOS
+    height: height * 0.15, // 15% as per iOS
     justifyContent: 'center',
     alignItems: 'center',
   },
   logo: {
     width: '100%',
     height: '100%',
+    tintColor: Colors.white,
   },
   loadingText: {
     fontSize: 16,
@@ -133,7 +143,7 @@ const styles = StyleSheet.create({
     textAlign: 'center',
   },
   progressContainer: {
-    width: '46.875%',
+    width: width * 0.46875, // 46.875% as per iOS
     marginTop: 20,
     alignItems: 'center',
   },
@@ -148,7 +158,7 @@ const styles = StyleSheet.create({
   },
   progressBarFill: {
     height: '100%',
-    backgroundColor: '#FFCC00',
+    backgroundColor: Colors.progressYellow,
     borderRadius: 4,
   },
 });

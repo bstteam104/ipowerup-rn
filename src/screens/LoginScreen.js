@@ -8,14 +8,21 @@ import {
   ScrollView,
   Image,
   StatusBar,
+  Alert,
+  Dimensions,
+  KeyboardAvoidingView,
+  Platform,
 } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import {Colors, Constants} from '../constants/Constants';
+import {Colors, Constants, BorderRadius, FontSizes} from '../constants/Constants';
+
+const {width} = Dimensions.get('window');
 
 const LoginScreen = ({navigation}) => {
-  const [email, setEmail] = useState(__DEV__ ? 'noumanguljunejo@gmail.com' : '');
-  const [password, setPassword] = useState(__DEV__ ? 'Nomi@ngj0000' : '');
+  const [email, setEmail] = useState('bstteam@gmail.com');
+  const [password, setPassword] = useState('bstteam');
   const [showPassword, setShowPassword] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
 
   const isValidEmail = (email) => {
     const emailRegex = /[A-Z0-9a-z._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,64}/;
@@ -28,142 +35,164 @@ const LoginScreen = ({navigation}) => {
     return passwordRegex.test(password);
   };
 
+  const showAlert = (title, message) => {
+    Alert.alert(title, message, [{text: 'OK', style: 'default'}]);
+  };
+
   const handleSignIn = async () => {
+    // For UI testing - skip validation and API, directly go to dashboard
+    // TODO: Enable validation and API call when backend is ready
+    
+    /*
     if (!email || email.trim() === '') {
-      alert('Please enter your email address.');
+      showAlert('Error', 'Please enter your email address.');
       return;
     }
 
     if (!password || password.trim() === '') {
-      alert('Please enter your password.');
+      showAlert('Error', 'Please enter your password.');
       return;
     }
 
     if (!isValidEmail(email)) {
-      alert('Please enter a valid email address.');
+      showAlert('Error', 'Please enter a valid email address.');
       return;
     }
 
     if (!isValidPassword(password)) {
-      alert('Password must be at least 6 characters long.');
+      showAlert('Error', 'Password must be at least 8 characters long, contain at least one letter, one number, and one special character.');
       return;
     }
+    */
 
-    // TODO: Implement API call
-    // For now, just navigate to TabBar
-    try {
-      // Simulate API call
-      // const response = await loginAPI({email, password, ...});
-      // await AsyncStorage.setItem('loggedInUser', JSON.stringify(response));
-      // await AsyncStorage.setItem('accessToken', response.token);
-      // await AsyncStorage.setItem('isUserLoggedIn', 'true');
-      
-      // Temporary: navigate to TabBar for testing
-      navigation.replace('TabBar');
-    } catch (error) {
-      alert(error.message || 'Something went wrong');
-    }
+    // Temporarily save mock user data for UI testing
+    const mockUser = {
+      id: 1,
+      first_name: 'Test',
+      last_name: 'User',
+      full_name: 'Test User',
+      email: email || 'test@ipowerup.com',
+      tempreture: 'celsius',
+    };
+    
+    await AsyncStorage.setItem('loggedInUser', JSON.stringify(mockUser));
+    await AsyncStorage.setItem('isUserLoggedIn', 'true');
+    
+    // Navigate directly to TabBar (Dashboard)
+    navigation.replace('TabBar');
   };
 
   return (
     <View style={styles.container}>
-      <StatusBar barStyle="dark-content" />
-      <ScrollView
-        contentContainerStyle={styles.scrollContent}
-        showsVerticalScrollIndicator={false}
-        bounces={false}>
-        {/* Logo */}
-        <Image
-          source={require('../../assets/blueLogo.png')}
-          style={styles.logo}
-          resizeMode="contain"
-        />
+      <StatusBar barStyle="dark-content" backgroundColor={Colors.white} />
+      <KeyboardAvoidingView 
+        style={styles.flex}
+        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+      >
+        <ScrollView
+          contentContainerStyle={styles.scrollContent}
+          showsVerticalScrollIndicator={false}
+          bounces={false}
+          keyboardShouldPersistTaps="handled"
+        >
+          {/* Logo - matching iOS layout */}
+          <Image
+            source={require('../../assets/blueLogo.png')}
+            style={styles.logo}
+            resizeMode="contain"
+          />
 
-        {/* Title */}
-        <Text style={styles.title}>Log in to your Account</Text>
+          {/* Title - matching iOS */}
+          <Text style={styles.title}>Log in to your Account</Text>
 
-        {/* Subtitle */}
-        <Text style={styles.subtitle}>
-          Or Create a new App account. This is the same account used for
-          iPowerUp.com
-        </Text>
+          {/* Subtitle - matching iOS */}
+          <Text style={styles.subtitle}>
+            Or Create a new App account. This is the same{'\n'}account used for iPowerUp.com
+          </Text>
 
-        {/* Form Container */}
-        <View style={styles.formContainer}>
-          {/* Email Field */}
-          <View style={styles.inputContainer}>
-            <View style={styles.inputWrapper}>
-              <Image
-                source={require('../../assets/email-icon.png')}
-                style={styles.inputIcon}
-                resizeMode="contain"
-              />
-              <TextInput
-                style={styles.input}
-                placeholder="Enter Email Address"
-                placeholderTextColor="#AAAAAA"
-                value={email}
-                onChangeText={setEmail}
-                keyboardType="email-address"
-                autoCapitalize="none"
-                autoCorrect={false}
-              />
+          {/* Form Container */}
+          <View style={styles.formContainer}>
+            {/* Email Field - matching iOS CustomTextField */}
+            <View style={styles.inputContainer}>
+              <View style={styles.inputWrapper}>
+                <Image
+                  source={require('../../assets/icons/email-icon.png')}
+                  style={styles.inputIcon}
+                  resizeMode="contain"
+                />
+                <TextInput
+                  style={styles.input}
+                  placeholder="Enter Email Address"
+                  placeholderTextColor={Colors.grayColor}
+                  value={email}
+                  onChangeText={setEmail}
+                  keyboardType="email-address"
+                  autoCapitalize="none"
+                  autoCorrect={false}
+                />
+              </View>
             </View>
-          </View>
 
-          {/* Password Field */}
-          <View style={styles.inputContainer}>
-            <View style={styles.inputWrapper}>
-              <Image
-                source={require('../../assets/password-icon.png')}
-                style={styles.inputIcon}
-                resizeMode="contain"
-              />
-              <TextInput
-                style={styles.input}
-                placeholder="Enter Password"
-                placeholderTextColor="#AAAAAA"
-                value={password}
-                onChangeText={setPassword}
-                secureTextEntry={!showPassword}
-                autoCapitalize="none"
-                autoCorrect={false}
-              />
-              <TouchableOpacity
-                onPress={() => setShowPassword(!showPassword)}
-                style={styles.eyeIcon}>
-                <Text style={styles.eyeIconText}>{showPassword ? '👁️' : '👁️‍🗨️'}</Text>
-              </TouchableOpacity>
+            {/* Password Field - matching iOS CustomPaswordTextField */}
+            <View style={styles.inputContainer}>
+              <View style={styles.inputWrapper}>
+                <Image
+                  source={require('../../assets/icons/password-icon.png')}
+                  style={styles.inputIcon}
+                  resizeMode="contain"
+                />
+                <TextInput
+                  style={styles.input}
+                  placeholder="Enter Password"
+                  placeholderTextColor={Colors.grayColor}
+                  value={password}
+                  onChangeText={setPassword}
+                  secureTextEntry={!showPassword}
+                  autoCapitalize="none"
+                  autoCorrect={false}
+                />
+                <TouchableOpacity
+                  onPress={() => setShowPassword(!showPassword)}
+                  style={styles.eyeIconContainer}
+                  hitSlop={{top: 10, bottom: 10, left: 10, right: 10}}
+                >
+                  <Text style={styles.eyeIcon}>
+                    {showPassword ? '👁️' : '👁️‍🗨️'}
+                  </Text>
+                </TouchableOpacity>
+              </View>
             </View>
+
+            {/* Forgot Password - matching iOS */}
+            <TouchableOpacity
+              onPress={() => navigation.navigate('ForgotPassword')}
+              style={styles.forgotPasswordContainer}
+            >
+              <Text style={styles.forgotPasswordText}>Forgot Password?</Text>
+            </TouchableOpacity>
+
+            {/* Sign In Button - matching iOS button styling */}
+            <TouchableOpacity 
+              style={[styles.signInButton, isLoading && styles.buttonDisabled]} 
+              onPress={handleSignIn}
+              disabled={isLoading}
+              activeOpacity={0.8}
+            >
+              <Text style={styles.signInButtonText}>
+                {isLoading ? 'Signing In...' : 'Sign In'}
+              </Text>
+            </TouchableOpacity>
+
+            {/* Create Account - matching iOS with underline */}
+            <TouchableOpacity
+              onPress={() => navigation.navigate('SignUp')}
+              style={styles.createAccountContainer}
+            >
+              <Text style={styles.createAccountText}>Create an Account?</Text>
+            </TouchableOpacity>
           </View>
-
-          {/* Forgot Password */}
-          <TouchableOpacity
-            onPress={() => navigation.navigate('ForgotPassword')}
-            style={styles.forgotPasswordContainer}>
-            <Text style={styles.forgotPasswordText}>Forgot Password?</Text>
-          </TouchableOpacity>
-
-          {/* Sign In Button */}
-          <TouchableOpacity style={styles.signInButton} onPress={handleSignIn}>
-            <Text style={styles.signInButtonText}>Sign In</Text>
-          </TouchableOpacity>
-
-          {/* Create Account */}
-          <TouchableOpacity
-            onPress={() => navigation.navigate('SignUp')}
-            style={styles.createAccountContainer}>
-            <Text style={styles.createAccountText}>Create an Account?</Text>
-          </TouchableOpacity>
-
-          {/* Connect Button - Hidden by default in iOS */}
-          <TouchableOpacity
-            style={[styles.connectButton, {display: 'none'}]}
-            onPress={() => navigation.navigate('AppBenefits', {routing: 'login'})}>
-            <Text style={styles.connectButtonText}>Connect New Device</Text>
-          </TouchableOpacity>
-        </View>
-      </ScrollView>
+        </ScrollView>
+      </KeyboardAvoidingView>
     </View>
   );
 };
@@ -172,6 +201,9 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: Colors.white,
+  },
+  flex: {
+    flex: 1,
   },
   scrollContent: {
     flexGrow: 1,
@@ -186,16 +218,16 @@ const styles = StyleSheet.create({
     marginBottom: 20,
   },
   title: {
-    fontSize: 24,
+    fontSize: FontSizes.title,
     fontWeight: 'bold',
     color: Colors.lightBlackColor,
     textAlign: 'center',
     marginBottom: 12,
   },
   subtitle: {
-    fontSize: 16,
+    fontSize: FontSizes.large,
     fontWeight: '500',
-    color: '#999B9F',
+    color: Colors.grayColor,
     textAlign: 'center',
     marginBottom: 40,
     lineHeight: 22,
@@ -211,51 +243,53 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     height: 49,
     borderWidth: 1,
-    borderColor: '#999B9F',
-    borderRadius: 10,
+    borderColor: Colors.inputBorderColor,
+    borderRadius: BorderRadius.medium,
     backgroundColor: Colors.white,
-    paddingLeft: 20,
-    paddingRight: 20,
+    paddingHorizontal: 20,
   },
   inputIcon: {
     width: 16,
     height: 16,
     marginRight: 20,
-    tintColor: '#999B9F',
+    tintColor: Colors.grayColor,
   },
   input: {
     flex: 1,
-    fontSize: 15,
+    fontSize: FontSizes.regular,
     color: Colors.lightBlackColor,
     paddingVertical: 0,
   },
-  eyeIcon: {
+  eyeIconContainer: {
     padding: 5,
   },
-  eyeIconText: {
-    fontSize: 16,
+  eyeIcon: {
+    fontSize: 18,
   },
   forgotPasswordContainer: {
     alignSelf: 'flex-end',
     marginBottom: 40,
-    marginTop: 20,
+    marginTop: 10,
   },
   forgotPasswordText: {
-    fontSize: 16,
+    fontSize: FontSizes.large,
     fontWeight: '500',
     color: Colors.black,
   },
   signInButton: {
     width: '100%',
     height: 50,
-    backgroundColor: '#4296D3', // iOS: rgb(66, 150, 211) = 0.2580794394, 0.58793991800000001, 0.82748454810000005
-    borderRadius: 12,
+    backgroundColor: Colors.signInBlue,
+    borderRadius: BorderRadius.large,
     justifyContent: 'center',
     alignItems: 'center',
     marginBottom: 20,
   },
+  buttonDisabled: {
+    opacity: 0.7,
+  },
   signInButtonText: {
-    fontSize: 16,
+    fontSize: FontSizes.large,
     fontWeight: 'bold',
     color: Colors.white,
   },
@@ -264,25 +298,10 @@ const styles = StyleSheet.create({
     marginBottom: 20,
   },
   createAccountText: {
-    fontSize: 14,
+    fontSize: FontSizes.medium,
     fontWeight: '500',
     color: Colors.black,
     textDecorationLine: 'underline',
-  },
-  connectButton: {
-    width: '100%',
-    height: 50,
-    backgroundColor: Colors.white,
-    borderRadius: 12,
-    borderWidth: 2,
-    borderColor: Colors.blueColor,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  connectButtonText: {
-    fontSize: 16,
-    fontWeight: 'bold',
-    color: Colors.black,
   },
 });
 
