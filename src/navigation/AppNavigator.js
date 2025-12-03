@@ -7,55 +7,26 @@ import SplashScreen from '../screens/SplashScreen';
 import LoginScreen from '../screens/LoginScreen';
 import SignUpScreen from '../screens/SignUpScreen';
 import ForgotPasswordScreen from '../screens/ForgotPasswordScreen';
-import PlaceholderScreen from '../screens/PlaceholderScreen';
+import OtpScreen from '../screens/OtpScreen';
+import RecreatePasswordScreen from '../screens/RecreatePasswordScreen';
+import AppBenefitsScreen from '../screens/AppBenefitsScreen';
+import PaidYourPhoneScreen from '../screens/PaidYourPhoneScreen';
+import NotificationsScreen from '../screens/NotificationsScreen';
+import NotificationDetailScreen from '../screens/NotificationDetailScreen';
+import AccountSettingsScreen from '../screens/AccountSettingsScreen';
+import AppSettingsScreen from '../screens/AppSettingsScreen';
+import ActivityHistoryScreen from '../screens/ActivityHistoryScreen';
+import SubscriptionScreen from '../screens/SubscriptionScreen';
+import ResetPasswordScreen from '../screens/ResetPasswordScreen';
+import ContactUsScreen from '../screens/ContactUsScreen';
+import TroubleshootingScreen from '../screens/TroubleshootingScreen';
+import TipsScreen from '../screens/TipsScreen';
+import TemperatureScreen from '../screens/TemperatureScreen';
+import TermsAndConditionsScreen from '../screens/TermsAndConditionsScreen';
+import PrivacyPolicyScreen from '../screens/PrivacyPolicyScreen';
 import TabNavigator from './TabNavigator';
 
 const Stack = createNativeStackNavigator();
-
-// Wrapper components for placeholder screens
-const NotificationsScreen = (props) => (
-  <PlaceholderScreen {...props} route={{params: {screenName: 'Notifications'}}} />
-);
-
-const ContactUsScreen = (props) => (
-  <PlaceholderScreen {...props} route={{params: {screenName: 'Contact Us'}}} />
-);
-
-const TroubleshootingScreen = (props) => (
-  <PlaceholderScreen {...props} route={{params: {screenName: 'Troubleshooting'}}} />
-);
-
-const TipsScreen = (props) => (
-  <PlaceholderScreen {...props} route={{params: {screenName: 'iPower Tips'}}} />
-);
-
-const AccountSettingsScreen = (props) => (
-  <PlaceholderScreen {...props} route={{params: {screenName: 'Account Settings'}}} />
-);
-
-const AppSettingsScreen = (props) => (
-  <PlaceholderScreen {...props} route={{params: {screenName: 'App Settings'}}} />
-);
-
-const ActivityHistoryScreen = (props) => (
-  <PlaceholderScreen {...props} route={{params: {screenName: 'Activity History'}}} />
-);
-
-const SubscriptionScreen = (props) => (
-  <PlaceholderScreen {...props} route={{params: {screenName: 'Peace of Mind'}}} />
-);
-
-const DeviceScanningScreen = (props) => (
-  <PlaceholderScreen {...props} route={{params: {screenName: 'Device Scanning'}}} />
-);
-
-const TermsAndConditionsScreen = (props) => (
-  <PlaceholderScreen {...props} route={{params: {screenName: 'Terms & Conditions'}}} />
-);
-
-const PrivacyPolicyScreen = (props) => (
-  <PlaceholderScreen {...props} route={{params: {screenName: 'Privacy Policy'}}} />
-);
 
 const AppNavigator = () => {
   return (
@@ -79,8 +50,14 @@ const AppNavigator = () => {
         />
         <Stack.Screen name="SignUp" component={SignUpScreen} />
         <Stack.Screen name="ForgotPassword" component={ForgotPasswordScreen} />
+        <Stack.Screen name="Otp" component={OtpScreen} />
+        <Stack.Screen name="RecreatePassword" component={RecreatePasswordScreen} />
         <Stack.Screen name="TermsAndConditions" component={TermsAndConditionsScreen} />
         <Stack.Screen name="PrivacyPolicy" component={PrivacyPolicyScreen} />
+        
+        {/* Device Connection Flow */}
+        <Stack.Screen name="AppBenefits" component={AppBenefitsScreen} />
+        <Stack.Screen name="PaidYourPhone" component={PaidYourPhoneScreen} />
         
         {/* Main App - Tab Navigator */}
         <Stack.Screen 
@@ -89,16 +66,24 @@ const AppNavigator = () => {
           options={{animation: 'fade'}}
         />
         
-        {/* Additional Screens */}
+        {/* Notification Screens */}
         <Stack.Screen name="Notifications" component={NotificationsScreen} />
+        <Stack.Screen name="NotificationDetail" component={NotificationDetailScreen} />
+        
+        {/* Settings Screens */}
+        <Stack.Screen name="AccountSettings" component={AccountSettingsScreen} />
+        <Stack.Screen name="AppSettings" component={AppSettingsScreen} />
+        <Stack.Screen name="Temperature" component={TemperatureScreen} />
+        <Stack.Screen name="ResetPassword" component={ResetPasswordScreen} />
+        
+        {/* History & Subscription */}
+        <Stack.Screen name="ActivityHistory" component={ActivityHistoryScreen} />
+        <Stack.Screen name="Subscription" component={SubscriptionScreen} />
+        
+        {/* Help Screens */}
         <Stack.Screen name="ContactUs" component={ContactUsScreen} />
         <Stack.Screen name="Troubleshooting" component={TroubleshootingScreen} />
         <Stack.Screen name="Tips" component={TipsScreen} />
-        <Stack.Screen name="AccountSettings" component={AccountSettingsScreen} />
-        <Stack.Screen name="AppSettings" component={AppSettingsScreen} />
-        <Stack.Screen name="ActivityHistory" component={ActivityHistoryScreen} />
-        <Stack.Screen name="Subscription" component={SubscriptionScreen} />
-        <Stack.Screen name="DeviceScanning" component={DeviceScanningScreen} />
       </Stack.Navigator>
     </NavigationContainer>
   );

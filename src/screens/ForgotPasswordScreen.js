@@ -56,8 +56,9 @@ const ForgotPasswordScreen = ({navigation}) => {
       const data = await response.json();
 
       if (data && data.success) {
-        showAlert('Success', 'Password reset link has been sent to your email.');
-        navigation.goBack();
+        showAlert('Success', 'OTP sent to your email.');
+        // Navigate to OtpScreen with email - matching iOS
+        navigation.navigate('Otp', {email: email});
       } else {
         showAlert('Error', data?.messages?.msg?.[0] || 'Something went wrong');
       }
@@ -262,6 +263,9 @@ const styles = StyleSheet.create({
 });
 
 export default ForgotPasswordScreen;
+
+
+
 
 
 
