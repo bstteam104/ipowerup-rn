@@ -151,16 +151,20 @@ const HomeScreen = ({navigation}) => {
             </View>
           </View>
 
-          {/* Transfer Power Button - iOS Style (Dark with Blue Arrow) */}
+          {/* Transfer Power Button - iOS Style (using actual slider images) */}
           <TouchableOpacity 
             style={styles.sliderButton}
             onPress={() => setIsCharging(!isCharging)}
             activeOpacity={0.9}
           >
-            <Text style={styles.sliderText}>Transfer Power To Phone</Text>
-            <View style={[styles.sliderThumb, isCharging && styles.sliderThumbActive]}>
-              <Text style={[styles.sliderArrow, isCharging && styles.sliderArrowActive]}>→</Text>
-            </View>
+            <Image
+              source={isCharging 
+                ? require('../../assets/home/newYellowSlider.png')
+                : require('../../assets/home/newWhiteSlider.png')
+              }
+              style={styles.sliderImage}
+              resizeMode="contain"
+            />
           </TouchableOpacity>
 
         </ScrollView>
@@ -210,9 +214,9 @@ const styles = StyleSheet.create({
     color: '#0097D9',
   },
   bellIcon: {
-    width: 28,
-    height: 28,
-    tintColor: '#FF6B6B',
+    width: 33, // iOS width = 33
+    height: 30, // iOS height = 30
+    // No tint color - use original image color like iOS
   },
   sectionTitle: {
     fontSize: 20,
@@ -275,47 +279,12 @@ const styles = StyleSheet.create({
     marginHorizontal: 20,
     marginTop: 15,
     height: 55,
-    backgroundColor: '#FFFFFF', // White background like iOS
-    borderRadius: 30,
-    flexDirection: 'row',
     alignItems: 'center',
-    paddingLeft: 25,
-    paddingRight: 5,
-    shadowColor: '#000',
-    shadowOffset: {width: 0, height: 2},
-    shadowOpacity: 0.15,
-    shadowRadius: 4,
-    elevation: 3,
-  },
-  sliderText: {
-    flex: 1,
-    fontSize: 16,
-    fontWeight: '600',
-    color: '#1D2733', // Dark text on white background
-  },
-  sliderThumb: {
-    width: 45,
-    height: 45,
-    borderRadius: 23,
-    backgroundColor: '#0097D9', // Blue like iOS
     justifyContent: 'center',
-    alignItems: 'center',
-    shadowColor: '#000',
-    shadowOffset: {width: 0, height: 1},
-    shadowOpacity: 0.2,
-    shadowRadius: 2,
-    elevation: 2,
   },
-  sliderThumbActive: {
-    backgroundColor: '#FFD60A', // Yellow when active/charging
-  },
-  sliderArrow: {
-    fontSize: 20,
-    fontWeight: 'bold',
-    color: '#FFFFFF', // White arrow on blue background
-  },
-  sliderArrowActive: {
-    color: '#1D2733', // Dark arrow when active
+  sliderImage: {
+    width: '100%',
+    height: 55,
   },
 });
 

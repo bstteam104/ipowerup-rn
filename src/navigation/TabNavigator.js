@@ -1,5 +1,5 @@
 import React from 'react';
-import {View, Image, StyleSheet, Platform} from 'react-native';
+import {View, Image, StyleSheet, Platform, Text} from 'react-native';
 import {createBottomTabNavigator} from '@react-navigation/bottom-tabs';
 import HomeScreen from '../screens/HomeScreen';
 import SolarScreen from '../screens/SolarScreen';
@@ -8,24 +8,24 @@ import ProfileScreen from '../screens/ProfileScreen';
 
 const Tab = createBottomTabNavigator();
 
-// Blue indicator bar image (bottom nav.png) - shown below selected tab icon
-// All selected tabs use the same blue indicator bar
-const IndicatorBar = () => (
-  <Image
-    source={require('../../assets/tabbar/homeTab.png')}
-    style={styles.indicatorBar}
-    resizeMode="contain"
-  />
-);
-
-const TabIcon = ({iconSource, focused}) => (
+// Tab icon - uses selected images directly (they already have blue background + icon + label built-in)
+const TabIcon = ({selectedIconSource, unselectedIconSource, label, focused}) => (
   <View style={styles.tabIconContainer}>
-    <Image
-      source={iconSource}
-      style={styles.tabIcon}
-      resizeMode="contain"
-    />
-    {focused && <IndicatorBar />}
+    {focused ? (
+      // Active tab: use selected image which already has blue background, icon, and label
+      <Image
+        source={selectedIconSource}
+        style={styles.tabIconSelected}
+        resizeMode="contain"
+      />
+    ) : (
+      // Inactive tab: just icon
+      <Image
+        source={unselectedIconSource}
+        style={styles.tabIcon}
+        resizeMode="contain"
+      />
+    )}
   </View>
 );
 
@@ -35,9 +35,9 @@ const TabNavigator = () => {
       screenOptions={{
         headerShown: false,
         tabBarStyle: styles.tabBar,
-        tabBarShowLabel: false, // iOS has no labels (title="") - matching iOS exactly
-        tabBarActiveTintColor: 'transparent', // Hide default active tint
-        tabBarInactiveTintColor: 'transparent', // Hide default inactive tint
+        tabBarShowLabel: false, // We'll show labels manually for active tabs only
+        tabBarActiveTintColor: '#32ADE6', // Light cyan/blue matching iOS systemCyanColor
+        tabBarInactiveTintColor: '#999999', // Gray for inactive
       }}
     >
       <Tab.Screen
@@ -46,7 +46,9 @@ const TabNavigator = () => {
         options={{
           tabBarIcon: ({focused}) => (
             <TabIcon
-              iconSource={require('../../assets/tabbar/homeUnselected.png')}
+              selectedIconSource={require('../../assets/tabbar/homeTab.png')}
+              unselectedIconSource={require('../../assets/tabbar/homeUnselected.png')}
+              label="Home"
               focused={focused}
             />
           ),
@@ -58,7 +60,9 @@ const TabNavigator = () => {
         options={{
           tabBarIcon: ({focused}) => (
             <TabIcon
-              iconSource={require('../../assets/tabbar/solarUnselected.png')}
+              selectedIconSource={require('../../assets/tabbar/solarTab.png')}
+              unselectedIconSource={require('../../assets/tabbar/solarUnselected.png')}
+              label="Solar"
               focused={focused}
             />
           ),
@@ -70,7 +74,9 @@ const TabNavigator = () => {
         options={{
           tabBarIcon: ({focused}) => (
             <TabIcon
-              iconSource={require('../../assets/tabbar/helpUnselected.png')}
+              selectedIconSource={require('../../assets/tabbar/helpTab.png')}
+              unselectedIconSource={require('../../assets/tabbar/helpUnselected.png')}
+              label="Help"
               focused={focused}
             />
           ),
@@ -82,7 +88,9 @@ const TabNavigator = () => {
         options={{
           tabBarIcon: ({focused}) => (
             <TabIcon
-              iconSource={require('../../assets/tabbar/profileUnselected.png')}
+              selectedIconSource={require('../../assets/tabbar/profileTab.png')}
+              unselectedIconSource={require('../../assets/tabbar/profileUnselected.png')}
+              label="Profile"
               focused={focused}
             />
           ),
@@ -123,13 +131,11 @@ const styles = StyleSheet.create({
     width: 24,
     height: 24,
   },
-  indicatorBar: {
-    position: 'absolute',
-    bottom: 0, // Position at the very bottom of the tab bar container
-    width: 60, // iOS bottom nav indicator width - adjusted for visibility
-    height: 4, // Thin indicator bar height - visible blue line
-    alignSelf: 'center',
-    backgroundColor: 'transparent',
+  tabIconSelected: {
+    // Selected images already contain blue background + icon + label
+    // Match iOS selected tab image dimensions: width 77, height 28
+    width: 77,
+    height: 28,
   },
 });
 
