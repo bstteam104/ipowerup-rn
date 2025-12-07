@@ -8,10 +8,13 @@ import {
   StatusBar,
   Alert,
   ScrollView,
+  Platform,
+  Dimensions,
 } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import {Colors, Constants, BorderRadius, FontSizes} from '../constants/Constants';
-import Header from '../components/Header';
+
+const {width, height} = Dimensions.get('window');
 
 const TemperatureScreen = ({navigation}) => {
   const [tempValue, setTempValue] = useState('fahrenheit');
@@ -80,16 +83,35 @@ const TemperatureScreen = ({navigation}) => {
 
   return (
     <View style={styles.container}>
-      <StatusBar barStyle="dark-content" backgroundColor={Colors.white} />
+      <StatusBar barStyle="dark-content" backgroundColor="transparent" translucent />
+      
+      {/* Background Image */}
+      <Image
+        source={require('../../assets/images/background.png')}
+        style={styles.backgroundImage}
+        resizeMode="cover"
+      />
+      
       <ScrollView
         contentContainerStyle={styles.scrollContent}
         showsVerticalScrollIndicator={false}
       >
         {/* Header */}
-        <Header
-          title="Case Temperature"
-          onBackPress={() => navigation.goBack()}
-        />
+        <View style={styles.header}>
+          <TouchableOpacity
+            style={styles.backButton}
+            onPress={() => navigation.goBack()}
+            activeOpacity={0.7}
+          >
+            <Image
+              source={require('../../assets/icons/back-arrow-ios.png')}
+              style={styles.backIcon}
+              resizeMode="contain"
+            />
+          </TouchableOpacity>
+          <Text style={styles.headerTitle}>Case Temperature</Text>
+          <View style={styles.placeholder} />
+        </View>
 
         {/* Temperature Options - matching iOS */}
         <View style={styles.optionsContainer}>
@@ -149,9 +171,48 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: Colors.white,
   },
+  backgroundImage: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    width: width,
+    height: height,
+    opacity: 0.55,
+  },
   scrollContent: {
     flexGrow: 1,
     paddingBottom: 40,
+  },
+  header: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingHorizontal: 20,
+    paddingTop: Platform.OS === 'android' ? 50 : 10,
+    paddingBottom: 30,
+  },
+  backButton: {
+    width: 24,
+    height: 24,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  backIcon: {
+    width: 24,
+    height: 24,
+    tintColor: Colors.black,
+  },
+  headerTitle: {
+    flex: 1,
+    fontSize: 20,
+    fontWeight: 'bold',
+    color: '#1D2733',
+    textAlign: 'center',
+  },
+  placeholder: {
+    width: 24,
   },
   optionsContainer: {
     paddingHorizontal: 20,

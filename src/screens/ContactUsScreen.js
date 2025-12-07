@@ -10,10 +10,13 @@ import {
   Alert,
   KeyboardAvoidingView,
   Platform,
+  Image,
+  Dimensions,
 } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import {Colors, Constants, BorderRadius, FontSizes} from '../constants/Constants';
-import Header from '../components/Header';
+
+const {width, height} = Dimensions.get('window');
 
 const ContactUsScreen = ({navigation}) => {
   const [name, setName] = useState('');
@@ -124,81 +127,104 @@ const ContactUsScreen = ({navigation}) => {
 
   return (
     <View style={styles.container}>
-      <StatusBar barStyle="dark-content" backgroundColor={Colors.white} />
+      <StatusBar barStyle="dark-content" backgroundColor="transparent" translucent />
+      
+      {/* Background Image */}
+      <Image
+        source={require('../../assets/images/background.png')}
+        style={styles.backgroundImage}
+        resizeMode="cover"
+      />
+      
       <KeyboardAvoidingView
         style={styles.flex}
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
       >
-        <ScrollView
-          contentContainerStyle={styles.scrollContent}
-          showsVerticalScrollIndicator={false}
-          keyboardShouldPersistTaps="handled"
-        >
-          {/* Header */}
-          <Header
-            title="Contact iPowerUp"
-            onBackPress={() => navigation.goBack()}
-          />
-
-          {/* Form Fields - matching iOS */}
-          <View style={styles.formContainer}>
-            {/* Name Field */}
-            <View style={styles.inputView}>
-              <TextInput
-                style={styles.input}
-                placeholder="Name"
-                placeholderTextColor={Colors.grayColor}
-                value={name}
-                onChangeText={setName}
-                autoCapitalize="words"
-              />
+        <View style={styles.flex}>
+          <ScrollView
+            contentContainerStyle={styles.scrollContent}
+            showsVerticalScrollIndicator={false}
+            keyboardShouldPersistTaps="handled"
+          >
+            {/* Header */}
+            <View style={styles.header}>
+              <TouchableOpacity
+                style={styles.backButton}
+                onPress={() => navigation.goBack()}
+                activeOpacity={0.7}
+              >
+                <Image
+                  source={require('../../assets/icons/back-arrow-ios.png')}
+                  style={styles.backIcon}
+                  resizeMode="contain"
+                />
+              </TouchableOpacity>
+              <Text style={styles.headerTitle}>Contact iPowerUp</Text>
+              <View style={styles.placeholder} />
             </View>
 
-            {/* Email Field */}
-            <View style={styles.inputView}>
-              <TextInput
-                style={styles.input}
-                placeholder="Email"
-                placeholderTextColor={Colors.grayColor}
-                value={email}
-                onChangeText={setEmail}
-                keyboardType="email-address"
-                autoCapitalize="none"
-              />
-            </View>
+            {/* Form Fields - matching iOS */}
+            <View style={styles.formContainer}>
+              {/* Name Field */}
+              <View style={styles.inputView}>
+                <TextInput
+                  style={styles.input}
+                  placeholder="Name"
+                  placeholderTextColor={Colors.grayColor}
+                  value={name}
+                  onChangeText={setName}
+                  autoCapitalize="words"
+                />
+              </View>
 
-            {/* Message Text View - matching iOS UITextView */}
-            <View style={styles.messageView}>
-              <TextInput
-                style={[
-                  styles.messageInput,
-                  message === placeholderText && styles.messagePlaceholder,
-                ]}
-                placeholder={placeholderText}
-                placeholderTextColor={Colors.grayColor}
-                value={message}
-                onChangeText={setMessage}
-                onFocus={handleMessageFocus}
-                onBlur={handleMessageBlur}
-                multiline
-                numberOfLines={6}
-                textAlignVertical="top"
-              />
-            </View>
+              {/* Email Field */}
+              <View style={styles.inputView}>
+                <TextInput
+                  style={styles.input}
+                  placeholder="Email"
+                  placeholderTextColor={Colors.grayColor}
+                  value={email}
+                  onChangeText={setEmail}
+                  keyboardType="email-address"
+                  autoCapitalize="none"
+                />
+              </View>
 
-            {/* Send Button - matching iOS */}
+              {/* Message Text View - matching iOS UITextView */}
+              <View style={styles.messageView}>
+                <TextInput
+                  style={[
+                    styles.messageInput,
+                    message === placeholderText && styles.messagePlaceholder,
+                  ]}
+                  placeholder={placeholderText}
+                  placeholderTextColor={Colors.grayColor}
+                  value={message}
+                  onChangeText={setMessage}
+                  onFocus={handleMessageFocus}
+                  onBlur={handleMessageBlur}
+                  multiline
+                  numberOfLines={6}
+                  textAlignVertical="top"
+                />
+              </View>
+            </View>
+          </ScrollView>
+          
+          {/* Submit Button - at bottom, matching iOS */}
+          <View style={styles.buttonContainer}>
             <TouchableOpacity
-              style={[styles.sendButton, isLoading && styles.buttonDisabled]}
+              style={[styles.submitButton, isLoading && styles.buttonDisabled]}
               onPress={handleSend}
               disabled={isLoading}
               activeOpacity={0.8}
             >
-              <Text style={styles.sendButtonText}>
-                {isLoading ? 'Sending...' : 'Send'}
+              <Text style={styles.submitButtonText}>
+                {isLoading ? 'Sending...' : 'Submit'}
               </Text>
             </TouchableOpacity>
           </View>
-        </ScrollView>
+        </View>
       </KeyboardAvoidingView>
     </View>
   );
@@ -209,12 +235,51 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: Colors.white,
   },
+  backgroundImage: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    width: width,
+    height: height,
+    opacity: 0.55,
+  },
   flex: {
     flex: 1,
   },
   scrollContent: {
     flexGrow: 1,
-    paddingBottom: 40,
+    paddingBottom: 20,
+  },
+  header: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingHorizontal: 20,
+    paddingTop: Platform.OS === 'android' ? 50 : 10,
+    paddingBottom: 30,
+  },
+  backButton: {
+    width: 24,
+    height: 24,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  backIcon: {
+    width: 24,
+    height: 24,
+    tintColor: Colors.black,
+  },
+  headerTitle: {
+    flex: 1,
+    fontSize: 20,
+    fontWeight: 'bold',
+    color: '#1D2733',
+    textAlign: 'center',
+  },
+  placeholder: {
+    width: 24,
   },
   formContainer: {
     paddingHorizontal: 20,
@@ -250,10 +315,17 @@ const styles = StyleSheet.create({
   messagePlaceholder: {
     color: Colors.grayColor,
   },
-  sendButton: {
+  buttonContainer: {
+    paddingHorizontal: 20,
+    paddingBottom: Platform.OS === 'ios' ? 20 : 30,
+    paddingTop: 10,
+    backgroundColor: 'transparent',
+    borderTopWidth: 0,
+  },
+  submitButton: {
     width: '100%',
     height: 50,
-    backgroundColor: Colors.signInBlue,
+    backgroundColor: Colors.progressYellow, // Yellow color matching iOS systemYellowColor
     borderRadius: BorderRadius.large,
     justifyContent: 'center',
     alignItems: 'center',
@@ -261,10 +333,10 @@ const styles = StyleSheet.create({
   buttonDisabled: {
     opacity: 0.7,
   },
-  sendButtonText: {
+  submitButtonText: {
     fontSize: FontSizes.large,
     fontWeight: 'bold',
-    color: Colors.white,
+    color: Colors.black,
   },
 });
 

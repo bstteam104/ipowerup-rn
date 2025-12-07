@@ -11,6 +11,7 @@ import {
   ScrollView,
   Dimensions,
 } from 'react-native';
+import {Colors} from '../constants/Constants';
 
 const {width, height} = Dimensions.get('window');
 

@@ -14,6 +14,7 @@ import {
   Dimensions,
 } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import {Colors} from '../constants/Constants';
 
 const {width, height} = Dimensions.get('window');
 
@@ -245,20 +246,15 @@ const styles = StyleSheet.create({
   connectButton: {
     width: '100%',
     height: 50,
-    backgroundColor: '#FFD60A',
-    borderRadius: 25,
+    backgroundColor: Colors.progressYellow, // systemYellowColor matching iOS
+    borderRadius: 12, // matching iOS cornerRadius
     justifyContent: 'center',
     alignItems: 'center',
-    shadowColor: '#000',
-    shadowOffset: {width: 0, height: 2},
-    shadowOpacity: 0.15,
-    shadowRadius: 4,
-    elevation: 3,
   },
   connectButtonText: {
-    fontSize: 16,
+    fontSize: 14,
     fontWeight: '600',
-    color: '#1D2733',
+    color: Colors.black,
   },
 });
 
