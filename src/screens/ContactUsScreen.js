@@ -13,6 +13,7 @@ import {
 } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import {Colors, Constants, BorderRadius, FontSizes} from '../constants/Constants';
+import Header from '../components/Header';
 
 const ContactUsScreen = ({navigation}) => {
   const [name, setName] = useState('');
@@ -134,16 +135,10 @@ const ContactUsScreen = ({navigation}) => {
           keyboardShouldPersistTaps="handled"
         >
           {/* Header */}
-          <View style={styles.header}>
-            <TouchableOpacity
-              style={styles.backButton}
-              onPress={() => navigation.goBack()}
-            >
-              <Text style={styles.backText}>← Back</Text>
-            </TouchableOpacity>
-            <Text style={styles.headerTitle}>Contact Us</Text>
-            <View style={styles.placeholder} />
-          </View>
+          <Header
+            title="Contact iPowerUp"
+            onBackPress={() => navigation.goBack()}
+          />
 
           {/* Form Fields - matching iOS */}
           <View style={styles.formContainer}>
@@ -221,30 +216,6 @@ const styles = StyleSheet.create({
     flexGrow: 1,
     paddingBottom: 40,
   },
-  header: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingHorizontal: 20,
-    paddingVertical: 15,
-    borderBottomWidth: 1,
-    borderBottomColor: Colors.lightGray,
-  },
-  backButton: {
-    width: 80,
-  },
-  backText: {
-    fontSize: FontSizes.medium,
-    color: Colors.black,
-  },
-  headerTitle: {
-    fontSize: FontSizes.heading,
-    fontWeight: 'bold',
-    color: Colors.lightBlackColor,
-  },
-  placeholder: {
-    width: 80,
-  },
   formContainer: {
     paddingHorizontal: 20,
     paddingTop: 30,
@@ -298,6 +269,9 @@ const styles = StyleSheet.create({
 });
 
 export default ContactUsScreen;
+
+
+
 
 
 

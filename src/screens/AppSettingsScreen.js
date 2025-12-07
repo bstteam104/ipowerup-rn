@@ -13,6 +13,7 @@ import {
 } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import {Colors, Constants, FontSizes} from '../constants/Constants';
+import Header from '../components/Header';
 
 const AppSettingsScreen = ({navigation}) => {
   const [bluetoothEnabled, setBluetoothEnabled] = useState(false);
@@ -144,7 +145,11 @@ const AppSettingsScreen = ({navigation}) => {
           style={{transform: [{scaleX: 0.9}, {scaleY: 0.9}]}}
         />
       ) : (
-        <Text style={styles.menuArrow}>→</Text>
+        <Image
+          source={require('../../assets/icons/right-arrow-ios.png')}
+          style={styles.menuArrow}
+          resizeMode="contain"
+        />
       )}
     </TouchableOpacity>
   );
@@ -158,20 +163,10 @@ const AppSettingsScreen = ({navigation}) => {
         contentContainerStyle={styles.scrollContent}
       >
         {/* Header */}
-        <View style={styles.header}>
-          <TouchableOpacity
-            style={styles.backButton}
-            onPress={() => navigation.goBack()}
-          >
-            <Image
-              source={require('../../assets/icons/back-arrow.png')}
-              style={styles.backIcon}
-              resizeMode="contain"
-            />
-          </TouchableOpacity>
-          <Text style={styles.headerTitle}>App Settings</Text>
-          <View style={styles.placeholder} />
-        </View>
+        <Header
+          title="App Settings"
+          onBackPress={() => navigation.goBack()}
+        />
 
         {/* Menu Items - matching iOS */}
         <View style={styles.menuContainer}>
@@ -223,34 +218,6 @@ const styles = StyleSheet.create({
   scrollContent: {
     paddingBottom: 40,
   },
-  header: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingHorizontal: 20,
-    paddingVertical: 15,
-    borderBottomWidth: 1,
-    borderBottomColor: Colors.lightGray,
-  },
-  backButton: {
-    width: 40,
-    height: 40,
-    justifyContent: 'center',
-    alignItems: 'flex-start',
-  },
-  backIcon: {
-    width: 24,
-    height: 24,
-    tintColor: Colors.black,
-  },
-  headerTitle: {
-    fontSize: FontSizes.heading,
-    fontWeight: 'bold',
-    color: Colors.lightBlackColor,
-  },
-  placeholder: {
-    width: 40,
-  },
   menuContainer: {
     marginHorizontal: 20,
     marginTop: 20,
@@ -290,13 +257,16 @@ const styles = StyleSheet.create({
     color: Colors.lightBlackColor,
   },
   menuArrow: {
-    fontSize: 18,
-    color: Colors.cyanBlue,
-    fontWeight: '600',
+    width: 18,
+    height: 18,
+    tintColor: Colors.black,
   },
 });
 
 export default AppSettingsScreen;
+
+
+
 
 
 

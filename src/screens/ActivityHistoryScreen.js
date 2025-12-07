@@ -13,6 +13,7 @@ import {
 } from 'react-native';
 import ChartCardView from '../components/ChartCardView';
 import {Colors, FontSizes} from '../constants/Constants';
+import Header from '../components/Header';
 
 const {width, height} = Dimensions.get('window');
 
@@ -81,20 +82,10 @@ const ActivityHistoryScreen = ({navigation}) => {
       <StatusBar barStyle="dark-content" backgroundColor={Colors.white} />
       <SafeAreaView style={styles.safeArea}>
         {/* Header */}
-        <View style={styles.header}>
-          <TouchableOpacity
-            style={styles.backButton}
-            onPress={() => navigation.goBack()}
-          >
-            <Image
-              source={require('../../assets/icons/back-arrow.png')}
-              style={styles.backIcon}
-              resizeMode="contain"
-            />
-          </TouchableOpacity>
-          <Text style={styles.headerTitle}>Activity History</Text>
-          <View style={styles.placeholder} />
-        </View>
+        <Header
+          title="Activity History"
+          onBackPress={() => navigation.goBack()}
+        />
 
         {/* ScrollView with Charts - matching iOS */}
         <ScrollView
@@ -143,35 +134,6 @@ const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
   },
-  header: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingHorizontal: 20,
-    paddingVertical: 15,
-    backgroundColor: Colors.white,
-    borderBottomWidth: 1,
-    borderBottomColor: Colors.lightGray,
-  },
-  backButton: {
-    width: 40,
-    height: 40,
-    justifyContent: 'center',
-    alignItems: 'flex-start',
-  },
-  backIcon: {
-    width: 24,
-    height: 24,
-    tintColor: Colors.black,
-  },
-  headerTitle: {
-    fontSize: FontSizes.heading,
-    fontWeight: 'bold',
-    color: Colors.lightBlackColor,
-  },
-  placeholder: {
-    width: 40,
-  },
   scrollView: {
     flex: 1,
   },
@@ -182,6 +144,9 @@ const styles = StyleSheet.create({
 });
 
 export default ActivityHistoryScreen;
+
+
+
 
 
 

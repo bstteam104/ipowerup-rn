@@ -10,6 +10,7 @@ import {
   ScrollView,
 } from 'react-native';
 import {Colors, BorderRadius, FontSizes} from '../constants/Constants';
+import Header from '../components/Header';
 
 const SubscriptionScreen = ({navigation}) => {
   const handleSelect = () => {
@@ -34,20 +35,11 @@ const SubscriptionScreen = ({navigation}) => {
         showsVerticalScrollIndicator={false}
       >
         {/* Header */}
-        <View style={styles.header}>
-          <TouchableOpacity
-            style={styles.backButton}
-            onPress={() => navigation.goBack()}
-          >
-            <Image
-              source={require('../../assets/icons/back-arrow.png')}
-              style={styles.backIcon}
-              resizeMode="contain"
-            />
-          </TouchableOpacity>
-          <Text style={styles.headerTitle}>Peace of Mind</Text>
-          <View style={styles.placeholder} />
-        </View>
+        <Header
+          title="Peace of Mind Subscription"
+          onBackPress={() => navigation.goBack()}
+          headerHeight={60}
+        />
 
         {/* Content - matching iOS */}
         <View style={styles.content}>
@@ -86,34 +78,6 @@ const styles = StyleSheet.create({
   scrollContent: {
     flexGrow: 1,
     paddingBottom: 40,
-  },
-  header: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingHorizontal: 20,
-    paddingVertical: 15,
-    borderBottomWidth: 1,
-    borderBottomColor: Colors.lightGray,
-  },
-  backButton: {
-    width: 40,
-    height: 40,
-    justifyContent: 'center',
-    alignItems: 'flex-start',
-  },
-  backIcon: {
-    width: 24,
-    height: 24,
-    tintColor: Colors.black,
-  },
-  headerTitle: {
-    fontSize: FontSizes.heading,
-    fontWeight: 'bold',
-    color: Colors.lightBlackColor,
-  },
-  placeholder: {
-    width: 40,
   },
   content: {
     paddingHorizontal: 20,
@@ -173,6 +137,9 @@ const styles = StyleSheet.create({
 });
 
 export default SubscriptionScreen;
+
+
+
 
 
 

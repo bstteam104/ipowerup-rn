@@ -11,6 +11,7 @@ import {
 } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import {Colors, Constants, BorderRadius, FontSizes} from '../constants/Constants';
+import Header from '../components/Header';
 
 const TemperatureScreen = ({navigation}) => {
   const [tempValue, setTempValue] = useState('fahrenheit');
@@ -85,20 +86,10 @@ const TemperatureScreen = ({navigation}) => {
         showsVerticalScrollIndicator={false}
       >
         {/* Header */}
-        <View style={styles.header}>
-          <TouchableOpacity
-            style={styles.backButton}
-            onPress={() => navigation.goBack()}
-          >
-            <Image
-              source={require('../../assets/icons/back-arrow.png')}
-              style={styles.backIcon}
-              resizeMode="contain"
-            />
-          </TouchableOpacity>
-          <Text style={styles.headerTitle}>Temperature</Text>
-          <View style={styles.placeholder} />
-        </View>
+        <Header
+          title="Case Temperature"
+          onBackPress={() => navigation.goBack()}
+        />
 
         {/* Temperature Options - matching iOS */}
         <View style={styles.optionsContainer}>
@@ -162,34 +153,6 @@ const styles = StyleSheet.create({
     flexGrow: 1,
     paddingBottom: 40,
   },
-  header: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingHorizontal: 20,
-    paddingVertical: 15,
-    borderBottomWidth: 1,
-    borderBottomColor: Colors.lightGray,
-  },
-  backButton: {
-    width: 40,
-    height: 40,
-    justifyContent: 'center',
-    alignItems: 'flex-start',
-  },
-  backIcon: {
-    width: 24,
-    height: 24,
-    tintColor: Colors.black,
-  },
-  headerTitle: {
-    fontSize: FontSizes.heading,
-    fontWeight: 'bold',
-    color: Colors.lightBlackColor,
-  },
-  placeholder: {
-    width: 40,
-  },
   optionsContainer: {
     paddingHorizontal: 20,
     paddingTop: 40,
@@ -231,6 +194,9 @@ const styles = StyleSheet.create({
 });
 
 export default TemperatureScreen;
+
+
+
 
 
 

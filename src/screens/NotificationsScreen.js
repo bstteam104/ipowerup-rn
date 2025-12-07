@@ -13,6 +13,7 @@ import {
   Alert,
 } from 'react-native';
 import {Colors, Constants, FontSizes} from '../constants/Constants';
+import Header from '../components/Header';
 
 const {width, height} = Dimensions.get('window');
 
@@ -96,20 +97,10 @@ const NotificationsScreen = ({navigation}) => {
       <StatusBar barStyle="dark-content" backgroundColor={Colors.white} />
       <SafeAreaView style={styles.safeArea}>
         {/* Header */}
-        <View style={styles.header}>
-          <TouchableOpacity
-            style={styles.backButton}
-            onPress={() => navigation.goBack()}
-          >
-            <Image
-              source={require('../../assets/icons/back-arrow.png')}
-              style={styles.backIcon}
-              resizeMode="contain"
-            />
-          </TouchableOpacity>
-          <Text style={styles.headerTitle}>Notifications</Text>
-          <View style={styles.placeholder} />
-        </View>
+        <Header
+          title="Notifications"
+          onBackPress={() => navigation.goBack()}
+        />
 
         {/* Notifications List - matching iOS UITableView */}
         <FlatList
@@ -132,34 +123,6 @@ const styles = StyleSheet.create({
   },
   safeArea: {
     flex: 1,
-  },
-  header: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingHorizontal: 20,
-    paddingVertical: 15,
-    borderBottomWidth: 1,
-    borderBottomColor: Colors.lightGray,
-  },
-  backButton: {
-    width: 40,
-    height: 40,
-    justifyContent: 'center',
-    alignItems: 'flex-start',
-  },
-  backIcon: {
-    width: 24,
-    height: 24,
-    tintColor: Colors.black,
-  },
-  headerTitle: {
-    fontSize: FontSizes.heading,
-    fontWeight: 'bold',
-    color: Colors.lightBlackColor,
-  },
-  placeholder: {
-    width: 40,
   },
   listContent: {
     paddingVertical: 10,

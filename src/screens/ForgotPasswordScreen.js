@@ -86,9 +86,11 @@ const ForgotPasswordScreen = ({navigation}) => {
           <TouchableOpacity 
             style={styles.backButton}
             onPress={() => navigation.goBack()}
+            activeOpacity={0.7}
+            hitSlop={{top: 10, bottom: 10, left: 10, right: 10}}
           >
             <Image
-              source={require('../../assets/icons/back-arrow.png')}
+              source={require('../../assets/icons/back-arrow-ios.png')}
               style={styles.backIcon}
               resizeMode="contain"
             />
@@ -173,14 +175,14 @@ const styles = StyleSheet.create({
     paddingBottom: 40,
   },
   backButton: {
-    width: 40,
-    height: 40,
+    width: 20,
+    height: 24,
     justifyContent: 'center',
-    alignItems: 'flex-start',
+    alignItems: 'center',
     marginBottom: 40,
   },
   backIcon: {
-    width: 24,
+    width: 20,
     height: 24,
     tintColor: Colors.black,
   },

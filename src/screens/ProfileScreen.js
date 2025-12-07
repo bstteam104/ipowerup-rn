@@ -45,7 +45,13 @@ const ProfileScreen = ({navigation}) => {
       </View>
       <Text style={styles.menuTitle}>{title}</Text>
       {rightComponent ? rightComponent : (
-        showArrow && <Text style={styles.menuArrow}>→</Text>
+        showArrow && (
+          <Image
+            source={require('../../assets/icons/right-arrow-ios.png')}
+            style={styles.menuArrow}
+            resizeMode="contain"
+          />
+        )
       )}
     </TouchableOpacity>
   );
@@ -216,9 +222,9 @@ const styles = StyleSheet.create({
     color: '#1D2733',
   },
   menuArrow: {
-    fontSize: 18,
-    color: '#0097D9',
-    fontWeight: '600',
+    width: 18,
+    height: 18,
+    tintColor: Colors.black,
   },
   deviceSection: {
     marginHorizontal: 20,
