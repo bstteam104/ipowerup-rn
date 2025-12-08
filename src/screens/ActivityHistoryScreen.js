@@ -112,32 +112,36 @@ const ActivityHistoryScreen = ({navigation}) => {
           showsVerticalScrollIndicator={false}
         >
           {/* Case To Device Charging Chart - matching iOS */}
-          <ChartCardView
-            title="Case To Device Charging"
-            subtitle="Last 10 Days"
-            wallOutletColor="rgba(0, 204, 230, 1)" // Blue - matching iOS UIColor(red: 0.0, green: 0.8, blue: 0.9, alpha: 1.0)
-            unoCaseColor="transparent" // Clear - matching iOS
-            percentageLabels={casePercentageLabels}
-            chartHeight={140}
-            data={caseData}
-            dayLabels={dayLabels}
-            showLegends={false}
-          />
+          <View style={styles.chartWrapper}>
+            <ChartCardView
+              title="Case To Device Charging"
+              subtitle="Last 10 Days"
+              wallOutletColor="rgba(0, 204, 230, 1)" // Blue - matching iOS UIColor(red: 0.0, green: 0.8, blue: 0.9, alpha: 1.0)
+              unoCaseColor="transparent" // Clear - matching iOS
+              percentageLabels={casePercentageLabels}
+              chartHeight={140}
+              data={caseData}
+              dayLabels={dayLabels}
+              showLegends={false}
+            />
+          </View>
 
           {/* Solar/USB to Case Charging Chart - matching iOS */}
-          <ChartCardView
-            title="Solar/USB to Case Charging"
-            subtitle=""
-            wallOutletColor="rgba(255, 128, 0, 1)" // Orange - matching iOS UIColor(red: 1.0, green: 0.5, blue: 0.0, alpha: 1.0)
-            unoCaseColor="rgba(0, 128, 255, 1)" // Blue - matching iOS UIColor(red: 0.0, green: 0.5, blue: 1.0, alpha: 1.0)
-            percentageLabels={phonePercentageLabels}
-            chartHeight={140}
-            data={phoneData}
-            dayLabels={dayLabels}
-            showLegends={true}
-            legendWallOutletColor="rgba(0, 128, 255, 1)" // USB - Blue
-            legendUnoCaseColor="rgba(255, 128, 0, 1)" // Solar - Orange
-          />
+          <View style={styles.chartWrapper}>
+            <ChartCardView
+              title="Solar/USB to Case Charging"
+              subtitle=""
+              wallOutletColor="rgba(255, 128, 0, 1)" // Orange - matching iOS UIColor(red: 1.0, green: 0.5, blue: 0.0, alpha: 1.0)
+              unoCaseColor="rgba(0, 128, 255, 1)" // Blue - matching iOS UIColor(red: 0.0, green: 0.5, blue: 1.0, alpha: 1.0)
+              percentageLabels={phonePercentageLabels}
+              chartHeight={140}
+              data={phoneData}
+              dayLabels={dayLabels}
+              showLegends={true}
+              legendWallOutletColor="rgba(0, 128, 255, 1)" // USB - Blue
+              legendUnoCaseColor="rgba(255, 128, 0, 1)" // Solar - Orange
+            />
+          </View>
         </ScrollView>
       </SafeAreaView>
     </View>
@@ -197,6 +201,10 @@ const styles = StyleSheet.create({
   scrollContent: {
     paddingTop: 10,
     paddingBottom: 40,
+    paddingHorizontal: 20,
+  },
+  chartWrapper: {
+    marginBottom: 20,
   },
 });
 

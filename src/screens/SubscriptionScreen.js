@@ -64,20 +64,38 @@ const SubscriptionScreen = ({navigation}) => {
 
         {/* Content - matching iOS */}
         <View style={styles.content}>
-          <Text style={styles.title}>Subscription Plans</Text>
-          <Text style={styles.subtitle}>
-            Choose a plan that works best for you
-          </Text>
-
-          {/* Subscription Plans can be added here */}
-          <View style={styles.planContainer}>
-            <Text style={styles.planText}>Premium Plan</Text>
-            <Text style={styles.planDescription}>
-              Get access to all features and premium support
-            </Text>
+          {/* White Card with Content - matching iOS */}
+          <View style={styles.cardContainer}>
+            <Text style={styles.cardTitle}>Subscribe and know what your case knows</Text>
+            
+            <View style={styles.textContainer}>
+              <Text style={styles.paragraph}>
+                Get peace of mind from a case and app that monitors your case and phone so you don't need to.
+              </Text>
+              
+              <Text style={styles.paragraph}>
+                Get alerts at 5%, 20%, 80%, and 100% battery power levels, plus additional optional levels.
+              </Text>
+              
+              <Text style={styles.paragraph}>
+                Enable case-to-phone communication even when the case is detached within Bluetooth range of up to 33 feet or 10 meters.
+              </Text>
+              
+              <Text style={styles.paragraph}>
+                Get case temperature alerts to prevent your case and phone from extreme temperature damage. Above 104° F or 40° C and below 32° F or 0° C.
+              </Text>
+              
+              <Text style={styles.paragraph}>
+                Check your battery usage history to understand opportunities for enhanced performance.
+              </Text>
+              
+              <Text style={styles.paragraph}>
+                Enjoy app enhancements throughout the year that provide continuous peace-of-mind improvements.
+              </Text>
+            </View>
           </View>
 
-          {/* Select Button - matching iOS */}
+          {/* Select Button - Yellow, matching iOS */}
           <TouchableOpacity
             style={styles.selectButton}
             onPress={handleSelect}
@@ -141,58 +159,50 @@ const styles = StyleSheet.create({
   },
   content: {
     paddingHorizontal: 20,
-    paddingTop: 40,
+    paddingTop: 20,
+    paddingBottom: 20,
   },
-  title: {
-    fontSize: FontSizes.title,
-    fontWeight: 'bold',
-    color: Colors.lightBlackColor,
-    textAlign: 'center',
-    marginBottom: 12,
-  },
-  subtitle: {
-    fontSize: FontSizes.large,
-    fontWeight: '500',
-    color: Colors.grayColor,
-    textAlign: 'center',
-    marginBottom: 40,
-    lineHeight: 22,
-  },
-  planContainer: {
+  cardContainer: {
     backgroundColor: Colors.white,
-    borderRadius: 12,
+    borderRadius: 16,
     padding: 20,
-    marginBottom: 30,
+    marginBottom: 20,
     shadowColor: '#000',
-    shadowOffset: {width: 0, height: 1},
-    shadowOpacity: 0.08,
-    shadowRadius: 4,
-    elevation: 2,
+    shadowOffset: {width: 0, height: 2},
+    shadowOpacity: 0.1,
+    shadowRadius: 8,
+    elevation: 4,
   },
-  planText: {
-    fontSize: FontSizes.heading,
+  cardTitle: {
+    fontSize: 20,
     fontWeight: 'bold',
-    color: Colors.lightBlackColor,
-    marginBottom: 8,
+    color: Colors.black,
+    marginBottom: 20,
+    textAlign: 'center',
   },
-  planDescription: {
-    fontSize: FontSizes.regular,
-    color: Colors.grayColor,
+  textContainer: {
+    // Paragraphs have marginBottom in paragraph style
+  },
+  paragraph: {
+    fontSize: 13,
+    fontWeight: '500',
+    color: Colors.black,
     lineHeight: 20,
+    marginBottom: 10,
   },
   selectButton: {
     width: '100%',
     height: 50,
-    backgroundColor: Colors.signInBlue,
-    borderRadius: BorderRadius.large,
+    backgroundColor: Colors.progressYellow, // Yellow - matching iOS systemYellowColor
+    borderRadius: 12,
     justifyContent: 'center',
     alignItems: 'center',
-    marginTop: 20,
+    marginTop: 10,
   },
   selectButtonText: {
-    fontSize: FontSizes.large,
+    fontSize: 16,
     fontWeight: 'bold',
-    color: Colors.white,
+    color: Colors.black, // Black text on yellow - matching iOS
   },
 });
 

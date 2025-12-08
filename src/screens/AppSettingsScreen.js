@@ -1,4 +1,4 @@
-import React, {useState, useEffect} from 'react';
+import React, {useState, useEffect, useCallback} from 'react';
 import {
   View,
   Text,
@@ -6,19 +6,57 @@ import {
   TouchableOpacity,
   Image,
   StatusBar,
-  Switch,
   Alert,
   ScrollView,
   Platform,
   Dimensions,
 } from 'react-native';
+import ToggleSwitch from 'toggle-switch-react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import {Colors, Constants, FontSizes} from '../constants/Constants';
 
 const {width, height} = Dimensions.get('window');
 
+const MenuItem = React.memo(({icon, title, onPress, showSwitch = false, switchValue, onSwitchChange, iconSize = 30, switchKey}) => (
+  <TouchableOpacity
+    style={styles.menuItem}
+    onPress={onPress}
+    activeOpacity={0.7}
+    disabled={showSwitch}
+  >
+    {icon && (
+      <View style={styles.menuIconContainer}>
+        <Image source={icon} style={[styles.menuIcon, {width: iconSize, height: 24}]} resizeMode="contain" />
+      </View>
+    )}
+    <Text style={styles.menuTitle} numberOfLines={1} ellipsizeMode="tail">{title}</Text>
+      {showSwitch ? (
+        <View style={styles.switchContainer}>
+          <ToggleSwitch
+            key={switchKey}
+            isOn={switchValue}
+            onColor="#000000"
+            offColor="#E0E0E0"
+            size="small"
+            thumbOnStyle={{backgroundColor: '#5CA3CC'}}
+            thumbOffStyle={{backgroundColor: '#5CA3CC'}}
+            onToggle={onSwitchChange}
+          />
+        </View>
+      ) : (
+      <Image
+        source={require('../../assets/icons/right-arrow-ios.png')}
+        style={styles.menuArrow}
+        resizeMode="contain"
+      />
+    )}
+  </TouchableOpacity>
+));
+
 const AppSettingsScreen = ({navigation}) => {
   const [bluetoothEnabled, setBluetoothEnabled] = useState(false);
+  const [alertEnabled, setAlertEnabled] = useState(false);
+  const [subscribeEnabled, setSubscribeEnabled] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
 
   useEffect(() => {
@@ -41,37 +79,23 @@ const AppSettingsScreen = ({navigation}) => {
     Alert.alert(title, message, [{text: 'OK', style: 'default'}]);
   };
 
-  const handleBluetoothToggle = async (value) => {
+  const handleBluetoothToggle = useCallback((value) => {
+    console.log('Bluetooth toggle:', value);
     setBluetoothEnabled(value);
-    setIsLoading(true);
+    // UI only for now, no API call
+  }, []);
 
-    try {
-      const response = await fetch(`${Constants.baseURLDev}/update-bluetooth-settings`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-      });
+  const handleAlertToggle = useCallback((value) => {
+    console.log('Alert toggle:', value);
+    setAlertEnabled(value);
+    // UI only for now, no API call
+  }, []);
 
-      const data = await response.json();
-
-      if (data && data.data) {
-        const userObj = data.data[0];
-        userObj.token = await AsyncStorage.getItem('accessToken');
-        await AsyncStorage.setItem('loggedInUser', JSON.stringify(userObj));
-        showAlert('Success', data?.messages?.msg?.[0] || 'Settings updated');
-      } else {
-        const errorMsg = data?.messages?.msg?.[0] || 'Something went wrong';
-        showAlert('Error', errorMsg);
-        setBluetoothEnabled(!value); // Revert on error
-      }
-    } catch (error) {
-      showAlert('Error', error.message || 'Something went wrong');
-      setBluetoothEnabled(!value); // Revert on error
-    } finally {
-      setIsLoading(false);
-    }
-  };
+  const handleSubscribeToggle = useCallback((value) => {
+    console.log('Subscribe toggle:', value);
+    setSubscribeEnabled(value);
+    // UI only for now, no API call
+  }, []);
 
   const handleTemperaturePress = () => {
     navigation.navigate('Temperature');
@@ -127,35 +151,6 @@ const AppSettingsScreen = ({navigation}) => {
     );
   };
 
-  const MenuItem = ({icon, title, onPress, showSwitch = false, switchValue, onSwitchChange}) => (
-    <TouchableOpacity
-      style={styles.menuItem}
-      onPress={onPress}
-      activeOpacity={0.7}
-      disabled={showSwitch}
-    >
-      <View style={styles.menuIconContainer}>
-        <Image source={icon} style={styles.menuIcon} resizeMode="contain" />
-      </View>
-      <Text style={styles.menuTitle}>{title}</Text>
-      {showSwitch ? (
-        <Switch
-          value={switchValue}
-          onValueChange={onSwitchChange}
-          trackColor={{false: '#E0E0E0', true: Colors.cyanBlue}}
-          thumbColor="#FFFFFF"
-          style={{transform: [{scaleX: 0.9}, {scaleY: 0.9}]}}
-        />
-      ) : (
-        <Image
-          source={require('../../assets/icons/right-arrow-ios.png')}
-          style={styles.menuArrow}
-          resizeMode="contain"
-        />
-      )}
-    </TouchableOpacity>
-  );
-
   return (
     <View style={styles.container}>
       <StatusBar barStyle="dark-content" backgroundColor="transparent" translucent />
@@ -189,10 +184,40 @@ const AppSettingsScreen = ({navigation}) => {
           <View style={styles.placeholder} />
         </View>
 
-        {/* Menu Items - matching iOS */}
+        {/* Menu Items - matching iOS PDF sequence: Reset Password, Delete Account, Case Temperature, Alert, Bluetooth */}
         <View style={styles.menuContainer}>
           <MenuItem
-            icon={require('../../assets/profile/app-settings.png')}
+            icon={require('../../assets/icons/reset-password.png')}
+            title="Reset Password"
+            onPress={handleResetPasswordPress}
+          />
+
+          <MenuItem
+            icon={require('../../assets/icons/delete-account.png')}
+            title="Delete Account"
+            onPress={handleDeleteAccount}
+          />
+
+          <MenuItem
+            icon={require('../../assets/icons/celsius-temperature.png')}
+            title="Case Temperature"
+            onPress={handleTemperaturePress}
+          />
+
+          <MenuItem
+            key="alert"
+            switchKey="alert-switch"
+            icon={require('../../assets/icons/exclamation-alert.png')}
+            title="Alert"
+            showSwitch={true}
+            switchValue={alertEnabled}
+            onSwitchChange={handleAlertToggle}
+          />
+
+          <MenuItem
+            key="bluetooth"
+            switchKey="bluetooth-switch"
+            icon={require('../../assets/icons/bluetooth-black.png')}
             title="Bluetooth"
             showSwitch={true}
             switchValue={bluetoothEnabled}
@@ -200,27 +225,14 @@ const AppSettingsScreen = ({navigation}) => {
           />
 
           <MenuItem
-            icon={require('../../assets/profile/notification.png')}
-            title="Alert"
-            onPress={() => {}}
-          />
-
-          <MenuItem
-            icon={require('../../assets/profile/app-settings.png')}
-            title="Temperature"
-            onPress={handleTemperaturePress}
-          />
-
-          <MenuItem
-            icon={require('../../assets/profile/logout.png')}
-            title="Delete Account"
-            onPress={handleDeleteAccount}
-          />
-
-          <MenuItem
-            icon={require('../../assets/profile/app-settings.png')}
-            title="Reset Password"
-            onPress={handleResetPasswordPress}
+            key="subscribe"
+            switchKey="subscribe-switch"
+            icon={require('../../assets/icons/subscribe-messages.png')}
+            title="Subscribe to messages"
+            showSwitch={true}
+            switchValue={subscribeEnabled}
+            onSwitchChange={handleSubscribeToggle}
+            iconSize={22}
           />
         </View>
       </ScrollView>
@@ -297,29 +309,35 @@ const styles = StyleSheet.create({
     elevation: 2,
   },
   menuIconContainer: {
-    width: 36,
-    height: 36,
-    borderRadius: 10,
-    backgroundColor: '#E8F4FC',
+    width: 30,
+    height: 24,
     justifyContent: 'center',
     alignItems: 'center',
-    marginRight: 14,
+    marginRight: 10,
   },
   menuIcon: {
-    width: 20,
-    height: 20,
-    tintColor: Colors.cyanBlue,
+    width: 30,
+    height: 24,
+    tintColor: Colors.black,
   },
   menuTitle: {
     flex: 1,
     fontSize: 16,
     fontWeight: '500',
     color: Colors.lightBlackColor,
+    flexShrink: 1,
   },
   menuArrow: {
     width: 18,
     height: 18,
     tintColor: Colors.black,
+  },
+  switchContainer: {
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingLeft: 8,
+    height: 38,
+    width: 45,
   },
 });
 

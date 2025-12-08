@@ -8,11 +8,11 @@ import {
   StatusBar,
   SafeAreaView,
   Platform,
-  Switch,
   Alert,
   ScrollView,
   Dimensions,
 } from 'react-native';
+import ToggleSwitch from 'toggle-switch-react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import {Colors} from '../constants/Constants';
 
@@ -39,16 +39,19 @@ const ProfileScreen = ({navigation}) => {
     );
   };
 
-  const MenuItem = ({icon, title, onPress, showArrow = true, rightComponent}) => (
+  const MenuItem = ({icon, title, onPress, showArrow = true, rightComponent, showIcon = true, rightIcon}) => (
     <TouchableOpacity style={styles.menuItem} onPress={onPress} activeOpacity={0.7}>
-      <View style={styles.menuIconContainer}>
-        <Image source={icon} style={styles.menuIcon} resizeMode="contain" />
-      </View>
+      {showIcon && icon && (
+        <View style={styles.menuIconContainer}>
+          <Image source={icon} style={styles.menuIcon} resizeMode="contain" />
+        </View>
+      )}
+      {!showIcon && <View style={styles.menuIconContainer} />}
       <Text style={styles.menuTitle}>{title}</Text>
       {rightComponent ? rightComponent : (
         showArrow && (
           <Image
-            source={require('../../assets/icons/right-arrow-ios.png')}
+            source={rightIcon || require('../../assets/icons/right-arrow-ios.png')}
             style={styles.menuArrow}
             resizeMode="contain"
           />
@@ -82,49 +85,54 @@ const ProfileScreen = ({navigation}) => {
           {/* Menu Items */}
           <View style={styles.menuContainer}>
             <MenuItem
-              icon={require('../../assets/profile/account-settings.png')}
+              icon={require('../../assets/icons/setting-account.png')}
               title="Account Settings"
               onPress={() => navigation.navigate('AccountSettings')}
             />
             
             <MenuItem
-              icon={require('../../assets/profile/notification.png')}
+              icon={require('../../assets/icons/bell-notification.png')}
               title="Notifications"
               onPress={() => {}}
               showArrow={false}
               rightComponent={
-                <Switch
-                  value={isNotificationEnabled}
-                  onValueChange={setIsNotificationEnabled}
-                  trackColor={{false: '#E0E0E0', true: '#0097D9'}}
-                  thumbColor="#FFFFFF"
-                  style={{transform: [{scaleX: 0.9}, {scaleY: 0.9}]}}
-                />
+                <View style={styles.switchContainer}>
+                  <ToggleSwitch
+                    isOn={isNotificationEnabled}
+                    onColor="#000000"
+                    offColor="#E0E0E0"
+                    size="small"
+                    thumbOnStyle={{backgroundColor: '#5CA3CC', width: 22, height: 22, borderRadius: 11}}
+                    thumbOffStyle={{backgroundColor: '#5CA3CC', width: 22, height: 22, borderRadius: 11}}
+                    onToggle={setIsNotificationEnabled}
+                  />
+                </View>
               }
             />
             
             <MenuItem
-              icon={require('../../assets/profile/app-settings.png')}
+              icon={require('../../assets/icons/setting-account.png')}
               title="App Settings"
               onPress={() => navigation.navigate('AppSettings')}
             />
             
             <MenuItem
-              icon={require('../../assets/profile/history.png')}
+              icon={require('../../assets/icons/file-history.png')}
               title="History"
               onPress={() => navigation.navigate('ActivityHistory')}
             />
             
             <MenuItem
-              icon={require('../../assets/profile/peace.png')}
+              icon={require('../../assets/icons/philosophy-peace.png')}
               title="Peace of Mind Subscription"
               onPress={() => navigation.navigate('Subscription')}
             />
             
             <MenuItem
-              icon={require('../../assets/profile/logout.png')}
               title="Log Out"
               onPress={handleLogout}
+              showIcon={false}
+              rightIcon={require('../../assets/icons/logout-icon.png')}
             />
           </View>
 
@@ -203,18 +211,16 @@ const styles = StyleSheet.create({
     elevation: 2,
   },
   menuIconContainer: {
-    width: 36,
-    height: 36,
-    borderRadius: 10,
-    backgroundColor: '#E8F4FC',
+    width: 30,
+    height: 24,
     justifyContent: 'center',
     alignItems: 'center',
-    marginRight: 14,
+    marginRight: 10,
   },
   menuIcon: {
-    width: 20,
-    height: 20,
-    tintColor: '#0097D9',
+    width: 30,
+    height: 24,
+    tintColor: Colors.black,
   },
   menuTitle: {
     flex: 1,
@@ -255,6 +261,14 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: '600',
     color: Colors.black,
+  },
+  switchContainer: {
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingVertical: 4,
+    paddingHorizontal: 6,
+    height: 38,
+    width: 50,
   },
 });
 

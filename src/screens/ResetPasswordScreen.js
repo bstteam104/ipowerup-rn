@@ -144,7 +144,7 @@ const ResetPasswordScreen = ({navigation}) => {
                 <TextInput
                   style={styles.input}
                   placeholder="Current Password"
-                  placeholderTextColor={Colors.grayColor}
+                  placeholderTextColor={Colors.black} // Matching iOS placeholderColor: black
                   value={currentPassword}
                   onChangeText={setCurrentPassword}
                   secureTextEntry={!showCurrentPassword}
@@ -156,9 +156,13 @@ const ResetPasswordScreen = ({navigation}) => {
                   style={styles.eyeIconContainer}
                   hitSlop={{top: 10, bottom: 10, left: 10, right: 10}}
                 >
-                  <Text style={styles.eyeIcon}>
-                    {showCurrentPassword ? '👁️' : '👁️‍🗨️'}
-                  </Text>
+                  <Image
+                    source={showCurrentPassword 
+                      ? require('../../assets/icons/eye-open.png')
+                      : require('../../assets/icons/eye-close.png')}
+                    style={styles.eyeIcon}
+                    resizeMode="contain"
+                  />
                 </TouchableOpacity>
               </View>
             </View>
@@ -174,7 +178,7 @@ const ResetPasswordScreen = ({navigation}) => {
                 <TextInput
                   style={styles.input}
                   placeholder="New Password"
-                  placeholderTextColor={Colors.grayColor}
+                  placeholderTextColor={Colors.black} // Matching iOS placeholderColor: black
                   value={newPassword}
                   onChangeText={setNewPassword}
                   secureTextEntry={!showNewPassword}
@@ -186,9 +190,13 @@ const ResetPasswordScreen = ({navigation}) => {
                   style={styles.eyeIconContainer}
                   hitSlop={{top: 10, bottom: 10, left: 10, right: 10}}
                 >
-                  <Text style={styles.eyeIcon}>
-                    {showNewPassword ? '👁️' : '👁️‍🗨️'}
-                  </Text>
+                  <Image
+                    source={showNewPassword 
+                      ? require('../../assets/icons/eye-open.png')
+                      : require('../../assets/icons/eye-close.png')}
+                    style={styles.eyeIcon}
+                    resizeMode="contain"
+                  />
                 </TouchableOpacity>
               </View>
             </View>
@@ -204,7 +212,7 @@ const ResetPasswordScreen = ({navigation}) => {
                 <TextInput
                   style={styles.input}
                   placeholder="Confirm Password"
-                  placeholderTextColor={Colors.grayColor}
+                  placeholderTextColor={Colors.black} // Matching iOS placeholderColor: black
                   value={confirmPassword}
                   onChangeText={setConfirmPassword}
                   secureTextEntry={!showConfirmPassword}
@@ -216,14 +224,23 @@ const ResetPasswordScreen = ({navigation}) => {
                   style={styles.eyeIconContainer}
                   hitSlop={{top: 10, bottom: 10, left: 10, right: 10}}
                 >
-                  <Text style={styles.eyeIcon}>
-                    {showConfirmPassword ? '👁️' : '👁️‍🗨️'}
-                  </Text>
+                  <Image
+                    source={showConfirmPassword 
+                      ? require('../../assets/icons/eye-open.png')
+                      : require('../../assets/icons/eye-close.png')}
+                    style={styles.eyeIcon}
+                    resizeMode="contain"
+                  />
                 </TouchableOpacity>
               </View>
             </View>
 
-            {/* Submit Button - matching iOS */}
+            {/* Password Requirements Text - matching iOS */}
+            <Text style={styles.requirementsText}>
+              Your new password must be at least 8 characters long, contain at least one uppercase letter, one lowercase letter, one number, and one special character (e.g., @, #, $, %).
+            </Text>
+
+            {/* Submit Button - Yellow, matching iOS/PDF */}
             <TouchableOpacity
               style={[styles.submitButton, isLoading && styles.buttonDisabled]}
               onPress={handleSubmit}
@@ -297,52 +314,65 @@ const styles = StyleSheet.create({
     paddingTop: 30,
   },
   inputContainer: {
-    marginBottom: 20,
+    marginBottom: 23, // Matching iOS spacing: 23
   },
   inputWrapper: {
     flexDirection: 'row',
     alignItems: 'center',
-    height: 49,
-    borderWidth: 1,
-    borderColor: Colors.inputBorderColor,
-    borderRadius: BorderRadius.medium,
+    height: 56, // Matching iOS height: 56
+    borderWidth: 0.8, // Matching iOS borderWidth: 0.8
+    borderColor: '#E0E0E0', // Light gray border
+    borderRadius: 10, // Matching iOS cornerRadius: 10
     backgroundColor: Colors.white,
-    paddingHorizontal: 20,
+    paddingLeft: 20, // Matching iOS leftPadding: 20
+    paddingRight: 15,
   },
   inputIcon: {
-    width: 16,
-    height: 16,
-    marginRight: 20,
-    tintColor: Colors.grayColor,
+    width: 20,
+    height: 20,
+    marginRight: 12,
+    tintColor: Colors.black, // Matching iOS - black icon
   },
   input: {
     flex: 1,
-    fontSize: FontSizes.regular,
-    color: Colors.lightBlackColor,
+    fontSize: 15, // Matching iOS pointSize: 15
+    color: Colors.black,
     paddingVertical: 0,
   },
   eyeIconContainer: {
-    padding: 5,
+    padding: 8,
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   eyeIcon: {
-    fontSize: 18,
+    width: 20,
+    height: 20,
+    tintColor: Colors.grayColor, // Light gray like iOS
+  },
+  requirementsText: {
+    fontSize: 16,
+    fontWeight: '500',
+    color: Colors.cyanBlue, // Matching iOS AccentColor
+    lineHeight: 22,
+    marginTop: 50, // Matching iOS spacing: 50
+    marginBottom: 20,
   },
   submitButton: {
     width: '100%',
     height: 50,
-    backgroundColor: Colors.signInBlue,
-    borderRadius: BorderRadius.large,
+    backgroundColor: Colors.progressYellow, // Yellow - matching iOS/PDF
+    borderRadius: 12, // Matching iOS cornerRadius: 12
     justifyContent: 'center',
     alignItems: 'center',
-    marginTop: 20,
+    marginTop: 10,
   },
   buttonDisabled: {
     opacity: 0.7,
   },
   submitButtonText: {
-    fontSize: FontSizes.large,
+    fontSize: 16,
     fontWeight: 'bold',
-    color: Colors.white,
+    color: Colors.black, // Black text on yellow - matching iOS/PDF
   },
 });
 

@@ -73,6 +73,7 @@ const styles = StyleSheet.create({
     backgroundColor: Colors.white,
     borderRadius: 16,
     padding: 20,
+    marginHorizontal: 0,
     shadowColor: '#000',
     shadowOffset: {width: 0, height: 2},
     shadowOpacity: 0.1,
@@ -81,7 +82,7 @@ const styles = StyleSheet.create({
   },
   subtitle: {
     fontSize: FontSizes.medium,
-    color: Colors.cyanBlue,
+    color: 'rgba(0, 179, 255, 1)', // Matching iOS UIColor(red: 0.0, green: 0.7, blue: 1.0, alpha: 1.0)
     marginBottom: 8,
   },
   titleRow: {
@@ -126,6 +127,7 @@ const styles = StyleSheet.create({
 });
 
 export default ChartCardView;
+
 
 
 

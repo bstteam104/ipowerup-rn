@@ -55,19 +55,19 @@ const HelpScreen = ({navigation}) => {
           {/* Menu Items */}
           <View style={styles.menuContainer}>
             <MenuItem
-              icon={require('../../assets/icons/contact.png')}
+              icon={require('../../assets/icons/phone-help.png')}
               title="Contact iPowerUp"
               onPress={() => navigation.navigate('ContactUs')}
             />
             
             <MenuItem
-              icon={require('../../assets/icons/tips.png')}
+              icon={require('../../assets/icons/wrench-help.png')}
               title="Help"
               onPress={() => navigation.navigate('Troubleshooting')}
             />
             
             <MenuItem
-              icon={require('../../assets/icons/tips.png')}
+              icon={require('../../assets/icons/idea-tips.png')}
               title="iPowerUp Tips"
               onPress={() => navigation.navigate('Tips')}
             />
@@ -132,18 +132,16 @@ const styles = StyleSheet.create({
     elevation: 2,
   },
   menuIconContainer: {
-    width: 40,
-    height: 40,
-    borderRadius: 12,
-    backgroundColor: '#E8F4FC',
+    width: 30,
+    height: 24,
     justifyContent: 'center',
     alignItems: 'center',
-    marginRight: 14,
+    marginRight: 10,
   },
   menuIcon: {
-    width: 22,
-    height: 22,
-    tintColor: '#0097D9',
+    width: 30,
+    height: 24,
+    tintColor: Colors.black,
   },
   menuTitle: {
     flex: 1,
