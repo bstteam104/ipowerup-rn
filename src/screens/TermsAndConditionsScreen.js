@@ -47,7 +47,7 @@ const TermsAndConditionsScreen = ({navigation}) => {
           <View style={styles.placeholder} />
         </View>
 
-        {/* Content - matching iOS */}
+        {/* Content */}
         <View style={styles.content}>
           <Text style={styles.contentText}>
             Terms and Conditions content will be displayed here.

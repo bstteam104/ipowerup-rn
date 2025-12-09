@@ -62,7 +62,7 @@ const NotificationsScreen = ({navigation}) => {
   };
 
   const getAlertImage = (imageName) => {
-    // Map alert image names to actual image sources - matching iOS
+    // Map alert image names to actual image sources
     const imageMap = {
       alert1: require('../../assets/Notification/alert1.png'),
       alert2: require('../../assets/Notification/alert2.png'),
@@ -120,7 +120,7 @@ const NotificationsScreen = ({navigation}) => {
           <View style={styles.placeholder} />
         </View>
 
-        {/* Notifications List - matching iOS UITableView */}
+        {/* Notifications List UITableView */}
         <FlatList
           data={notifications}
           renderItem={renderNotificationItem}

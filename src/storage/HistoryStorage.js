@@ -1,4 +1,4 @@
-// History Storage - AsyncStorage helper (iOS BLEHistoryStorage.swift jaisa)
+// History Storage - AsyncStorage helper
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const HISTORY_KEY = 'chargingHistory';

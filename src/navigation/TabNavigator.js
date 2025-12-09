@@ -36,7 +36,7 @@ const TabNavigator = () => {
         headerShown: false,
         tabBarStyle: styles.tabBar,
         tabBarShowLabel: false, // We'll show labels manually for active tabs only
-        tabBarActiveTintColor: '#32ADE6', // Light cyan/blue matching iOS systemCyanColor
+        tabBarActiveTintColor: '#32ADE6', // Light cyan/blue systemCyanColor
         tabBarInactiveTintColor: '#999999', // Gray for inactive
       }}
     >
@@ -106,14 +106,14 @@ const styles = StyleSheet.create({
     bottom: 0,
     left: 0,
     right: 0,
-    height: 80, // iOS CustomTabBar height = 80 - matching iOS exactly
+    height: 80, // CustomTabBar height = 80 exactly
     backgroundColor: '#FFFFFF',
-    borderTopLeftRadius: 20, // iOS roundCorners radius = 20 - matching iOS
-    borderTopRightRadius: 20, // iOS roundCorners radius = 20 - matching iOS
-    shadowColor: '#000000', // iOS shadowColor = black - matching iOS
-    shadowOffset: {width: 0, height: -2}, // iOS shadowOffset = (0, -2) - matching iOS
-    shadowOpacity: 0.2, // iOS shadowOpacity = 0.2 - matching iOS
-    shadowRadius: 10, // iOS shadowRadius = 10 - matching iOS
+    borderTopLeftRadius: 20, // roundCorners radius = 20
+    borderTopRightRadius: 20, // roundCorners radius = 20
+    shadowColor: '#000000', // shadowColor = black
+    shadowOffset: {width: 0, height: -2}, // shadowOffset = (0, -2)
+    shadowOpacity: 0.2, // shadowOpacity = 0.2
+    shadowRadius: 10, // shadowRadius = 10
     elevation: 20, // Android shadow
     paddingBottom: Platform.OS === 'ios' ? 20 : 10,
     paddingTop: 10,
@@ -133,7 +133,7 @@ const styles = StyleSheet.create({
   },
   tabIconSelected: {
     // Selected images already contain blue background + icon + label
-    // Match iOS selected tab image dimensions: width 77, height 28
+    // Match selected tab image dimensions: width 77, height 28
     width: 77,
     height: 28,
   },

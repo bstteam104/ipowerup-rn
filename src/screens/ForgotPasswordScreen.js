@@ -60,7 +60,7 @@ const ForgotPasswordScreen = ({navigation}) => {
 
       if (data && data.success) {
         showAlert('Success', 'OTP sent to your email.');
-        // Navigate to OtpScreen with email - matching iOS
+        // Navigate to OtpScreen with email
         navigation.navigate('Otp', {email: email});
       } else {
         showAlert('Error', data?.messages?.msg?.[0] || 'Something went wrong');

@@ -1,4 +1,4 @@
-// Constants matching iOS implementation exactly
+// Constants
 
 export const Constants = {
   deviceOS: "Android",
@@ -14,11 +14,11 @@ export const Constants = {
   baseURLDev: "https://demo-cmolds1.com/projects/ipowerup_be_2024/public/api",
 };
 
-// Colors matching iOS CustomColorStrings exactly
+// Colors
 export const Colors = {
-  // Primary colors from iOS
+  // Primary colors
   blueColor: "#0075FF",
-  cyanBlue: "#0097D9", // iOS button border color
+  cyanBlue: "#0097D9", // button border color
   grayColor: "#999B9F",
   lightBlackColor: "#1D2733",
   lightGray: "#00000012",
@@ -30,7 +30,7 @@ export const Colors = {
   splashLightBlue: "#7AC5EA",
   progressYellow: "#FFCC00",
   
-  // Sign In button color (iOS: rgb(66, 150, 211))
+  // Sign In button color ( rgb(66, 150, 211))
   signInBlue: "#4296D3",
   
   // Text colors
@@ -58,7 +58,7 @@ export const Colors = {
   cardShadowColor: "#000000",
 };
 
-// Font sizes matching iOS
+// Font sizes
 export const FontSizes = {
   small: 12,
   medium: 14,
@@ -68,7 +68,7 @@ export const FontSizes = {
   heading: 20,
 };
 
-// Border radius matching iOS
+// Border radius
 export const BorderRadius = {
   small: 4,
   medium: 10,
@@ -76,7 +76,7 @@ export const BorderRadius = {
   xlarge: 20,
 };
 
-// Validation strings matching iOS
+// Validation strings
 export const ValidationStrings = {
   invalidPassword: "Password must include:",
   invalidEmail: "Invalid email",

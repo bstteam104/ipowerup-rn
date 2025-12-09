@@ -68,7 +68,7 @@ const NotificationDetailScreen = ({navigation}) => {
 
         {/* Content */}
         <View style={styles.content}>
-          {/* Swipe Image - matching iOS swipeImage */}
+          {/* Swipe Image swipeImage */}
           <TouchableOpacity
             activeOpacity={1}
             onPress={handleImageTap}

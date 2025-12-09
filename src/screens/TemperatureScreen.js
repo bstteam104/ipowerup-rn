@@ -113,7 +113,7 @@ const TemperatureScreen = ({navigation}) => {
           <View style={styles.placeholder} />
         </View>
 
-        {/* Temperature Options - matching iOS */}
+        {/* Temperature Options */}
         <View style={styles.optionsContainer}>
           <TouchableOpacity
             style={styles.optionItem}
@@ -150,7 +150,7 @@ const TemperatureScreen = ({navigation}) => {
           </TouchableOpacity>
         </View>
 
-        {/* Continue Button - matching iOS */}
+        {/* Continue Button */}
         <TouchableOpacity
           style={[styles.continueButton, isLoading && styles.buttonDisabled]}
           onPress={handleContinue}

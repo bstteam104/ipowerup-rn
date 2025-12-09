@@ -87,9 +87,9 @@ const OtpScreen = ({navigation, route}) => {
           bounces={false}
           keyboardShouldPersistTaps="handled"
         >
-          {/* Corner View with rounded top corners - matching iOS */}
+          {/* Corner View with rounded top corners */}
           <View style={styles.cornerView}>
-            {/* Back to Sign In - matching iOS underline */}
+            {/* Back to Sign In underline */}
             <TouchableOpacity
               onPress={() => navigation.replace('Login')}
               style={styles.backSignInContainer}
@@ -104,7 +104,7 @@ const OtpScreen = ({navigation, route}) => {
               {emailText || 'your email'}
             </Text>
 
-            {/* PIN Input - matching iOS SVPinView */}
+            {/* PIN Input SVPinView */}
             <View style={styles.pinContainer}>
               <PinInput
                 pinLength={4}
@@ -113,7 +113,7 @@ const OtpScreen = ({navigation, route}) => {
               />
             </View>
 
-            {/* Resend OTP - matching iOS */}
+            {/* Resend OTP */}
             <TouchableOpacity
               onPress={handleResendOtp}
               style={styles.resendContainer}
@@ -121,7 +121,7 @@ const OtpScreen = ({navigation, route}) => {
               <Text style={styles.resendText}>Resend OTP</Text>
             </TouchableOpacity>
 
-            {/* Continue Button - matching iOS */}
+            {/* Continue Button */}
             <TouchableOpacity
               style={[styles.continueButton, isLoading && styles.buttonDisabled]}
               onPress={handleContinue}

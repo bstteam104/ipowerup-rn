@@ -66,7 +66,7 @@ const TroubleshootingScreen = ({navigation}) => {
       const data = await response.json();
 
       if (data && data.data && data.data.length > 0) {
-        // Add isExpanded property to each FAQ - matching iOS
+        // Add isExpanded property to each FAQ
         const faqsWithExpanded = data.data.map(faq => ({
           ...faq,
           isExpanded: false,
@@ -140,7 +140,7 @@ const TroubleshootingScreen = ({navigation}) => {
           <View style={styles.placeholder} />
         </View>
 
-        {/* FAQs List - matching iOS UITableView */}
+        {/* FAQs List UITableView */}
         <FlatList
           data={faqs}
           renderItem={renderFAQItem}

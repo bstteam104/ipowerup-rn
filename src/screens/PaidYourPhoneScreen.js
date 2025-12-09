@@ -13,7 +13,7 @@ const {width, height} = Dimensions.get('window');
 
 const PaidYourPhoneScreen = ({navigation}) => {
   const handleScan = () => {
-    // Navigate to TabBar - matching iOS
+    // Navigate to TabBar
     navigation.replace('TabBar');
   };
 
@@ -21,9 +21,9 @@ const PaidYourPhoneScreen = ({navigation}) => {
     <View style={styles.container}>
       <StatusBar barStyle="dark-content" backgroundColor={Colors.white} />
       
-      {/* Corner View with rounded top corners - matching iOS */}
+      {/* Corner View with rounded top corners */}
       <View style={styles.cornerView}>
-        {/* Back To Previous Screen - matching iOS underline */}
+        {/* Back To Previous Screen underline */}
         <TouchableOpacity
           onPress={() => navigation.goBack()}
           style={styles.backPreviousContainer}
@@ -31,7 +31,7 @@ const PaidYourPhoneScreen = ({navigation}) => {
           <Text style={styles.backPreviousText}>Back To Previous Screen</Text>
         </TouchableOpacity>
 
-        {/* Bluetooth Circle View - matching iOS viewBluetooth */}
+        {/* Bluetooth Circle View viewBluetooth */}
         <View style={styles.bluetoothCircleContainer}>
           <View style={styles.bluetoothCircle} />
         </View>
@@ -42,7 +42,7 @@ const PaidYourPhoneScreen = ({navigation}) => {
           Please wait while we scan for your device
         </Text>
 
-        {/* Scan Button - matching iOS */}
+        {/* Scan Button */}
         <TouchableOpacity
           style={styles.scanButton}
           onPress={handleScan}

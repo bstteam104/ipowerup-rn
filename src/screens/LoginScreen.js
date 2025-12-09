@@ -95,24 +95,24 @@ const LoginScreen = ({navigation}) => {
           bounces={false}
           keyboardShouldPersistTaps="handled"
         >
-          {/* Logo - matching iOS layout */}
+          {/* Logo layout */}
           <Image
             source={require('../../assets/blueLogo.png')}
             style={styles.logo}
             resizeMode="contain"
           />
 
-          {/* Title - matching iOS */}
+          {/* Title */}
           <Text style={styles.title}>Log in to your Account</Text>
 
-          {/* Subtitle - matching iOS */}
+          {/* Subtitle */}
           <Text style={styles.subtitle}>
             Or Create a new App account. This is the same{'\n'}account used for iPowerUp.com
           </Text>
 
           {/* Form Container */}
           <View style={styles.formContainer}>
-            {/* Email Field - matching iOS CustomTextField */}
+            {/* Email Field CustomTextField */}
             <View style={styles.inputContainer}>
               <View style={styles.inputWrapper}>
                 <Image
@@ -133,7 +133,7 @@ const LoginScreen = ({navigation}) => {
               </View>
             </View>
 
-            {/* Password Field - matching iOS CustomPaswordTextField */}
+            {/* Password Field CustomPaswordTextField */}
             <View style={styles.inputContainer}>
               <View style={styles.inputWrapper}>
                 <Image
@@ -163,7 +163,7 @@ const LoginScreen = ({navigation}) => {
               </View>
             </View>
 
-            {/* Forgot Password - matching iOS */}
+            {/* Forgot Password */}
             <TouchableOpacity
               onPress={() => navigation.navigate('ForgotPassword')}
               style={styles.forgotPasswordContainer}
@@ -171,7 +171,7 @@ const LoginScreen = ({navigation}) => {
               <Text style={styles.forgotPasswordText}>Forgot Password?</Text>
             </TouchableOpacity>
 
-            {/* Sign In Button - matching iOS button styling */}
+            {/* Sign In Button button styling */}
             <TouchableOpacity 
               style={[styles.signInButton, isLoading && styles.buttonDisabled]} 
               onPress={handleSignIn}
@@ -183,7 +183,7 @@ const LoginScreen = ({navigation}) => {
               </Text>
             </TouchableOpacity>
 
-            {/* Create Account - matching iOS with underline */}
+            {/* Create Account with underline */}
             <TouchableOpacity
               onPress={() => navigation.navigate('SignUp')}
               style={styles.createAccountContainer}

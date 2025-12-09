@@ -47,7 +47,7 @@ const PrivacyPolicyScreen = ({navigation}) => {
           <View style={styles.placeholder} />
         </View>
 
-        {/* Content - matching iOS */}
+        {/* Content */}
         <View style={styles.content}>
           <Text style={styles.contentText}>
             Privacy Policy content will be displayed here.

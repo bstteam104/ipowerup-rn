@@ -82,7 +82,7 @@ const styles = StyleSheet.create({
   },
   subtitle: {
     fontSize: FontSizes.medium,
-    color: 'rgba(0, 179, 255, 1)', // Matching iOS UIColor(red: 0.0, green: 0.7, blue: 1.0, alpha: 1.0)
+    color: 'rgba(0, 179, 255, 1)', 
     marginBottom: 8,
   },
   titleRow: {

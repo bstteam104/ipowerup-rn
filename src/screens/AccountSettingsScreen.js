@@ -140,7 +140,7 @@ const AccountSettingsScreen = ({navigation}) => {
             <View style={styles.placeholder} />
           </View>
 
-          {/* Form Fields - matching iOS */}
+          {/* Form Fields */}
           <View style={styles.formContainer}>
             {/* First Name */}
             <View style={styles.inputContainer}>
@@ -235,7 +235,7 @@ const AccountSettingsScreen = ({navigation}) => {
               />
             </View>
 
-            {/* Continue Button - matching iOS */}
+            {/* Continue Button */}
             <TouchableOpacity
               style={[styles.continueButton, isLoading && styles.buttonDisabled]}
               onPress={handleUpdate}

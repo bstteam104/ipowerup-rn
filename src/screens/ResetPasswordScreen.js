@@ -131,7 +131,7 @@ const ResetPasswordScreen = ({navigation}) => {
             <View style={styles.placeholder} />
           </View>
 
-          {/* Form Fields - matching iOS */}
+          {/* Form Fields */}
           <View style={styles.formContainer}>
             {/* Current Password */}
             <View style={styles.inputContainer}>
@@ -144,7 +144,7 @@ const ResetPasswordScreen = ({navigation}) => {
                 <TextInput
                   style={styles.input}
                   placeholder="Current Password"
-                  placeholderTextColor={Colors.black} // Matching iOS placeholderColor: black
+                  placeholderTextColor={Colors.black} //  placeholderColor: black
                   value={currentPassword}
                   onChangeText={setCurrentPassword}
                   secureTextEntry={!showCurrentPassword}
@@ -178,7 +178,7 @@ const ResetPasswordScreen = ({navigation}) => {
                 <TextInput
                   style={styles.input}
                   placeholder="New Password"
-                  placeholderTextColor={Colors.black} // Matching iOS placeholderColor: black
+                  placeholderTextColor={Colors.black} //  placeholderColor: black
                   value={newPassword}
                   onChangeText={setNewPassword}
                   secureTextEntry={!showNewPassword}
@@ -212,7 +212,7 @@ const ResetPasswordScreen = ({navigation}) => {
                 <TextInput
                   style={styles.input}
                   placeholder="Confirm Password"
-                  placeholderTextColor={Colors.black} // Matching iOS placeholderColor: black
+                  placeholderTextColor={Colors.black} //  placeholderColor: black
                   value={confirmPassword}
                   onChangeText={setConfirmPassword}
                   secureTextEntry={!showConfirmPassword}
@@ -235,12 +235,12 @@ const ResetPasswordScreen = ({navigation}) => {
               </View>
             </View>
 
-            {/* Password Requirements Text - matching iOS */}
+            {/* Password Requirements Text */}
             <Text style={styles.requirementsText}>
               Your new password must be at least 8 characters long, contain at least one uppercase letter, one lowercase letter, one number, and one special character (e.g., @, #, $, %).
             </Text>
 
-            {/* Submit Button - Yellow, matching iOS/PDF */}
+            {/* Submit Button - Yellow,/PDF */}
             <TouchableOpacity
               style={[styles.submitButton, isLoading && styles.buttonDisabled]}
               onPress={handleSubmit}
@@ -314,28 +314,28 @@ const styles = StyleSheet.create({
     paddingTop: 30,
   },
   inputContainer: {
-    marginBottom: 23, // Matching iOS spacing: 23
+    marginBottom: 23, // 
   },
   inputWrapper: {
     flexDirection: 'row',
     alignItems: 'center',
-    height: 56, // Matching iOS height: 56
-    borderWidth: 0.8, // Matching iOS borderWidth: 0.8
+    height: 56, // 
+    borderWidth: 0.8, // 
     borderColor: '#E0E0E0', // Light gray border
-    borderRadius: 10, // Matching iOS cornerRadius: 10
+    borderRadius: 10, // 
     backgroundColor: Colors.white,
-    paddingLeft: 20, // Matching iOS leftPadding: 20
+    paddingLeft: 20, // 
     paddingRight: 15,
   },
   inputIcon: {
     width: 20,
     height: 20,
     marginRight: 12,
-    tintColor: Colors.black, // Matching iOS - black icon
+    tintColor: Colors.black, // 
   },
   input: {
     flex: 1,
-    fontSize: 15, // Matching iOS pointSize: 15
+    fontSize: 15, // 
     color: Colors.black,
     paddingVertical: 0,
   },
@@ -347,21 +347,21 @@ const styles = StyleSheet.create({
   eyeIcon: {
     width: 20,
     height: 20,
-    tintColor: Colors.grayColor, // Light gray like iOS
+    tintColor: Colors.grayColor, // Light gray 
   },
   requirementsText: {
     fontSize: 16,
     fontWeight: '500',
-    color: Colors.cyanBlue, // Matching iOS AccentColor
+    color: Colors.cyanBlue, // 
     lineHeight: 22,
-    marginTop: 50, // Matching iOS spacing: 50
+    marginTop: 50, // 
     marginBottom: 20,
   },
   submitButton: {
     width: '100%',
     height: 50,
-    backgroundColor: Colors.progressYellow, // Yellow - matching iOS/PDF
-    borderRadius: 12, // Matching iOS cornerRadius: 12
+    backgroundColor: Colors.progressYellow, // Yellow/PDF
+    borderRadius: 12, // 
     justifyContent: 'center',
     alignItems: 'center',
     marginTop: 10,
@@ -372,7 +372,7 @@ const styles = StyleSheet.create({
   submitButtonText: {
     fontSize: 16,
     fontWeight: 'bold',
-    color: Colors.black, // Black text on yellow - matching iOS/PDF
+    color: Colors.black, // Black text on yellow/PDF
   },
 });
 

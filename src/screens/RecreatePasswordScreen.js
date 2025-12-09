@@ -72,7 +72,7 @@ const RecreatePasswordScreen = ({navigation, route}) => {
 
       if (data && data.success) {
         showAlert('Success', 'Password Reset Successfully');
-        // Navigate to Login and reset stack - matching iOS setRootController
+        // Navigate to Login and reset stack setRootController
         navigation.reset({
           index: 0,
           routes: [{name: 'Login'}],
@@ -101,9 +101,9 @@ const RecreatePasswordScreen = ({navigation, route}) => {
           bounces={false}
           keyboardShouldPersistTaps="handled"
         >
-          {/* Corner View with rounded top corners - matching iOS */}
+          {/* Corner View with rounded top corners */}
           <View style={styles.cornerView}>
-            {/* Back to Sign In - matching iOS underline */}
+            {/* Back to Sign In underline */}
             <TouchableOpacity
               onPress={() => navigation.replace('Login')}
               style={styles.backSignInContainer}
@@ -117,7 +117,7 @@ const RecreatePasswordScreen = ({navigation, route}) => {
               Enter your new password below
             </Text>
 
-            {/* New Password Field - matching iOS CustomPaswordTextField */}
+            {/* New Password Field CustomPaswordTextField */}
             <View style={styles.inputContainer}>
               <View style={styles.inputWrapper}>
                 <Image
@@ -147,7 +147,7 @@ const RecreatePasswordScreen = ({navigation, route}) => {
               </View>
             </View>
 
-            {/* Confirm Password Field - matching iOS CustomPaswordTextField */}
+            {/* Confirm Password Field CustomPaswordTextField */}
             <View style={styles.inputContainer}>
               <View style={styles.inputWrapper}>
                 <Image
@@ -177,7 +177,7 @@ const RecreatePasswordScreen = ({navigation, route}) => {
               </View>
             </View>
 
-            {/* Update Button - matching iOS */}
+            {/* Update Button */}
             <TouchableOpacity
               style={[styles.updateButton, isLoading && styles.buttonDisabled]}
               onPress={handleUpdate}

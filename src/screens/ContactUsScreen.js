@@ -163,7 +163,7 @@ const ContactUsScreen = ({navigation}) => {
               <View style={styles.placeholder} />
             </View>
 
-            {/* Form Fields - matching iOS */}
+            {/* Form Fields */}
             <View style={styles.formContainer}>
               {/* Name Field */}
               <View style={styles.inputView}>
@@ -190,7 +190,7 @@ const ContactUsScreen = ({navigation}) => {
                 />
               </View>
 
-              {/* Message Text View - matching iOS UITextView */}
+              {/* Message Text View UITextView */}
               <View style={styles.messageView}>
                 <TextInput
                   style={[
@@ -211,7 +211,7 @@ const ContactUsScreen = ({navigation}) => {
             </View>
           </ScrollView>
           
-          {/* Submit Button - at bottom, matching iOS */}
+          {/* Submit Button - at bottom, */}
           <View style={styles.buttonContainer}>
             <TouchableOpacity
               style={[styles.submitButton, isLoading && styles.buttonDisabled]}
@@ -325,7 +325,7 @@ const styles = StyleSheet.create({
   submitButton: {
     width: '100%',
     height: 50,
-    backgroundColor: Colors.progressYellow, // Yellow color matching iOS systemYellowColor
+    backgroundColor: Colors.progressYellow, // Yellow color systemYellowColor
     borderRadius: BorderRadius.large,
     justifyContent: 'center',
     alignItems: 'center',

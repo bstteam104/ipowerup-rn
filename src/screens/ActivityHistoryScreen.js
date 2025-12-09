@@ -40,7 +40,7 @@ const ActivityHistoryScreen = ({navigation}) => {
   }, []);
 
   const loadChartData = () => {
-    // Generate sample data for 10 days - matching iOS structure
+    // Generate sample data for 10 days structure
     const labels = [];
     const caseChartData = [];
     const phoneChartData = [];
@@ -53,7 +53,7 @@ const ActivityHistoryScreen = ({navigation}) => {
       labels.push(dateFormatter.format(date).charAt(0)); // First letter of day
     }
 
-    // Generate sample data - matching iOS data structure
+    // Generate sample data data structure
     for (let i = 0; i < 10; i++) {
       // Case data: (wallOutlet, unoCase) - both same value for case charging
       const caseValue = Math.random() * 0.8 + 0.2;
@@ -105,19 +105,19 @@ const ActivityHistoryScreen = ({navigation}) => {
           <View style={styles.placeholder} />
         </View>
 
-        {/* ScrollView with Charts - matching iOS */}
+        {/* ScrollView with Charts */}
         <ScrollView
           style={styles.scrollView}
           contentContainerStyle={styles.scrollContent}
           showsVerticalScrollIndicator={false}
         >
-          {/* Case To Device Charging Chart - matching iOS */}
+          {/* Case To Device Charging Chart */}
           <View style={styles.chartWrapper}>
             <ChartCardView
               title="Case To Device Charging"
               subtitle="Last 10 Days"
-              wallOutletColor="rgba(0, 204, 230, 1)" // Blue - matching iOS UIColor(red: 0.0, green: 0.8, blue: 0.9, alpha: 1.0)
-              unoCaseColor="transparent" // Clear - matching iOS
+              wallOutletColor="rgba(0, 204, 230, 1)" // Blue UIColor(red: 0.0, green: 0.8, blue: 0.9, alpha: 1.0)
+              unoCaseColor="transparent" // Clear
               percentageLabels={casePercentageLabels}
               chartHeight={140}
               data={caseData}
@@ -126,13 +126,13 @@ const ActivityHistoryScreen = ({navigation}) => {
             />
           </View>
 
-          {/* Solar/USB to Case Charging Chart - matching iOS */}
+          {/* Solar/USB to Case Charging Chart */}
           <View style={styles.chartWrapper}>
             <ChartCardView
               title="Solar/USB to Case Charging"
               subtitle=""
-              wallOutletColor="rgba(255, 128, 0, 1)" // Orange - matching iOS UIColor(red: 1.0, green: 0.5, blue: 0.0, alpha: 1.0)
-              unoCaseColor="rgba(0, 128, 255, 1)" // Blue - matching iOS UIColor(red: 0.0, green: 0.5, blue: 1.0, alpha: 1.0)
+              wallOutletColor="rgba(255, 128, 0, 1)" // Orange UIColor(red: 1.0, green: 0.5, blue: 0.0, alpha: 1.0)
+              unoCaseColor="rgba(0, 128, 255, 1)" // Blue UIColor(red: 0.0, green: 0.5, blue: 1.0, alpha: 1.0)
               percentageLabels={phonePercentageLabels}
               chartHeight={140}
               data={phoneData}
@@ -151,7 +151,7 @@ const ActivityHistoryScreen = ({navigation}) => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: 'rgba(173, 217, 230, 1)', // Light blue - matching iOS UIColor(red: 0.68, green: 0.85, blue: 0.90, alpha: 1.0)
+    backgroundColor: 'rgba(173, 217, 230, 1)', // Light blue UIColor(red: 0.68, green: 0.85, blue: 0.90, alpha: 1.0)
   },
   backgroundImage: {
     position: 'absolute',

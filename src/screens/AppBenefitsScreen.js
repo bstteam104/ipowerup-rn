@@ -20,7 +20,7 @@ const AppBenefitsScreen = ({navigation, route}) => {
   const [deviceConnected, setDeviceConnected] = useState(false);
 
   useEffect(() => {
-    // Start scanning after 2 seconds - matching iOS
+    // Start scanning after 2 seconds
     const timer = setTimeout(() => {
       startBluetoothScanning();
     }, 2000);
@@ -48,7 +48,7 @@ const AppBenefitsScreen = ({navigation, route}) => {
           onPress: () => {
             // Open settings - platform specific
             if (Platform.OS === 'ios') {
-              // iOS settings
+              // Platform settings
             } else {
               // Android settings
             }
@@ -66,9 +66,9 @@ const AppBenefitsScreen = ({navigation, route}) => {
     <View style={styles.container}>
       <StatusBar barStyle="dark-content" backgroundColor={Colors.white} />
       
-      {/* Corner View with rounded top corners - matching iOS */}
+      {/* Corner View with rounded top corners */}
       <View style={styles.cornerView}>
-        {/* Back To Previous Screen - matching iOS underline */}
+        {/* Back To Previous Screen underline */}
         <TouchableOpacity
           onPress={() => navigation.goBack()}
           style={styles.backPreviousContainer}
@@ -82,7 +82,7 @@ const AppBenefitsScreen = ({navigation, route}) => {
           Make sure Bluetooth is enabled and your device is nearby
         </Text>
 
-        {/* Connect Button - matching iOS */}
+        {/* Connect Button */}
         <TouchableOpacity
           style={[
             styles.connectButton,

@@ -21,7 +21,7 @@ const SubscriptionScreen = ({navigation}) => {
       {
         text: 'OK',
         onPress: () => {
-          // Navigate back after 0.8 seconds - matching iOS
+          // Navigate back after 0.8 seconds
           setTimeout(() => {
             navigation.goBack();
           }, 800);
@@ -62,9 +62,9 @@ const SubscriptionScreen = ({navigation}) => {
           <View style={styles.placeholder} />
         </View>
 
-        {/* Content - matching iOS */}
+        {/* Content */}
         <View style={styles.content}>
-          {/* White Card with Content - matching iOS */}
+          {/* White Card with Content */}
           <View style={styles.cardContainer}>
             <Text style={styles.cardTitle}>Subscribe and know what your case knows</Text>
             
@@ -95,7 +95,7 @@ const SubscriptionScreen = ({navigation}) => {
             </View>
           </View>
 
-          {/* Select Button - Yellow, matching iOS */}
+          {/* Select Button - Yellow, */}
           <TouchableOpacity
             style={styles.selectButton}
             onPress={handleSelect}
@@ -193,7 +193,7 @@ const styles = StyleSheet.create({
   selectButton: {
     width: '100%',
     height: 50,
-    backgroundColor: Colors.progressYellow, // Yellow - matching iOS systemYellowColor
+    backgroundColor: Colors.progressYellow, // Yellow systemYellowColor
     borderRadius: 12,
     justifyContent: 'center',
     alignItems: 'center',
@@ -202,7 +202,7 @@ const styles = StyleSheet.create({
   selectButtonText: {
     fontSize: 16,
     fontWeight: 'bold',
-    color: Colors.black, // Black text on yellow - matching iOS
+    color: Colors.black, // Black text on yellow
   },
 });
 

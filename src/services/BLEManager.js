@@ -1,4 +1,4 @@
-// BLE Manager - Singleton pattern (iOS BLEManager.swift jaisa)
+// BLE Manager - Singleton pattern
 import {BleManager} from 'react-native-ble-plx';
 import {BLE_CONSTANTS} from '../constants/BLEConstants';
 import {
@@ -15,8 +15,8 @@ class BLEManagerService {
     this.isScanning = false;
     this.isConnected = false;
     this.isAutoScanEnabled = true;
-    this.discoveredDevices = []; // Only iPowerUp Uno devices (iOS jaisa)
-    this.allDiscoveredDevices = []; // Only iPowerUp Uno devices for UI (iOS jaisa - no other devices)
+    this.discoveredDevices = []; // Only iPowerUp Uno devices
+    this.allDiscoveredDevices = []; // Only iPowerUp Uno devices for UI
     this.connectedDevice = null;
     this.writeCharacteristic = null;
     this.notifyCharacteristic = null;
@@ -63,7 +63,7 @@ class BLEManagerService {
     }
   }
   
-  // Set delegate (iOS jaisa)
+  // Set delegate
   setDelegate(delegate) {
     this.delegate = delegate;
   }
@@ -73,7 +73,7 @@ class BLEManagerService {
     this.getPhoneBatteryLevel = getter;
   }
   
-  // Start scanning (iOS jaisa)
+  // Start scanning
   startScanning() {
     if (this.isScanning || this.isConnected) {
       console.log('⚠️ Already scanning or connected, skipping...');
@@ -112,7 +112,7 @@ class BLEManagerService {
         
         if (!device) return;
         
-        // iOS jaisa: Only accept devices with exact name "iPowerUp Uno" (line 153 BLEManager.swift)
+        // Only accept devices with exact name "iPowerUp Uno"
         // Get device name - check multiple sources (name might come in later callbacks)
         // Priority: name > localName > advertising.completeLocalName > advertising.localName
         let deviceName = device.name || device.localName || null;
@@ -129,14 +129,14 @@ class BLEManagerService {
           }
         }
         
-        // iOS jaisa: Only accept exact match "iPowerUp Uno" (guard statement like iOS line 153)
+        // Only accept exact match "iPowerUp Uno"
         if (!deviceName || deviceName !== BLE_CONSTANTS.DEVICE_NAME) {
-          return; // Ignore devices not matching the expected name (iOS jaisa)
+          return; 
         }
         
         console.log('✅ Peripheral is Discover:', deviceName);
         
-        // Avoid duplicates (iOS jaisa)
+        // Avoid duplicates
         const deviceId = device.id;
         const existingIndex = this.allDiscoveredDevices.findIndex(d => d.id === deviceId);
         
@@ -162,7 +162,7 @@ class BLEManagerService {
           this.delegate.onAnyDeviceDiscovered([...this.allDiscoveredDevices]);
         }
         
-        // Add to discoveredDevices array (iOS jaisa)
+        // Add to discoveredDevices array
         if (!this.discoveredDevices.find(d => d.id === device.id)) {
           this.discoveredDevices.push(device);
           
@@ -170,7 +170,7 @@ class BLEManagerService {
             this.delegate.onDeviceDiscovered(device);
           }
           
-          // Auto-connect if enabled (iOS jaisa)
+          // Auto-connect if enabled
           if (this.isAutoScanEnabled) {
             this.stopScanning();
             this.connectToDevice(device);
@@ -207,7 +207,7 @@ class BLEManagerService {
     this.allDiscoveredDevices = [];
   }
   
-  // Connect to device (iOS jaisa)
+  // Connect to device
   async connectToDevice(device) {
     try {
       console.log('🔌 Connecting to:', device.name);
@@ -275,7 +275,7 @@ class BLEManagerService {
           this.notifyCharacteristic = char;
           console.log('📡 Notify characteristic found');
           
-          // Subscribe to notifications (iOS jaisa)
+          // Subscribe to notifications
           char.monitor((error, characteristic) => {
             if (error) {
               console.error('Notification error:', error);
@@ -291,7 +291,7 @@ class BLEManagerService {
         }
       }
       
-      // Wait 1 second then send password (iOS jaisa)
+      // Wait 1 second then send password
       setTimeout(() => {
         this.sendPassword();
       }, BLE_CONSTANTS.CONNECTION_DELAY);
@@ -326,7 +326,7 @@ class BLEManagerService {
     }
   }
   
-  // Send password command (iOS jaisa)
+  // Send password command
   sendPassword() {
     if (!this.writeCharacteristic || !this.connectedDevice) {
       console.error('Cannot send password: not connected');
@@ -343,7 +343,7 @@ class BLEManagerService {
       .then(() => {
         console.log('✅ Password sent');
         
-        // After password, query status (iOS jaisa)
+        // After password, query status
         setTimeout(() => {
           this.queryPowerBankStatus();
         }, 500);
@@ -353,7 +353,7 @@ class BLEManagerService {
       });
   }
   
-  // Query power bank status (iOS jaisa)
+  // Query power bank status
   async queryPowerBankStatus() {
     if (!this.writeCharacteristic || !this.connectedDevice) {
       return;
@@ -378,7 +378,7 @@ class BLEManagerService {
     }
   }
   
-  // Start periodic queries (iOS jaisa)
+  // Start periodic queries
   startPeriodicQueries() {
     if (this.queryInterval) {
       clearInterval(this.queryInterval);
@@ -399,7 +399,7 @@ class BLEManagerService {
     }
   }
   
-  // Enable phone charging (iOS jaisa)
+  // Enable phone charging
   async enablePhoneCharging() {
     if (!this.writeCharacteristic || !this.connectedDevice) {
       console.error('Cannot enable charging: not connected');
@@ -415,7 +415,7 @@ class BLEManagerService {
       await this.writeCharacteristic.writeWithResponse(base64Command);
       console.log('✅ Enable charging command sent');
       
-      // Query status after 2.5 seconds (iOS jaisa)
+      // Query status after 2.5 seconds
       setTimeout(() => {
         this.queryPowerBankStatus();
       }, 2500);
@@ -424,7 +424,7 @@ class BLEManagerService {
     }
   }
   
-  // Stop charging (iOS jaisa)
+  // Stop charging
   async stopCharging() {
     if (!this.writeCharacteristic || !this.connectedDevice) {
       console.error('Cannot stop charging: not connected');
@@ -440,7 +440,7 @@ class BLEManagerService {
       await this.writeCharacteristic.writeWithResponse(base64Command);
       console.log('✅ Stop charging command sent');
       
-      // Query status after 2.5 seconds (iOS jaisa)
+      // Query status after 2.5 seconds
       setTimeout(() => {
         this.queryPowerBankStatus();
       }, 2500);

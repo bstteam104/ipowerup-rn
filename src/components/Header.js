@@ -4,7 +4,7 @@ import {Colors, FontSizes} from '../constants/Constants';
 
 const Header = ({title, onBackPress, showBackButton = true, headerHeight = 50}) => {
   const statusBarHeight = Platform.OS === 'ios' ? 0 : StatusBar.currentHeight || 0;
-  // iOS-like top padding: status bar + extra spacing (increased for better spacing)
+  // Top padding: status bar + extra spacing (increased for better spacing)
   const topPadding = statusBarHeight + (Platform.OS === 'ios' ? 12 : 16);
   
   return (

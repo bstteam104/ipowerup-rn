@@ -132,7 +132,7 @@ const AppSettingsScreen = ({navigation}) => {
               const data = await response.json();
 
               if (data && data.success) {
-                // Clear all data and navigate to Login - matching iOS signOutOldUser
+                // Clear all data and navigate to Login signOutOldUser
                 await AsyncStorage.clear();
                 navigation.reset({
                   index: 0,
@@ -184,7 +184,7 @@ const AppSettingsScreen = ({navigation}) => {
           <View style={styles.placeholder} />
         </View>
 
-        {/* Menu Items - matching iOS PDF sequence: Reset Password, Delete Account, Case Temperature, Alert, Bluetooth */}
+        {/* Menu Items PDF sequence: Reset Password, Delete Account, Case Temperature, Alert, Bluetooth */}
         <View style={styles.menuContainer}>
           <MenuItem
             icon={require('../../assets/icons/reset-password.png')}

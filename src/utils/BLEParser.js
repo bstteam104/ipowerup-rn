@@ -1,8 +1,7 @@
-// BLE Response Parser - Exact from iOS PowerBankStatus.swift
+// BLE Response Parser
 
 /**
  * Parse 0x04 response (Power Bank Status)
- * iOS: PowerBankStatus.parse(data:)
  * 
  * Response format:
  * Byte 0: Command (0x04)
@@ -42,7 +41,7 @@ export const parsePowerBankStatus = (data, temperatureUnit = 'celsius') => {
   // Byte 5: Case Temperature (°C)
   let caseTemp = data[5];
   
-  // Convert to Fahrenheit if needed (iOS jaisa)
+  // Convert to Fahrenheit if needed
   if (temperatureUnit === 'fahrenheit') {
     caseTemp = (caseTemp * 9.0 / 5.0) + 32.0;
   }
@@ -71,7 +70,6 @@ export const parsePowerBankStatus = (data, temperatureUnit = 'celsius') => {
 
 /**
  * Convert hex string to Buffer
- * iOS: PowerBankStatus.data(fromHexString:)
  */
 export const hexStringToBuffer = (hexString) => {
   let hex = hexString.replace(/0x/gi, '');

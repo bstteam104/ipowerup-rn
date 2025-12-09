@@ -252,8 +252,8 @@ const styles = StyleSheet.create({
   connectButton: {
     width: '100%',
     height: 50,
-    backgroundColor: Colors.progressYellow, // systemYellowColor matching iOS
-    borderRadius: 12, // matching iOS cornerRadius
+    backgroundColor: Colors.progressYellow, // systemYellowColor
+    borderRadius: 12, // cornerRadius
     justifyContent: 'center',
     alignItems: 'center',
   },

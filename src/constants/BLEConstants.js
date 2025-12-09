@@ -1,4 +1,4 @@
-// BLE Constants - Exact from iOS
+// BLE Constants
 export const BLE_CONSTANTS = {
   // Device Name
   DEVICE_NAME: 'iPowerUp Uno',
@@ -24,7 +24,7 @@ export const BLE_CONSTANTS = {
   // Response Types
   RESPONSE_POWER_BANK_STATUS: 0x04,
   
-  // Timing (iOS jaisa)
+  // Timing
   SCAN_DELAY: 2000, // 2 seconds after HomeScreen load
   CONNECTION_DELAY: 1000, // 1 second after connection before password
   QUERY_INTERVAL: 5000, // 5 seconds periodic query

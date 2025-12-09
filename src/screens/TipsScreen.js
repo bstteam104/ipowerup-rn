@@ -110,7 +110,7 @@ const TipsScreen = ({navigation}) => {
           <View style={styles.placeholder} />
         </View>
 
-        {/* Tips List - matching iOS UITableView */}
+        {/* Tips List UITableView */}
         <FlatList
           data={tips}
           renderItem={renderTipItem}

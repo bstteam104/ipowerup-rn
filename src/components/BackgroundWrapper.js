@@ -6,7 +6,7 @@ const {width, height} = Dimensions.get('window');
 const BackgroundWrapper = ({children}) => {
   return (
     <View style={styles.container}>
-      {/* Background Image - matching iOS backgroundSplashScreen with alpha 0.55 */}
+      {/* Background Image backgroundSplashScreen with alpha 0.55 */}
       <Image
         source={require('../../assets/images/background.png')}
         style={styles.backgroundImage}
@@ -31,7 +31,7 @@ const styles = StyleSheet.create({
     bottom: 0,
     width: width,
     height: height,
-    opacity: 0.55, // Same as iOS alpha
+    opacity: 0.55,
   },
 });
 

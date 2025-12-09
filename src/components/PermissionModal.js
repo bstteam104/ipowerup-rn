@@ -1,4 +1,4 @@
-// Permission Modal - iOS PDF Screen 2e jaisa
+// Permission Modal
 import React, {useState, useEffect} from 'react';
 import {
   View,
@@ -18,7 +18,7 @@ const PermissionModal = ({visible, onAllow, onDontAllow, permissionType = 'bluet
   const [iPowerUpDevice, setIPowerUpDevice] = useState(null);
   const [otherDevices, setOtherDevices] = useState([]);
   
-  // Static placeholder devices (iOS jaisa - before permission granted)
+  // Static placeholder devices (before permission granted)
   const staticDevices = [
     {name: 'MacBook Pro', initials: 'MB'},
     {name: '[TV] Samsung Q...', initials: 'TV'},
@@ -46,18 +46,18 @@ const PermissionModal = ({visible, onAllow, onDontAllow, permissionType = 'bluet
     }
   }, [visible]);
 
-  // Process discovered devices - only iPowerUp Uno devices (iOS jaisa - no other devices)
+  // Process discovered devices - only iPowerUp Uno devices
   useEffect(() => {
     // Only process real devices if permission is granted and scanning has started
     if (hasPermissionGranted && discoveredDevices && discoveredDevices.length > 0) {
       console.log('🔄 Processing iPowerUp devices in PermissionModal:', discoveredDevices.length, discoveredDevices.map(d => d.name));
       
-      // iOS jaisa: Only iPowerUp Uno devices are discovered (filtered in BLEManager)
+      // Only iPowerUp Uno devices are discovered (filtered in BLEManager)
       // All devices in discoveredDevices are iPowerUp Uno devices
       const iPowerUp = discoveredDevices[0] || null; // First iPowerUp device
       
       setIPowerUpDevice(iPowerUp);
-      setOtherDevices([]); // No other devices (iOS jaisa)
+      setOtherDevices([]); // No other devices
       
       console.log('✅ iPowerUp found:', !!iPowerUp);
     } else if (!hasPermissionGranted) {
@@ -73,7 +73,7 @@ const PermissionModal = ({visible, onAllow, onDontAllow, permissionType = 'bluet
 
   // Calculate device count - static for first modal, real for second modal
   const displayCount = showStaticDevices 
-    ? 46 // Static count for first modal (iOS jaisa)
+    ? 46 // Static count for first modal
     : (discoveredDevices.length > 0 ? discoveredDevices.length : 0); // Real count for second modal
 
   const getTitle = () => {
@@ -143,7 +143,7 @@ const PermissionModal = ({visible, onAllow, onDontAllow, permissionType = 'bluet
                   </View>
                 )}
 
-                {/* iOS jaisa: No other devices shown - only iPowerUp Uno */}
+                {/* No other devices shown - only iPowerUp Uno */}
 
                 {/* Static Placeholder Devices - Only show if showStaticDevices is true (First Modal) */}
                 {showStaticDevices && staticDevices.map((device, index) => {

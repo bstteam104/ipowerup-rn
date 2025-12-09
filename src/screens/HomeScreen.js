@@ -107,7 +107,7 @@ const HomeScreen = ({navigation}) => {
           }
         }
       } else {
-        // iOS - permissions are handled automatically via Info.plist
+        // Permissions are handled automatically via Info.plist
         setHasBluetoothPermission(true);
         return true;
       }
@@ -117,7 +117,7 @@ const HomeScreen = ({navigation}) => {
     }
   };
 
-  // Request Bluetooth permissions directly (iOS jaisa - no custom modal)
+  // Request Bluetooth permissions directly
   const requestBluetoothPermissions = async () => {
     try {
       if (Platform.OS === 'android') {
@@ -183,7 +183,7 @@ const HomeScreen = ({navigation}) => {
           }
         }
       } else {
-        // iOS - permissions handled automatically by system
+        // Permissions handled automatically by system
         setHasBluetoothPermission(true);
         // Show scanning modal after permission granted
         setShowScanningModal(true);
@@ -243,7 +243,7 @@ const HomeScreen = ({navigation}) => {
           console.log('✅ Bluetooth is already ON');
         }
       } else {
-        // iOS or fallback - use BLEManager
+        // Fallback - use BLEManager
         const state = await BLEManager.getBluetoothState();
         console.log('📶 Current Bluetooth state:', state);
         
@@ -274,14 +274,14 @@ const HomeScreen = ({navigation}) => {
     // Get initial phone battery
     getPhoneBatteryLevel();
     
-    // Check permissions and request if needed (iOS jaisa - direct native permission)
+    // Check permissions and request if needed
     checkBluetoothPermissions().then((hasPermission) => {
       if (hasPermission) {
         // Permission already granted - setup BLE and start scanning immediately
         console.log('✅ Permissions already granted, starting BLE scan...');
         setupBLEManager();
       } else {
-        // Request permissions directly (iOS jaisa - native system dialog)
+        // Request permissions directly
         console.log('⏳ Requesting Bluetooth permissions...');
         requestBluetoothPermissions();
       }
@@ -319,7 +319,7 @@ const HomeScreen = ({navigation}) => {
     // Set phone battery getter
     BLEManager.setPhoneBatteryGetter(getPhoneBatteryLevel);
     
-    // Set delegate (iOS jaisa)
+    // Set delegate
     BLEManager.setDelegate({
       onBluetoothStateChange: (state) => {
         if (state === 'PoweredOff') {
@@ -440,7 +440,7 @@ const HomeScreen = ({navigation}) => {
       return;
     }
     
-    // iOS jaisa logic: Agar charging ho raha hai toh stop, nahi toh enable
+    // Toggle charging: If charging, stop it; otherwise enable it
     if (isCharging) {
       // Currently charging - stop it
       BLEManager.stopCharging();
@@ -469,7 +469,7 @@ const HomeScreen = ({navigation}) => {
         showStaticDevices={false}
       />
       
-      {/* Background Image - iOS backgroundSplashScreen */}
+      {/* Background Image */}
       <Image
         source={require('../../assets/images/background.png')}
         style={styles.backgroundImage}
@@ -546,7 +546,7 @@ const HomeScreen = ({navigation}) => {
             </View>
           </View>
 
-          {/* Transfer Power Button - iOS Style */}
+          {/* Transfer Power Button */}
           <TouchableOpacity 
             style={styles.sliderButton}
             onPress={() => setIsCharging(!isCharging)}
