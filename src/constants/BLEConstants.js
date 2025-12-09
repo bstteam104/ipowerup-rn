@@ -1,0 +1,37 @@
+// BLE Constants - Exact from iOS
+export const BLE_CONSTANTS = {
+  // Device Name
+  DEVICE_NAME: 'iPowerUp Uno',
+  
+  // Service UUID
+  SERVICE_UUID: '000056ff-0000-1000-8000-00805f9b34fb',
+  
+  // Characteristic UUIDs
+  RX_CHARACTERISTIC_UUID: '000033F4-0000-1000-8000-00805f9b34fb', // Case → Phone
+  TX_CHARACTERISTIC_UUID: '000033f3-0000-1000-8000-00805f9b34fb', // Phone → Case
+  
+  // Command Types
+  COMMAND_SEND_PASSWORD: 0x19,
+  COMMAND_QUERY_POWER_BANK_STATUS: 0x04,
+  COMMAND_QUERY_CHARGER_CONFIG: 0x03,
+  COMMAND_HISTORY_PHONE_CHARGING: 0x07,
+  COMMAND_HISTORY_USB_CHARGING: 0x06,
+  COMMAND_HISTORY_SOLAR_CHARGING: 0x05,
+  COMMAND_TODAY_STATUS: 0x08,
+  COMMAND_ENABLE_PHONE_CHARGING: 0x21,
+  COMMAND_STOP_CHARGING: 0x18,
+  
+  // Response Types
+  RESPONSE_POWER_BANK_STATUS: 0x04,
+  
+  // Timing (iOS jaisa)
+  SCAN_DELAY: 2000, // 2 seconds after HomeScreen load
+  CONNECTION_DELAY: 1000, // 1 second after connection before password
+  QUERY_INTERVAL: 5000, // 5 seconds periodic query
+};
+
+
+
+
+
+

@@ -157,7 +157,7 @@ const TroubleshootingScreen = ({navigation}) => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: Colors.white,
+    backgroundColor: 'transparent',
   },
   backgroundImage: {
     position: 'absolute',
@@ -165,8 +165,8 @@ const styles = StyleSheet.create({
     left: 0,
     right: 0,
     bottom: 0,
-    width: width,
-    height: height,
+    width: '100%',
+    height: '100%',
     opacity: 0.55,
   },
   safeArea: {

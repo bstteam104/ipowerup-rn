@@ -1,4 +1,4 @@
-import React, {useState, useEffect} from 'react';
+import React, {useState, useEffect, useRef} from 'react';
 import {
   View,
   Text,
@@ -10,9 +10,19 @@ import {
   SafeAreaView,
   Platform,
   ScrollView,
+  Alert,
+  PermissionsAndroid,
+  Linking,
 } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import {Colors} from '../constants/Constants';
+import DeviceInfo from 'react-native-device-info';
+import {NativeModules} from 'react-native';
+import BLEManager from '../services/BLEManager';
+import {BLE_CONSTANTS} from '../constants/BLEConstants';
+import {saveHistoryEntry} from '../storage/HistoryStorage';
+import PermissionModal from '../components/PermissionModal';
+
+const {BluetoothModule} = NativeModules;
 
 const {width, height} = Dimensions.get('window');
 
@@ -42,14 +52,254 @@ const getTemperatureImage = (temp, unit = 'celsius') => {
 
 const HomeScreen = ({navigation}) => {
   const [userName, setUserName] = useState('User');
-  const [phoneBatteryLevel, setPhoneBatteryLevel] = useState(95);
+  const [phoneBatteryLevel, setPhoneBatteryLevel] = useState(0);
   const [caseBatteryLevel, setCaseBatteryLevel] = useState(0);
   const [caseTemperature, setCaseTemperature] = useState(0);
   const [temperatureUnit, setTemperatureUnit] = useState('celsius');
   const [isCharging, setIsCharging] = useState(false);
+  const [isConnected, setIsConnected] = useState(false);
+  const [hasBluetoothPermission, setHasBluetoothPermission] = useState(false);
+  const [showScanningModal, setShowScanningModal] = useState(false); // Scanning modal after permission
+  const [allDiscoveredDevices, setAllDiscoveredDevices] = useState([]); // Devices for scanning modal
+  const batteryIntervalRef = useRef(null);
+
+  // Get phone battery level
+  const getPhoneBatteryLevel = async () => {
+    try {
+      const level = await DeviceInfo.getBatteryLevel();
+      const percent = Math.round(level * 100);
+      setPhoneBatteryLevel(percent);
+      return percent;
+    } catch (error) {
+      console.error('Error getting battery:', error);
+      return 0;
+    }
+  };
+
+  // Check Bluetooth permissions (without requesting)
+  const checkBluetoothPermissions = async () => {
+    try {
+      if (Platform.OS === 'android') {
+        const androidVersion = Platform.Version;
+        if (androidVersion >= 31) {
+          // Android 12+ (API 31+) - Check permissions first
+          const scanCheck = await PermissionsAndroid.check(PermissionsAndroid.PERMISSIONS.BLUETOOTH_SCAN);
+          const connectCheck = await PermissionsAndroid.check(PermissionsAndroid.PERMISSIONS.BLUETOOTH_CONNECT);
+          const locationCheck = await PermissionsAndroid.check(PermissionsAndroid.PERMISSIONS.ACCESS_FINE_LOCATION);
+          
+          if (scanCheck && connectCheck && locationCheck) {
+            setHasBluetoothPermission(true);
+            return true;
+          } else {
+            // Permission not granted - show modal
+            return false;
+          }
+        } else {
+          // Android 11 and below - Check location permission
+          const locationCheck = await PermissionsAndroid.check(PermissionsAndroid.PERMISSIONS.ACCESS_FINE_LOCATION);
+          
+          if (locationCheck) {
+            setHasBluetoothPermission(true);
+            return true;
+          } else {
+            // Permission not granted - show modal
+            return false;
+          }
+        }
+      } else {
+        // iOS - permissions are handled automatically via Info.plist
+        setHasBluetoothPermission(true);
+        return true;
+      }
+    } catch (error) {
+      console.error('Permission check error:', error);
+      return false;
+    }
+  };
+
+  // Request Bluetooth permissions directly (iOS jaisa - no custom modal)
+  const requestBluetoothPermissions = async () => {
+    try {
+      if (Platform.OS === 'android') {
+        const androidVersion = Platform.Version;
+        if (androidVersion >= 31) {
+          // Android 12+ (API 31+) - Direct native permission request
+          const granted = await PermissionsAndroid.requestMultiple([
+            PermissionsAndroid.PERMISSIONS.BLUETOOTH_SCAN,
+            PermissionsAndroid.PERMISSIONS.BLUETOOTH_CONNECT,
+            PermissionsAndroid.PERMISSIONS.ACCESS_FINE_LOCATION,
+          ]);
+          
+          const allGranted = 
+            granted[PermissionsAndroid.PERMISSIONS.BLUETOOTH_SCAN] === PermissionsAndroid.RESULTS.GRANTED &&
+            granted[PermissionsAndroid.PERMISSIONS.BLUETOOTH_CONNECT] === PermissionsAndroid.RESULTS.GRANTED &&
+            granted[PermissionsAndroid.PERMISSIONS.ACCESS_FINE_LOCATION] === PermissionsAndroid.RESULTS.GRANTED;
+          
+          if (allGranted) {
+            setHasBluetoothPermission(true);
+            // Show scanning modal after permission granted
+            setShowScanningModal(true);
+            // Check and enable Bluetooth, then setup BLE
+            checkAndEnableBluetooth().then(() => {
+              setupBLEManager();
+            }).catch(() => {
+              setupBLEManager();
+            });
+          } else {
+            Alert.alert(
+              'Permission Denied',
+              'Bluetooth permission is required. Please enable it in Settings.',
+              [
+                {text: 'Cancel', style: 'cancel'},
+                {text: 'Open Settings', onPress: () => Linking.openSettings()},
+              ]
+            );
+          }
+        } else {
+          // Android 11 and below - Direct native permission request
+          const granted = await PermissionsAndroid.request(
+            PermissionsAndroid.PERMISSIONS.ACCESS_FINE_LOCATION
+          );
+          
+          if (granted === PermissionsAndroid.RESULTS.GRANTED) {
+            setHasBluetoothPermission(true);
+            // Show scanning modal after permission granted
+            setShowScanningModal(true);
+            // Check and enable Bluetooth, then setup BLE
+            checkAndEnableBluetooth().then(() => {
+              setupBLEManager();
+            }).catch(() => {
+              setupBLEManager();
+            });
+          } else {
+            Alert.alert(
+              'Permission Denied',
+              'Location permission is required for Bluetooth. Please enable it in Settings.',
+              [
+                {text: 'Cancel', style: 'cancel'},
+                {text: 'Open Settings', onPress: () => Linking.openSettings()},
+              ]
+            );
+          }
+        }
+      } else {
+        // iOS - permissions handled automatically by system
+        setHasBluetoothPermission(true);
+        // Show scanning modal after permission granted
+        setShowScanningModal(true);
+        checkAndEnableBluetooth().then(() => {
+          setupBLEManager();
+        }).catch(() => {
+          setupBLEManager();
+        });
+      }
+    } catch (error) {
+      console.error('Permission request error:', error);
+      Alert.alert(
+        'Error',
+        'Failed to request permissions. Please try again or enable in Settings.',
+        [{text: 'OK'}]
+      );
+    }
+  };
+
+  // Check Bluetooth state and automatically request enable if off
+  // This function is called IMMEDIATELY after permission is granted
+  const checkAndEnableBluetooth = async () => {
+    try {
+      console.log('🔵 checkAndEnableBluetooth called - Platform:', Platform.OS, 'BluetoothModule available:', !!BluetoothModule);
+      if (Platform.OS === 'android' && BluetoothModule) {
+        // Use native module to check and enable Bluetooth
+        const isEnabled = await BluetoothModule.isBluetoothEnabled();
+        console.log('📶 Bluetooth enabled:', isEnabled);
+        
+        if (!isEnabled) {
+          // IMMEDIATELY request Bluetooth enable (shows system dialog)
+          // This dialog will appear right after permission allow button is pressed
+          console.log('🔵 Requesting Bluetooth enable immediately...');
+          try {
+            // This will show Android system dialog: "Allow iPowerUp to turn on Bluetooth?"
+            await BluetoothModule.requestEnableBluetooth();
+            console.log('✅ Bluetooth enable request completed - user allowed');
+          } catch (error) {
+            console.error('❌ Bluetooth enable request failed:', error);
+            // If user denied Bluetooth enable, show alert
+            if (error.message && error.message.includes('denied')) {
+              Alert.alert(
+                'Bluetooth Required',
+                'Bluetooth needs to be enabled to scan for devices. Please enable it in Settings.',
+                [
+                  {text: 'Cancel', style: 'cancel'},
+                  {
+                    text: 'Open Settings',
+                    onPress: () => Linking.openSettings(),
+                  },
+                ]
+              );
+            }
+            throw error; // Re-throw to handle in promise chain
+          }
+        } else {
+          console.log('✅ Bluetooth is already ON');
+        }
+      } else {
+        // iOS or fallback - use BLEManager
+        const state = await BLEManager.getBluetoothState();
+        console.log('📶 Current Bluetooth state:', state);
+        
+        if (state === 'PoweredOff') {
+          Alert.alert(
+            'Bluetooth is Off',
+            'Bluetooth needs to be enabled to scan for devices. Please enable it in Settings.',
+            [
+              {text: 'Cancel', style: 'cancel'},
+              {
+                text: 'Open Settings',
+                onPress: () => Linking.openSettings(),
+              },
+            ]
+          );
+        }
+      }
+    } catch (error) {
+      console.error('Error checking/enabling Bluetooth:', error);
+      throw error; // Re-throw to handle in promise chain
+    }
+  };
 
   useEffect(() => {
+    // Load user data
     loadUserData();
+    
+    // Get initial phone battery
+    getPhoneBatteryLevel();
+    
+    // Check permissions and request if needed (iOS jaisa - direct native permission)
+    checkBluetoothPermissions().then((hasPermission) => {
+      if (hasPermission) {
+        // Permission already granted - setup BLE and start scanning immediately
+        console.log('✅ Permissions already granted, starting BLE scan...');
+        setupBLEManager();
+      } else {
+        // Request permissions directly (iOS jaisa - native system dialog)
+        console.log('⏳ Requesting Bluetooth permissions...');
+        requestBluetoothPermissions();
+      }
+    });
+    
+    // Periodic battery check (react-native-device-info doesn't have listener, so we poll)
+    batteryIntervalRef.current = setInterval(() => {
+      getPhoneBatteryLevel();
+    }, 5000);
+    
+    // Cleanup
+    return () => {
+      if (batteryIntervalRef.current) {
+        clearInterval(batteryIntervalRef.current);
+      }
+      BLEManager.stopPeriodicQueries();
+      BLEManager.stopScanning();
+    };
   }, []);
 
   const loadUserData = async () => {
@@ -65,14 +315,159 @@ const HomeScreen = ({navigation}) => {
     }
   };
 
+  const setupBLEManager = () => {
+    // Set phone battery getter
+    BLEManager.setPhoneBatteryGetter(getPhoneBatteryLevel);
+    
+    // Set delegate (iOS jaisa)
+    BLEManager.setDelegate({
+      onBluetoothStateChange: (state) => {
+        if (state === 'PoweredOff') {
+          Alert.alert(
+            'Bluetooth Off',
+            'Please enable Bluetooth to connect to your device'
+          );
+        }
+      },
+      
+      onStartScanning: () => {
+        console.log('🔍 Scanning started');
+        // Clear previous devices when starting new scan
+        BLEManager.clearAllDiscoveredDevices();
+        setAllDiscoveredDevices([]);
+      },
+      
+      onStopScanning: () => {
+        console.log('🛑 Scanning stopped');
+      },
+      
+      onDeviceDiscovered: (device) => {
+        console.log('✅ iPowerUp device discovered:', device.name);
+        // Auto-connect handled by BLEManager
+      },
+      
+      onAnyDeviceDiscovered: (devices) => {
+        // Update all discovered devices for scanning modal (real-time)
+        console.log('📱 Total devices discovered:', devices.length, devices.map(d => d.name));
+        setAllDiscoveredDevices([...devices]);
+      },
+      
+      onConnected: (device) => {
+        console.log('✅ Connected to:', device.name);
+        setIsConnected(true);
+        // Close scanning modal when connected
+        setShowScanningModal(false);
+        BLEManager.startPeriodicQueries();
+      },
+      
+      onConnectionFailed: (error) => {
+        console.error('❌ Connection failed:', error);
+        setIsConnected(false);
+        // Retry scanning after 3 seconds
+        setTimeout(() => {
+          if (!BLEManager.isConnected) {
+            BLEManager.startScanning();
+          }
+        }, 3000);
+      },
+      
+      onDisconnected: () => {
+        console.log('🔌 Disconnected');
+        setIsConnected(false);
+        setCaseBatteryLevel(0);
+        setCaseTemperature(0);
+        setIsCharging(false);
+        // Retry scanning
+        setTimeout(() => {
+          BLEManager.startScanning();
+        }, 2000);
+      },
+      
+      onDataReceived: async (data) => {
+        // Update UI with received data
+        setCaseBatteryLevel(data.caseBatPct);
+        setCaseTemperature(Math.round(data.caseTemp));
+        setIsCharging(data.phoneCharging);
+        
+        // Get phone battery from phone (not from case)
+        const phoneBattery = await getPhoneBatteryLevel();
+        
+        // Save to history (AsyncStorage)
+        await saveHistoryEntry({
+          phoneBattery: phoneBattery,
+          caseBattery: data.caseBatPct,
+          temperature: data.caseTemp,
+          phoneCharging: data.phoneCharging,
+          solarCurrent: data.solarCurr,
+        });
+      },
+      
+      getTemperatureUnit: () => temperatureUnit,
+      
+      onScanError: (error) => {
+        console.error('Scan error in Home:', error);
+        Alert.alert('Scan Error', error.message || 'Could not scan for devices.');
+      },
+      
+      onPermissionError: (error) => {
+        console.error('Permission error:', error);
+        Alert.alert(
+          'Bluetooth Permission Required',
+          'Please grant Bluetooth permissions in Settings to connect to your iPowerUp device.',
+          [
+            {text: 'OK', style: 'default'},
+          ]
+        );
+      },
+    });
+    
+    // Start scanning immediately (no delay - for real-time device discovery)
+    if (!BLEManager.isConnected) {
+      BLEManager.startScanning();
+    } else {
+      BLEManager.queryPowerBankStatus();
+    }
+  };
+
   const formatTemperature = (temp) => {
     const unit = temperatureUnit === 'fahrenheit' ? 'F' : 'C';
-    return `${temp}° ${unit}`;
+    return `${Math.round(temp)}° ${unit}`;
+  };
+
+  const handleTransferPower = () => {
+    if (!isConnected) {
+      Alert.alert('Not Connected', 'Please connect to your device first');
+      return;
+    }
+    
+    // iOS jaisa logic: Agar charging ho raha hai toh stop, nahi toh enable
+    if (isCharging) {
+      // Currently charging - stop it
+      BLEManager.stopCharging();
+    } else {
+      // Not charging - enable it
+      BLEManager.enablePhoneCharging();
+    }
+    
+    // Note: Actual charging status case se response mein aayega (phoneCharging flag)
+    // UI update onDataReceived callback mein hoga
   };
 
   return (
     <View style={styles.container}>
       <StatusBar barStyle="dark-content" backgroundColor="transparent" translucent />
+      
+      {/* Scanning Modal - Shows devices being discovered after permission granted */}
+      <PermissionModal
+        visible={showScanningModal}
+        onAllow={() => {}} // No action needed
+        onDontAllow={() => setShowScanningModal(false)}
+        permissionType="bluetooth"
+        discoveredDevices={allDiscoveredDevices}
+        deviceCount={allDiscoveredDevices.length}
+        hasPermissionGranted={true}
+        showStaticDevices={false}
+      />
       
       {/* Background Image - iOS backgroundSplashScreen */}
       <Image
@@ -151,7 +546,7 @@ const HomeScreen = ({navigation}) => {
             </View>
           </View>
 
-          {/* Transfer Power Button - iOS Style (using actual slider images) */}
+          {/* Transfer Power Button - iOS Style */}
           <TouchableOpacity 
             style={styles.sliderButton}
             onPress={() => setIsCharging(!isCharging)}
@@ -176,7 +571,7 @@ const HomeScreen = ({navigation}) => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#FFFFFF',
+    backgroundColor: 'transparent',
   },
   backgroundImage: {
     position: 'absolute',
@@ -184,8 +579,8 @@ const styles = StyleSheet.create({
     left: 0,
     right: 0,
     bottom: 0,
-    width: width,
-    height: height,
+    width: '100%',
+    height: '100%',
     opacity: 0.55,
   },
   safeArea: {
@@ -214,9 +609,8 @@ const styles = StyleSheet.create({
     color: '#0097D9',
   },
   bellIcon: {
-    width: 33, // iOS width = 33
-    height: 30, // iOS height = 30
-    // No tint color - use original image color like iOS
+    width: 33,
+    height: 30,
   },
   sectionTitle: {
     fontSize: 20,
@@ -286,6 +680,7 @@ const styles = StyleSheet.create({
     width: '100%',
     height: 55,
   },
+
 });
 
 export default HomeScreen;
