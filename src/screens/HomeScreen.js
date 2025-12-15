@@ -16,13 +16,10 @@ import {
 } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import DeviceInfo from 'react-native-device-info';
-import {NativeModules} from 'react-native';
 import BLEManager from '../services/BLEManager';
 import {BLE_CONSTANTS} from '../constants/BLEConstants';
 import {saveHistoryEntry} from '../storage/HistoryStorage';
 import PermissionModal from '../components/PermissionModal';
-
-const {BluetoothModule} = NativeModules;
 
 const {width, height} = Dimensions.get('window');
 
@@ -50,7 +47,7 @@ const getTemperatureImage = (temp, unit = 'celsius') => {
   return require('../../assets/temperature/temp-red.png');
 };
 
-const HomeScreen = ({navigation}) => {
+const HomeScreen = ({navigation, route}) => {
   const [userName, setUserName] = useState('User');
   const [phoneBatteryLevel, setPhoneBatteryLevel] = useState(0);
   const [caseBatteryLevel, setCaseBatteryLevel] = useState(0);
@@ -203,63 +200,24 @@ const HomeScreen = ({navigation}) => {
     }
   };
 
-  // Check Bluetooth state and automatically request enable if off
-  // This function is called IMMEDIATELY after permission is granted
+  // Check Bluetooth state and show alert if OFF (pure BLE library, no native module)
   const checkAndEnableBluetooth = async () => {
     try {
-      console.log('🔵 checkAndEnableBluetooth called - Platform:', Platform.OS, 'BluetoothModule available:', !!BluetoothModule);
-      if (Platform.OS === 'android' && BluetoothModule) {
-        // Use native module to check and enable Bluetooth
-        const isEnabled = await BluetoothModule.isBluetoothEnabled();
-        console.log('📶 Bluetooth enabled:', isEnabled);
-        
-        if (!isEnabled) {
-          // IMMEDIATELY request Bluetooth enable (shows system dialog)
-          // This dialog will appear right after permission allow button is pressed
-          console.log('🔵 Requesting Bluetooth enable immediately...');
-          try {
-            // This will show Android system dialog: "Allow iPowerUp to turn on Bluetooth?"
-            await BluetoothModule.requestEnableBluetooth();
-            console.log('✅ Bluetooth enable request completed - user allowed');
-          } catch (error) {
-            console.error('❌ Bluetooth enable request failed:', error);
-            // If user denied Bluetooth enable, show alert
-            if (error.message && error.message.includes('denied')) {
-              Alert.alert(
-                'Bluetooth Required',
-                'Bluetooth needs to be enabled to scan for devices. Please enable it in Settings.',
-                [
-                  {text: 'Cancel', style: 'cancel'},
-                  {
-                    text: 'Open Settings',
-                    onPress: () => Linking.openSettings(),
-                  },
-                ]
-              );
-            }
-            throw error; // Re-throw to handle in promise chain
-          }
-        } else {
-          console.log('✅ Bluetooth is already ON');
-        }
-      } else {
-        // Fallback - use BLEManager
-        const state = await BLEManager.getBluetoothState();
-        console.log('📶 Current Bluetooth state:', state);
-        
-        if (state === 'PoweredOff') {
-          Alert.alert(
-            'Bluetooth is Off',
-            'Bluetooth needs to be enabled to scan for devices. Please enable it in Settings.',
-            [
-              {text: 'Cancel', style: 'cancel'},
-              {
-                text: 'Open Settings',
-                onPress: () => Linking.openSettings(),
-              },
-            ]
-          );
-        }
+      const state = await BLEManager.getBluetoothState();
+      console.log('📶 Current Bluetooth state:', state);
+      
+      if (state === 'PoweredOff') {
+        Alert.alert(
+          'Bluetooth is Off',
+          'Bluetooth needs to be enabled to scan for devices. Please enable it in Settings.',
+          [
+            {text: 'Cancel', style: 'cancel'},
+            {
+              text: 'Open Settings',
+              onPress: () => Linking.openSettings(),
+            },
+          ]
+        );
       }
     } catch (error) {
       console.error('Error checking/enabling Bluetooth:', error);
@@ -302,6 +260,22 @@ const HomeScreen = ({navigation}) => {
     };
   }, []);
 
+  // If navigated from Profile with openScanModal flag, show the Bluetooth popup
+  useEffect(() => {
+    if (route?.params?.openScanModal) {
+      setShowScanningModal(true);
+      BLEManager.clearAllDiscoveredDevices();
+      setAllDiscoveredDevices([]);
+      if (!BLEManager.isConnected) {
+        BLEManager.startScanning();
+      } else {
+        BLEManager.queryPowerBankStatus();
+      }
+      // Reset the flag so it doesn't trigger again unintentionally
+      navigation.setParams({openScanModal: false});
+    }
+  }, [route?.params?.openScanModal]);
+
   const loadUserData = async () => {
     try {
       const userData = await AsyncStorage.getItem('loggedInUser');
@@ -323,10 +297,21 @@ const HomeScreen = ({navigation}) => {
     BLEManager.setDelegate({
       onBluetoothStateChange: (state) => {
         if (state === 'PoweredOff') {
+          // Hide devices popup and notify user
+          setShowScanningModal(false);
           Alert.alert(
             'Bluetooth Off',
             'Please enable Bluetooth to connect to your device'
           );
+        } else if (state === 'PoweredOn') {
+          // As soon as Bluetooth turns ON, show popup and start scanning
+          setShowScanningModal(true);
+          // Clear previous list so modal shows fresh devices
+          BLEManager.clearAllDiscoveredDevices();
+          setAllDiscoveredDevices([]);
+          if (!BLEManager.isConnected) {
+            BLEManager.startScanning();
+          }
         }
       },
       
@@ -549,7 +534,7 @@ const HomeScreen = ({navigation}) => {
           {/* Transfer Power Button */}
           <TouchableOpacity 
             style={styles.sliderButton}
-            onPress={() => setIsCharging(!isCharging)}
+            onPress={handleTransferPower}
             activeOpacity={0.9}
           >
             <Image

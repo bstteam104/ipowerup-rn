@@ -13,7 +13,17 @@ import {
 
 const {width, height} = Dimensions.get('window');
 
-const PermissionModal = ({visible, onAllow, onDontAllow, permissionType = 'bluetooth', discoveredDevices = [], deviceCount = 0, hasPermissionGranted = false, showStaticDevices = false}) => {
+const PermissionModal = ({
+  visible,
+  onAllow,
+  onDontAllow,
+  permissionType = 'bluetooth',
+  discoveredDevices = [],
+  deviceCount = 0,
+  hasPermissionGranted = false,
+  showStaticDevices = false,
+  onDevicePress, // optional: called when user taps the iPowerUp device icon
+}) => {
   const [pulseAnim] = useState(new Animated.Value(1));
   const [iPowerUpDevice, setIPowerUpDevice] = useState(null);
   const [otherDevices, setOtherDevices] = useState([]);
@@ -129,7 +139,15 @@ const PermissionModal = ({visible, onAllow, onDontAllow, permissionType = 'bluet
 
                 {/* iPowerUp Device - Top Center (if found - only after permission) */}
                 {hasPermissionGranted && iPowerUpDevice && iPowerUpDevice.name && (
-                  <View style={[styles.deviceIcon, styles.iPowerUpDevice]}>
+                  <TouchableOpacity
+                    activeOpacity={0.8}
+                    style={[styles.deviceIcon, styles.iPowerUpDevice]}
+                    onPress={() => {
+                      if (onDevicePress) {
+                        onDevicePress(iPowerUpDevice);
+                      }
+                    }}
+                  >
                     <View style={[styles.deviceBadge, styles.iPowerUpBadge]}>
                       <Text style={[styles.deviceIconText, styles.iPowerUpBadgeText]}>
                         {iPowerUpDevice.name.substring(0, 2).toUpperCase()}
@@ -140,7 +158,7 @@ const PermissionModal = ({visible, onAllow, onDontAllow, permissionType = 'bluet
                         ? iPowerUpDevice.name.substring(0, 15) + '...'
                         : iPowerUpDevice.name}
                     </Text>
-                  </View>
+                  </TouchableOpacity>
                 )}
 
                 {/* No other devices shown - only iPowerUp Uno */}

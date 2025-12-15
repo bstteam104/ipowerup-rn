@@ -16,12 +16,7 @@ const {width, height} = Dimensions.get('window');
 
 const SolarScreen = ({navigation}) => {
   const [solarMilliAmps, setSolarMilliAmps] = useState(0);
-  const [selectedRange, setSelectedRange] = useState('250'); // '250' or '500'
-  const maxValue = selectedRange === '250' ? 250 : 500;
-
-  const selectRadio = (range) => {
-    setSelectedRange(range);
-  };
+  const [selectedPanel, setSelectedPanel] = useState(1); // 1 or 2, matches iOS radio buttons
 
   return (
     <View style={styles.container}>
@@ -48,36 +43,57 @@ const SolarScreen = ({navigation}) => {
 
           {/* Gauge Card */}
           <View style={styles.card}>
-            {/* Small header inside card */}
-            <View style={styles.cardHeaderRow}>
-              <Text style={styles.smallHeaderText}>Solar Energy Receiving</Text>
-            </View>
 
-            {/* Semi-circular Gauge with Battery */}
-            <View style={styles.gaugeContainer}>
-              <View style={styles.gaugeWrapper}>
-                {/* Outer arc */}
-                <View style={styles.gaugeArc}>
-                  <View style={styles.gaugeFill} />
-                </View>
-                {/* Center battery */}
-                <View style={styles.batteryCenter}>
-                  <Image
-                    source={require('../../assets/batteries/bat_0.png')}
-                    style={styles.batteryIcon}
-                    resizeMode="contain"
-                  />
-                </View>
-              </View>
+            {/* iOS-style gauge image inside its own shadow box (first white box in PDF) */}
+            <View style={styles.gaugeImageShadowBox}>
+              <Image
+                source={
+                  selectedPanel === 1
+                    ? require('../../assets/solar/solarImage1.png')
+                    : require('../../assets/solar/solarImage2.png')
+                }
+                style={styles.gaugeImage}
+                resizeMode="contain"
+              />
             </View>
 
             {/* Solar Panels Label */}
             <View style={styles.panelsRow}>
               <Text style={styles.panelsLabel}>Solar Panels #</Text>
-              <Text style={styles.panelNumber}>1</Text>
-              <View style={[styles.panelDot, styles.panelDotOrange]} />
-              <Text style={styles.panelNumber}>2</Text>
-              <View style={[styles.panelDot, styles.panelDotBlue]} />
+
+              {/* Panel 1 radio */}
+              <TouchableOpacity
+                style={styles.panelOption}
+                activeOpacity={0.7}
+                onPress={() => setSelectedPanel(1)}>
+                <Text style={styles.panelNumber}>1</Text>
+                <Image
+                  source={
+                    selectedPanel === 1
+                      ? require('../../assets/solar/selectedBlueCircle.png')
+                      : require('../../assets/solar/blueCircle.png')
+                  }
+                  style={styles.radioIcon}
+                  resizeMode="contain"
+                />
+              </TouchableOpacity>
+
+              {/* Panel 2 radio */}
+              <TouchableOpacity
+                style={styles.panelOption}
+                activeOpacity={0.7}
+                onPress={() => setSelectedPanel(2)}>
+                <Text style={styles.panelNumber}>2</Text>
+                <Image
+                  source={
+                    selectedPanel === 2
+                      ? require('../../assets/solar/selectedBlueCircle.png')
+                      : require('../../assets/solar/blueCircle.png')
+                  }
+                  style={styles.radioIcon}
+                  resizeMode="contain"
+                />
+              </TouchableOpacity>
             </View>
 
             {/* mA Value */}
@@ -85,31 +101,25 @@ const SolarScreen = ({navigation}) => {
             <Text style={styles.maSubtext}>mA = Milliamps of Current*</Text>
           </View>
 
-          {/* Improve Solar Collection Card */}
-          <View style={styles.card}>
-            <Text style={styles.improveTitle}>Improve Solar Collection</Text>
-            
-            {/* Phone with Sun Image - tilted phone catching sunlight */}
-            <View style={styles.phoneImageContainer}>
-              <Image
-                source={selectedRange === '250' 
-                  ? require('../../assets/solar/solarImage1.png')
-                  : require('../../assets/solar/solarImage2.png')
-                }
-                style={styles.phoneImage}
-                resizeMode="contain"
-              />
-            </View>
+          {/* Improve Solar Collection subtitle (outside card, like design) */}
+          <Text style={styles.sectionSubtitle}>Improve Solar Collection</Text>
 
-            {/* Tips */}
-            <Text style={styles.tipTitle}>For faster solar collection:</Text>
-            <Text style={styles.tipText}>Adjust case direction and angle</Text>
-
-            {/* Note */}
-            <Text style={styles.noteText}>
-              *A Milliamp is one thousandth of an Ampere, a unit of electrical current.
-            </Text>
+          {/* Improve Solar Collection image only (asset already has white card) */}
+          <View style={styles.imageOnlyContainer}>
+            <Image
+              source={require('../../assets/solar/mobileImage.png')}
+              style={styles.phoneImage}
+              resizeMode="contain"
+            />
           </View>
+
+          {/* Tips & note below card (outside), inline like PDF */}
+          <Text style={styles.tipTitle}>For faster solar collection:</Text>
+          <Text style={styles.tipText}>Adjust case direction and angle</Text>
+
+          <Text style={styles.noteText}>
+            *A Milliamp is one thousandth of an Ampere, a unit of electrical current.
+          </Text>
 
         </ScrollView>
       </SafeAreaView>
@@ -123,6 +133,16 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: 'transparent',
+  },
+  imageOnlyContainer: {
+    alignSelf: 'center',
+    width: width * 0.72,
+    // Same padding & radius as main Solar Collection card so heights match
+    borderRadius: 20,
+    paddingVertical: 18,
+    paddingHorizontal: 18,
+    marginBottom: 15,
+    alignItems: 'center',
   },
   backgroundImage: {
     position: 'absolute',
@@ -144,26 +164,41 @@ const styles = StyleSheet.create({
     paddingBottom: 120,
   },
   header: {
+    // Header matches iOS: full-width, centered main title
     paddingHorizontal: 20,
     paddingTop: Platform.OS === 'android' ? 50 : 10,
-    paddingBottom: 10,
+    // Extra space between heading/subheading and first card
+    paddingBottom: 8,
     alignItems: 'center',
   },
   headerTitle: {
-    fontSize: 18,
-    fontWeight: '600',
+    // Match app/global heading style (same as Home section titles)
+    fontSize: 20,
+    fontWeight: 'bold',
     color: '#1D2733',
-    marginBottom: 3,
+    // Extra space before subtitle
+    marginBottom: 8,
+    textAlign: 'center',
+    alignSelf: 'center',
   },
   headerSubtitle: {
-    fontSize: 14,
-    color: '#888888',
+    // Subheading style – match heading weight (bold) like design
+    fontSize: 17,
+    fontWeight: 'bold',
+    color: '#1D2733',
+    marginTop: 2,
+    marginBottom: 6,
+    textAlign: 'left',
+    alignSelf: 'stretch',
   },
   card: {
-    marginHorizontal: 20,
+    // iOS-style centered card, inset from screen edges (slimmer like PDF)
+    alignSelf: 'center',
+    width: width * 0.72,
     backgroundColor: '#FFFFFF',
     borderRadius: 20,
-    padding: 20,
+    paddingVertical: 18,
+    paddingHorizontal: 18,
     marginBottom: 15,
     alignItems: 'center',
     shadowColor: '#000',
@@ -177,9 +212,31 @@ const styles = StyleSheet.create({
     marginBottom: 10,
   },
   smallHeaderText: {
-    fontSize: 12,
+    // Card subheading style – lighter than main title
+    fontSize: 13,
+    fontWeight: '500',
     color: '#888888',
-    textAlign: 'center',
+    textAlign: 'left',
+    alignSelf: 'flex-start',
+  },
+  gaugeImageShadowBox: {
+    alignSelf: 'center',
+    width: '88%',
+    borderRadius: 18,
+    backgroundColor: '#FFFFFF',
+    paddingVertical: 4,
+    paddingHorizontal: 4,
+    shadowColor: '#000',
+    shadowOffset: {width: 0, height: 2},
+    shadowOpacity: 0.2,
+    shadowRadius: 6,
+    elevation: 4,
+    marginBottom: 18,
+  },
+  gaugeImage: {
+    width: '86%',
+    height: 140,
+    alignSelf: 'center',
   },
   gaugeContainer: {
     alignItems: 'center',
@@ -233,6 +290,11 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginBottom: 10,
   },
+  panelOption: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginLeft: 6,
+  },
   panelsLabel: {
     fontSize: 14,
     fontWeight: '500',
@@ -243,7 +305,7 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: '500',
     color: '#333333',
-    marginHorizontal: 3,
+    marginRight: 3,
   },
   panelDot: {
     width: 10,
@@ -257,6 +319,10 @@ const styles = StyleSheet.create({
   panelDotBlue: {
     backgroundColor: '#0097D9',
   },
+  radioIcon: {
+    width: 16,
+    height: 16,
+  },
   maValue: {
     fontSize: 28,
     fontWeight: 'bold',
@@ -267,37 +333,62 @@ const styles = StyleSheet.create({
     fontSize: 12,
     color: '#0097D9',
   },
-  improveTitle: {
-    fontSize: 18,
-    fontWeight: '600',
+  sectionSubtitle: {
+    // Matches header subtitle styling for section titles
+    fontSize: 17,
+    fontWeight: 'bold',
     color: '#1D2733',
-    marginBottom: 20,
+    marginTop: 12,
+    marginBottom: 12,
+    paddingHorizontal: 32,
+    textAlign: 'left',
+  },
+  imageShadowBox: {
+    alignSelf: 'stretch',
+    borderRadius: 18,
+    backgroundColor: '#FFFFFF',
+    paddingVertical: 12,
+    paddingHorizontal: 10,
+    shadowColor: '#000',
+    shadowOffset: {width: 0, height: 2},
+    shadowOpacity: 0.25,
+    shadowRadius: 4,
+    elevation: 4,
+    marginBottom: 16,
   },
   phoneImageContainer: {
-    marginBottom: 20,
+    marginBottom: 0,
     alignItems: 'center',
   },
   phoneImage: {
-    width: width * 0.45,
-    height: 140,
+    width: '100%',
+    height: 190,
   },
   tipTitle: {
-    fontSize: 14,
-    fontWeight: '600',
+    // Subheading style under Improve Solar Collection
+    fontSize: 15,
+    fontWeight: 'bold',
     color: '#1D2733',
-    marginBottom: 5,
+    marginTop: 8,
+    marginBottom: 3,
+    paddingHorizontal: 32,
+    textAlign: 'left',
   },
   tipText: {
-    fontSize: 14,
-    color: '#888888',
+    fontSize: 15,
+    color: '#1D2733', // black-ish, like design
+    fontWeight: 'bold',
     marginBottom: 15,
+    paddingHorizontal: 32,
+    textAlign: 'left',
   },
   noteText: {
-    fontSize: 10,
-    color: '#888888',
-    textAlign: 'center',
+    fontSize: 13,
+    color: '#1D2733',
+    fontWeight: '600',
+    textAlign: 'left',
     fontStyle: 'italic',
-    paddingHorizontal: 10,
+    paddingHorizontal: 32,
   },
 });
 

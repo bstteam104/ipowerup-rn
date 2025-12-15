@@ -207,6 +207,16 @@ class BLEManagerService {
     this.allDiscoveredDevices = [];
   }
   
+  // Connect to device by its id (used for manual selection in UI)
+  connectToDeviceById(deviceId) {
+    const device = this.discoveredDevices.find(d => d.id === deviceId);
+    if (!device) {
+      console.warn('⚠️ No BLE device found with id:', deviceId);
+      return;
+    }
+    this.connectToDevice(device);
+  }
+  
   // Connect to device
   async connectToDevice(device) {
     try {
@@ -244,34 +254,51 @@ class BLEManagerService {
     try {
       // Discover services
       const deviceWithServices = await device.discoverAllServicesAndCharacteristics();
-      console.log('✅ Discovered services');
+      console.log('✅ discoverAllServicesAndCharacteristics completed');
       
-      // Find our service
-      const service = deviceWithServices.services().find(
-        s => s.uuid.toLowerCase() === BLE_CONSTANTS.SERVICE_UUID.toLowerCase()
+      // In react-native-ble-plx, services() and characteristics() return Promises
+      const services = await deviceWithServices.services();
+      console.log('✅ Services discovered count:', services?.length || 0);
+      
+      // Find our service (matches full 128-bit UUID used by firmware/iOS)
+      const service = services.find(
+        s => (s.uuid || '').toLowerCase() === BLE_CONSTANTS.SERVICE_UUID.toLowerCase()
       );
       
       if (!service) {
+        console.log('❌ Target service not found. Available services:', services.map(s => s.uuid));
         throw new Error('Service not found');
       }
       
       console.log('✅ Found service:', service.uuid);
       
-      // Find characteristics
-      const characteristics = service.characteristics();
+      // Find characteristics (async)
+      const characteristics = await service.characteristics();
+      console.log('✅ Characteristics discovered count:', characteristics?.length || 0);
       
       for (const char of characteristics) {
         const charUUID = char.uuid.toLowerCase();
         console.log('Found characteristic:', charUUID);
         
+        // Some firmwares expose "short" UUIDs (e.g. "33F3"/"33F4") instead of full 128‑bit.
+        // iOS code also checks against "33F3" directly, so we mirror that behaviour here.
+        const txShort = '33f3';
+        const rxShort = '33f4';
+        const isTxChar =
+          charUUID === BLE_CONSTANTS.TX_CHARACTERISTIC_UUID.toLowerCase() ||
+          charUUID.endsWith(txShort);
+        const isRxChar =
+          charUUID === BLE_CONSTANTS.RX_CHARACTERISTIC_UUID.toLowerCase() ||
+          charUUID.endsWith(rxShort);
+        
         // TX characteristic (Phone → Case) - for writing
-        if (charUUID === BLE_CONSTANTS.TX_CHARACTERISTIC_UUID.toLowerCase()) {
+        if (isTxChar) {
           this.writeCharacteristic = char;
           console.log('✍️ Write characteristic found');
         }
         
         // RX characteristic (Case → Phone) - for notifications
-        if (charUUID === BLE_CONSTANTS.RX_CHARACTERISTIC_UUID.toLowerCase()) {
+        if (isRxChar) {
           this.notifyCharacteristic = char;
           console.log('📡 Notify characteristic found');
           

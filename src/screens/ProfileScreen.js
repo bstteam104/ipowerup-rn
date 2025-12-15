@@ -1,4 +1,4 @@
-import React, {useState} from 'react';
+import React, {useState, useEffect, useRef} from 'react';
 import {
   View,
   Text,
@@ -15,11 +15,36 @@ import {
 import ToggleSwitch from 'toggle-switch-react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import {Colors} from '../constants/Constants';
+import {useIsFocused} from '@react-navigation/native';
+import BLEManager from '../services/BLEManager';
+import PermissionModal from '../components/PermissionModal';
 
 const {width, height} = Dimensions.get('window');
 
 const ProfileScreen = ({navigation}) => {
   const [isNotificationEnabled, setIsNotificationEnabled] = useState(true);
+  const [isCaseConnected, setIsCaseConnected] = useState(false);
+  const [showScanningModal, setShowScanningModal] = useState(false);
+  const [allDiscoveredDevices, setAllDiscoveredDevices] = useState([]);
+  const isFocused = useIsFocused();
+  const scanIntervalRef = useRef(null);
+
+  // Sync BLE connection state when profile screen is focused
+  useEffect(() => {
+    if (isFocused) {
+      setIsCaseConnected(!!BLEManager.isConnected);
+    }
+  }, [isFocused]);
+
+  // Cleanup polling interval on unmount
+  useEffect(() => {
+    return () => {
+      if (scanIntervalRef.current) {
+        clearInterval(scanIntervalRef.current);
+        scanIntervalRef.current = null;
+      }
+    };
+  }, []);
 
   const handleLogout = () => {
     Alert.alert(
@@ -60,10 +85,67 @@ const ProfileScreen = ({navigation}) => {
     </TouchableOpacity>
   );
 
+  const startScanOnProfile = () => {
+    // Open modal on same screen and start BLE scan (no navigation)
+    setShowScanningModal(true);
+    BLEManager.clearAllDiscoveredDevices();
+    setAllDiscoveredDevices([]);
+    BLEManager.startScanning();
+
+    // Poll BLEManager for newly discovered devices & connection state
+    if (scanIntervalRef.current) {
+      clearInterval(scanIntervalRef.current);
+    }
+    scanIntervalRef.current = setInterval(() => {
+      const devices = BLEManager.getAllDiscoveredDevices();
+      setAllDiscoveredDevices([...devices]);
+
+      // If connected, update UI and close modal
+      if (BLEManager.isConnected) {
+        setIsCaseConnected(true);
+        setShowScanningModal(false);
+        BLEManager.stopScanning();
+        if (scanIntervalRef.current) {
+          clearInterval(scanIntervalRef.current);
+          scanIntervalRef.current = null;
+        }
+      }
+    }, 1000);
+  };
+
+  const handleCloseScanModal = () => {
+    setShowScanningModal(false);
+    BLEManager.stopScanning();
+    if (scanIntervalRef.current) {
+      clearInterval(scanIntervalRef.current);
+      scanIntervalRef.current = null;
+    }
+  };
+
+  const handleConnectDeviceFromProfile = (deviceMeta) => {
+    if (!deviceMeta?.id) {
+      return;
+    }
+    BLEManager.connectToDeviceById(deviceMeta.id);
+  };
+
   return (
     <View style={styles.container}>
       <StatusBar barStyle="dark-content" backgroundColor="transparent" translucent />
       
+      {/* Bluetooth scanning popup on Profile (same screen) */}
+      <PermissionModal
+        visible={showScanningModal}
+        onAllow={() => {}}
+        onDontAllow={handleCloseScanModal}
+        permissionType="bluetooth"
+        discoveredDevices={allDiscoveredDevices}
+        deviceCount={allDiscoveredDevices.length}
+        hasPermissionGranted={true}
+        showStaticDevices={false}
+        onDevicePress={handleConnectDeviceFromProfile}
+      />
+
       {/* Background Image */}
       <Image
         source={require('../../assets/images/background.png')}
@@ -138,17 +220,23 @@ const ProfileScreen = ({navigation}) => {
 
           {/* Device Connection Section */}
           <View style={styles.deviceSection}>
-            <Text style={styles.deviceTitle}>No Case Connected</Text>
+            <Text style={styles.deviceTitle}>
+              {isCaseConnected ? 'Case Connected' : 'No Case Connected'}
+            </Text>
             <Text style={styles.deviceSubtitle}>
-              Searching for the Uno case, or Duo case?
+              {isCaseConnected
+                ? 'Your iPowerUp Uno case is connected.'
+                : 'Searching for the Uno case, or Duo case?'}
             </Text>
             
             <TouchableOpacity
               style={styles.connectButton}
-              onPress={() => navigation.navigate('DeviceScanning')}
+              onPress={startScanOnProfile}
               activeOpacity={0.8}
             >
-              <Text style={styles.connectButtonText}>Connect New Device</Text>
+              <Text style={styles.connectButtonText}>
+                {isCaseConnected ? 'Manage Device' : 'Connect New Device'}
+              </Text>
             </TouchableOpacity>
           </View>
 
