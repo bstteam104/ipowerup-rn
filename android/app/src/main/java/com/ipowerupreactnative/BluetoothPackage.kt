@@ -7,7 +7,10 @@ import com.facebook.react.uimanager.ViewManager
 
 class BluetoothPackage : ReactPackage {
     override fun createNativeModules(reactContext: ReactApplicationContext): List<NativeModule> {
-        return listOf(BluetoothModule(reactContext))
+        return listOf(
+            BluetoothModule(reactContext),
+            BLEManagerNative(reactContext) // Native Kotlin BLE Manager
+        )
     }
 
     override fun createViewManagers(reactContext: ReactApplicationContext): List<ViewManager<*, *>> {

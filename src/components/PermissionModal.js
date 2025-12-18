@@ -9,6 +9,7 @@ import {
   Image,
   Dimensions,
   Animated,
+  ScrollView,
 } from 'react-native';
 
 const {width, height} = Dimensions.get('window');
@@ -23,10 +24,15 @@ const PermissionModal = ({
   hasPermissionGranted = false,
   showStaticDevices = false,
   onDevicePress, // optional: called when user taps the iPowerUp device icon
+  connectionStatus = null, // 'idle' | 'connecting' | 'connected' | 'error'
+  connectionError = null, // Error message
+  protocolInfo = null, // Protocol details for debugging
 }) => {
   const [pulseAnim] = useState(new Animated.Value(1));
   const [iPowerUpDevice, setIPowerUpDevice] = useState(null);
   const [otherDevices, setOtherDevices] = useState([]);
+  const [showDebugInfo, setShowDebugInfo] = useState(true); // Always show by default
+  const [clickError, setClickError] = useState(null);
   
   // Static placeholder devices (before permission granted)
   const staticDevices = [
@@ -58,24 +64,42 @@ const PermissionModal = ({
 
   // Process discovered devices - only iPowerUp Uno devices
   useEffect(() => {
-    // Only process real devices if permission is granted and scanning has started
-    if (hasPermissionGranted && discoveredDevices && discoveredDevices.length > 0) {
-      console.log('🔄 Processing iPowerUp devices in PermissionModal:', discoveredDevices.length, discoveredDevices.map(d => d.name));
-      
-      // Only iPowerUp Uno devices are discovered (filtered in BLEManager)
-      // All devices in discoveredDevices are iPowerUp Uno devices
-      const iPowerUp = discoveredDevices[0] || null; // First iPowerUp device
-      
-      setIPowerUpDevice(iPowerUp);
-      setOtherDevices([]); // No other devices
-      
-      console.log('✅ iPowerUp found:', !!iPowerUp);
-    } else if (!hasPermissionGranted) {
-      // Before permission granted - use static devices
-      setIPowerUpDevice(null);
-      setOtherDevices([]);
-    } else {
-      // Permission granted but no devices yet
+    try {
+      // Only process real devices if permission is granted and scanning has started
+      if (hasPermissionGranted && Array.isArray(discoveredDevices) && discoveredDevices.length > 0) {
+        // Safe device processing
+        const validDevices = discoveredDevices.filter(d => d && d.id && d.name);
+        
+        if (validDevices.length > 0) {
+          console.log('🔄 Processing iPowerUp devices in PermissionModal:', validDevices.length);
+          
+          // Only iPowerUp Uno devices are discovered (filtered in BLEManager)
+          // All devices in discoveredDevices are iPowerUp Uno devices
+          const iPowerUp = validDevices[0] || null; // First iPowerUp device
+          
+          if (iPowerUp && iPowerUp.id && iPowerUp.name) {
+            setIPowerUpDevice(iPowerUp);
+            setOtherDevices([]); // No other devices
+            console.log('✅ iPowerUp found:', iPowerUp.name);
+          } else {
+            setIPowerUpDevice(null);
+            setOtherDevices([]);
+          }
+        } else {
+          setIPowerUpDevice(null);
+          setOtherDevices([]);
+        }
+      } else if (!hasPermissionGranted) {
+        // Before permission granted - use static devices
+        setIPowerUpDevice(null);
+        setOtherDevices([]);
+      } else {
+        // Permission granted but no devices yet
+        setIPowerUpDevice(null);
+        setOtherDevices([]);
+      }
+    } catch (error) {
+      console.error('Error processing devices in PermissionModal:', error);
       setIPowerUpDevice(null);
       setOtherDevices([]);
     }
@@ -143,8 +167,34 @@ const PermissionModal = ({
                     activeOpacity={0.8}
                     style={[styles.deviceIcon, styles.iPowerUpDevice]}
                     onPress={() => {
-                      if (onDevicePress) {
-                        onDevicePress(iPowerUpDevice);
+                      try {
+                        console.log('📱 Device clicked:', iPowerUpDevice);
+                        setClickError(null);
+                        if (onDevicePress && iPowerUpDevice) {
+                          // Ensure we pass the correct format
+                          const deviceMeta = {
+                            id: iPowerUpDevice.id,
+                            name: iPowerUpDevice.name,
+                            rssi: iPowerUpDevice.rssi,
+                          };
+                          console.log('📤 Calling onDevicePress with:', deviceMeta);
+                          onDevicePress(deviceMeta);
+                        } else {
+                          console.error('❌ onDevicePress not available or device invalid');
+                          setClickError('Device handler not available');
+                        }
+                      } catch (error) {
+                        console.error('❌ Error in device click:', error);
+                        console.error('Error details:', {
+                          message: error?.message,
+                          stack: error?.stack,
+                          name: error?.name,
+                        });
+                        const errorMsg = error?.message || error?.toString() || 'Failed to connect to device';
+                        setClickError(errorMsg);
+                        
+                        // Also update connection status if delegate is available
+                        // This will be handled by the parent component's error handler
                       }
                     }}
                   >
@@ -188,6 +238,107 @@ const PermissionModal = ({
             <Text style={styles.deviceCountText}>
               {displayCount} {displayCount === 1 ? 'device' : 'devices'} found
             </Text>
+
+            {/* Connection Status - Debug Info - ALWAYS VISIBLE */}
+            {!showStaticDevices && hasPermissionGranted && (
+              <View style={styles.debugContainer}>
+                <TouchableOpacity
+                  onPress={() => setShowDebugInfo(!showDebugInfo)}
+                  style={styles.debugToggle}
+                >
+                  <Text style={styles.debugToggleText}>
+                    {showDebugInfo ? '▼' : '▶'} Debug Info (Always Check This!)
+                  </Text>
+                </TouchableOpacity>
+                
+                {showDebugInfo && (
+                  <ScrollView 
+                    style={styles.debugScrollView}
+                    contentContainerStyle={styles.debugContent}
+                    showsVerticalScrollIndicator={true}
+                    nestedScrollEnabled={true}
+                  >
+                    {/* Connection Status */}
+                    <View style={styles.debugSection}>
+                      <Text style={styles.debugTitle}>🔌 Connection Status:</Text>
+                      <Text style={[
+                        styles.debugValue,
+                        connectionStatus === 'connected' && styles.debugSuccess,
+                        connectionStatus === 'error' && styles.debugError,
+                        connectionStatus === 'connecting' && styles.debugWarning,
+                      ]}>
+                        {connectionStatus || 'idle'}
+                      </Text>
+                    </View>
+
+                    {/* Click Error */}
+                    {clickError && (
+                      <View style={styles.debugSection}>
+                        <Text style={styles.debugTitle}>❌ Click Error:</Text>
+                        <Text style={styles.debugError}>{clickError}</Text>
+                      </View>
+                    )}
+
+                    {/* Connection Error */}
+                    {connectionError && (
+                      <View style={styles.debugSection}>
+                        <Text style={styles.debugTitle}>❌ Connection Error:</Text>
+                        <Text style={styles.debugError}>{connectionError}</Text>
+                      </View>
+                    )}
+
+                    {/* Protocol Info */}
+                    <View style={styles.debugSection}>
+                      <Text style={styles.debugTitle}>📡 Protocol Details:</Text>
+                      <Text style={styles.debugValue}>Service UUID: {protocolInfo?.serviceUUID || '000056ff-0000-1000-8000-00805f9b34fb'}</Text>
+                      <Text style={styles.debugValue}>TX UUID: {protocolInfo?.txUUID || '000033f3-0000-1000-8000-00805f9b34fb'}</Text>
+                      <Text style={styles.debugValue}>RX UUID: {protocolInfo?.rxUUID || '000033F4-0000-1000-8000-00805f9b34fb'}</Text>
+                      <Text style={styles.debugValue}>Write Type: {protocolInfo?.writeType || 'writeWithoutResponse (iOS protocol)'}</Text>
+                    </View>
+
+                    {/* Current Device Info */}
+                    <View style={styles.debugSection}>
+                      <Text style={styles.debugTitle}>📱 Current Device:</Text>
+                      <Text style={styles.debugValue}>Device ID: {protocolInfo?.deviceId || iPowerUpDevice?.id || 'N/A'}</Text>
+                      <Text style={styles.debugValue}>Device Name: {protocolInfo?.deviceName || iPowerUpDevice?.name || 'N/A'}</Text>
+                      <Text style={styles.debugValue}>RSSI: {iPowerUpDevice?.rssi || 'N/A'}</Text>
+                    </View>
+
+                    {/* BLE Manager State */}
+                    <View style={styles.debugSection}>
+                      <Text style={styles.debugTitle}>⚙️ BLE Manager State:</Text>
+                      <Text style={styles.debugValue}>Is Scanning: {protocolInfo?.isScanning ? '✅ Yes' : '❌ No'}</Text>
+                      <Text style={styles.debugValue}>Is Connected: {protocolInfo?.isConnected ? '✅ Yes' : '❌ No'}</Text>
+                      <Text style={styles.debugValue}>Discovered Devices: {protocolInfo?.discoveredCount || discoveredDevices?.length || 0}</Text>
+                      <Text style={styles.debugValue}>All Discovered: {discoveredDevices?.length || 0}</Text>
+                    </View>
+
+                    {/* Device Details */}
+                    {iPowerUpDevice && (
+                      <View style={styles.debugSection}>
+                        <Text style={styles.debugTitle}>🎯 Selected Device (Click to Connect):</Text>
+                        <Text style={styles.debugValue}>ID: {iPowerUpDevice.id || 'N/A'}</Text>
+                        <Text style={styles.debugValue}>Name: {iPowerUpDevice.name || 'N/A'}</Text>
+                        <Text style={styles.debugValue}>RSSI: {iPowerUpDevice.rssi || 'N/A'}</Text>
+                        <Text style={styles.debugValue}>Timestamp: {iPowerUpDevice.timestamp ? new Date(iPowerUpDevice.timestamp).toLocaleTimeString() : 'N/A'}</Text>
+                      </View>
+                    )}
+
+                    {/* Connection Flow Steps */}
+                    <View style={styles.debugSection}>
+                      <Text style={styles.debugTitle}>🔄 Connection Flow:</Text>
+                      <Text style={styles.debugValue}>1. Scan Started: ✅</Text>
+                      <Text style={styles.debugValue}>2. Device Found: {iPowerUpDevice ? '✅' : '⏳ Waiting...'}</Text>
+                      <Text style={styles.debugValue}>3. Device Clicked: {connectionStatus === 'connecting' || connectionStatus === 'connected' ? '✅' : '⏳ Not yet'}</Text>
+                      <Text style={styles.debugValue}>4. Connecting: {connectionStatus === 'connecting' ? '⏳ In Progress...' : connectionStatus === 'connected' ? '✅ Connected' : '⏳ Not started'}</Text>
+                      <Text style={styles.debugValue}>5. Services Discovered: {connectionStatus === 'connected' ? '✅' : '⏳'}</Text>
+                      <Text style={styles.debugValue}>6. Characteristics Found: {connectionStatus === 'connected' ? '✅' : '⏳'}</Text>
+                      <Text style={styles.debugValue}>7. Password Sent: {connectionStatus === 'connected' ? '✅' : '⏳'}</Text>
+                    </View>
+                  </ScrollView>
+                )}
+              </View>
+            )}
 
             {/* Additional Info */}
             <Text style={styles.infoText}>
@@ -435,6 +586,61 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: '500',
     color: '#666666',
+  },
+  debugContainer: {
+    width: '100%',
+    marginTop: 12,
+    marginBottom: 12,
+    borderWidth: 1,
+    borderColor: '#E0E0E0',
+    borderRadius: 8,
+    backgroundColor: '#F9F9F9',
+  },
+  debugToggle: {
+    padding: 10,
+    borderBottomWidth: 1,
+    borderBottomColor: '#E0E0E0',
+  },
+  debugToggleText: {
+    fontSize: 12,
+    fontWeight: '600',
+    color: '#0097D9',
+  },
+  debugScrollView: {
+    maxHeight: 300, // Limit height to make it scrollable
+  },
+  debugContent: {
+    padding: 12,
+  },
+  debugSection: {
+    marginBottom: 12,
+    paddingBottom: 8,
+    borderBottomWidth: 1,
+    borderBottomColor: '#E0E0E0',
+  },
+  debugTitle: {
+    fontSize: 11,
+    fontWeight: '600',
+    color: '#1D2733',
+    marginBottom: 4,
+  },
+  debugValue: {
+    fontSize: 10,
+    color: '#666666',
+    fontFamily: 'monospace',
+    marginBottom: 2,
+  },
+  debugSuccess: {
+    color: '#4CAF50',
+    fontWeight: '600',
+  },
+  debugError: {
+    color: '#F44336',
+    fontWeight: '600',
+  },
+  debugWarning: {
+    color: '#FF9800',
+    fontWeight: '600',
   },
 });
 

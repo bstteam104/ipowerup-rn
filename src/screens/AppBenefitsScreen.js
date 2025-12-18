@@ -10,7 +10,7 @@ import {
   Platform,
 } from 'react-native';
 import {Colors, BorderRadius, FontSizes} from '../constants/Constants';
-import {BleManager} from 'react-native-ble-plx';
+// BLE functionality is handled by Kotlin Native Module (BLEManagerNative)
 
 const {width, height} = Dimensions.get('window');
 
@@ -29,8 +29,8 @@ const AppBenefitsScreen = ({navigation, route}) => {
   }, []);
 
   const startBluetoothScanning = () => {
-    // Bluetooth scanning logic here
-    // This would integrate with react-native-ble-plx
+    // Bluetooth scanning is handled by Kotlin Native Module (BLEManagerNative)
+    // This screen is just for UI display
     setIsConnecting(true);
   };
 

@@ -104,8 +104,8 @@ const SolarScreen = ({navigation}) => {
           {/* Improve Solar Collection subtitle (outside card, like design) */}
           <Text style={styles.sectionSubtitle}>Improve Solar Collection</Text>
 
-          {/* Improve Solar Collection image only (asset already has white card) */}
-          <View style={styles.imageOnlyContainer}>
+          {/* Improve Solar Collection image in white card container */}
+          <View style={styles.imageCard}>
             <Image
               source={require('../../assets/solar/mobileImage.png')}
               style={styles.phoneImage}
@@ -133,16 +133,6 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: 'transparent',
-  },
-  imageOnlyContainer: {
-    alignSelf: 'center',
-    width: width * 0.72,
-    // Same padding & radius as main Solar Collection card so heights match
-    borderRadius: 20,
-    paddingVertical: 18,
-    paddingHorizontal: 18,
-    marginBottom: 15,
-    alignItems: 'center',
   },
   backgroundImage: {
     position: 'absolute',
@@ -356,13 +346,30 @@ const styles = StyleSheet.create({
     elevation: 4,
     marginBottom: 16,
   },
+  imageCard: {
+    // Match the first card styling exactly
+    alignSelf: 'center',
+    width: width * 0.72,
+    backgroundColor: '#FFFFFF',
+    borderRadius: 20,
+    paddingVertical: 18,
+    paddingHorizontal: 18,
+    marginBottom: 15,
+    alignItems: 'center',
+    shadowColor: '#000',
+    shadowOffset: {width: 0, height: 2},
+    shadowOpacity: 0.15,
+    shadowRadius: 8,
+    elevation: 5,
+  },
   phoneImageContainer: {
     marginBottom: 0,
     alignItems: 'center',
   },
   phoneImage: {
     width: '100%',
-    height: 190,
+    height: 285,
+    alignSelf: 'center',
   },
   tipTitle: {
     // Subheading style under Improve Solar Collection

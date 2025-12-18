@@ -84,7 +84,15 @@ const LoginScreen = ({navigation}) => {
 
   return (
     <View style={styles.container}>
-      <StatusBar barStyle="dark-content" backgroundColor={Colors.white} />
+      <StatusBar barStyle="dark-content" backgroundColor="transparent" translucent />
+      
+      {/* Background Image */}
+      <Image
+        source={require('../../assets/images/background.png')}
+        style={styles.backgroundImage}
+        resizeMode="cover"
+      />
+      
       <KeyboardAvoidingView 
         style={styles.flex}
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
@@ -200,7 +208,17 @@ const LoginScreen = ({navigation}) => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: Colors.white,
+    backgroundColor: 'transparent',
+  },
+  backgroundImage: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    width: '100%',
+    height: '100%',
+    opacity: 0.55,
   },
   flex: {
     flex: 1,

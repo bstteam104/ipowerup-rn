@@ -13,6 +13,7 @@ import {
 } from 'react-native';
 import ToggleSwitch from 'toggle-switch-react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import {useIsFocused} from '@react-navigation/native';
 import {Colors, Constants, FontSizes} from '../constants/Constants';
 
 const {width, height} = Dimensions.get('window');
@@ -58,10 +59,14 @@ const AppSettingsScreen = ({navigation}) => {
   const [alertEnabled, setAlertEnabled] = useState(false);
   const [subscribeEnabled, setSubscribeEnabled] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const isFocused = useIsFocused();
 
+  // Load settings when screen is focused (fixes toggle reset issue)
   useEffect(() => {
-    loadSettings();
-  }, []);
+    if (isFocused) {
+      loadSettings();
+    }
+  }, [isFocused]);
 
   const loadSettings = async () => {
     try {
@@ -79,10 +84,55 @@ const AppSettingsScreen = ({navigation}) => {
     Alert.alert(title, message, [{text: 'OK', style: 'default'}]);
   };
 
-  const handleBluetoothToggle = useCallback((value) => {
+  const handleBluetoothToggle = useCallback(async (value) => {
     console.log('Bluetooth toggle:', value);
+    setIsLoading(true);
     setBluetoothEnabled(value);
-    // UI only for now, no API call
+    
+    try {
+      // iOS: mehodeUpdateBlueToothSetting() - calls API to update backend
+      // iOS API: user/update-bluetooth-status
+      const userData = await AsyncStorage.getItem('loggedInUser');
+      if (!userData) {
+        throw new Error('User not logged in');
+      }
+      
+      const user = JSON.parse(userData);
+      const token = user.token || await AsyncStorage.getItem('accessToken');
+      
+      const response = await fetch(`${Constants.baseURLDev}/user/update-bluetooth-status`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`,
+        },
+      });
+      
+      const data = await response.json();
+      
+      if (data && data.success) {
+        // Update user data in AsyncStorage (iOS: UserDefaults.standard.loggedInUser = userObj)
+        const updatedUser = {
+          ...user,
+          bluetooth: value ? 1 : 0,
+          ...(data.data?.[0] || {}),
+        };
+        await AsyncStorage.setItem('loggedInUser', JSON.stringify(updatedUser));
+        showAlert('Success', data.messages?.msg?.[0] || 'Bluetooth setting updated');
+      } else {
+        // Revert toggle on error
+        setBluetoothEnabled(!value);
+        const errorMsg = data?.messages?.msg?.[0] || 'Something went wrong';
+        showAlert('Error', errorMsg);
+      }
+    } catch (error) {
+      console.error('Error updating Bluetooth setting:', error);
+      // Revert toggle on error
+      setBluetoothEnabled(!value);
+      showAlert('Error', error.message || 'Failed to update Bluetooth setting');
+    } finally {
+      setIsLoading(false);
+    }
   }, []);
 
   const handleAlertToggle = useCallback((value) => {
