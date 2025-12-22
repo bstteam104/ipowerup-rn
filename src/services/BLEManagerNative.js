@@ -206,12 +206,17 @@ class BLEManagerNativeService {
                 }
               } else if (commandByte === BLE_CONSTANTS.COMMAND_QUERY_CHARGER_CONFIG) {
                 console.log('✅ Detected Charger Config response (0x03)');
-                // Log that we received charger config response
-                if (this.delegate?.onDeviceResponse) {
-                  this.delegate.onDeviceResponse('0x03', rawDataStr, buffer.length);
+                // Parse charger config - Protocol PDF: byte 5 (index 5) = EnPhCharger (0=off, 1=on)
+                // iOS: bytes[5] == 1 for enPhCharger
+                if (buffer.length >= 6) {
+                  const enPhCharger = buffer[5] === 1;
+                  console.log('📊 Charger Config - enPhCharger:', enPhCharger);
+                  if (this.delegate?.onChargerConfigReceived) {
+                    this.delegate.onChargerConfigReceived({enPhCharger});
+                  }
+                } else {
+                  console.error('❌ Charger config response too short:', buffer.length);
                 }
-                // For now, just acknowledge receipt
-                this.delegate.onDataReceived({command: 'CHARGER_CONFIG', rawHex: rawDataStr});
               } else if (commandByte === BLE_CONSTANTS.COMMAND_SEND_PASSWORD) {
                 // Device is acknowledging password (0x19 response) - this is normal
                 console.log('✅ Device acknowledged password (0x19 response)');

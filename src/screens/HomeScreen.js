@@ -59,22 +59,8 @@ const HomeScreen = ({navigation, route}) => {
   const [hasBluetoothPermission, setHasBluetoothPermission] = useState(false);
   const [showScanningModal, setShowScanningModal] = useState(false); // Scanning modal after permission
   const [allDiscoveredDevices, setAllDiscoveredDevices] = useState([]); // Devices for scanning modal
-  const [commandHistory, setCommandHistory] = useState([]); // Debug: Track commands sent/received
-  const [showDebugPanel, setShowDebugPanel] = useState(false); // Debug panel visibility
+  const [chargeConfigEnabled, setChargeConfigEnabled] = useState(false); // Phone charging enabled in config
   const batteryIntervalRef = useRef(null);
-
-  // Add command to history for debugging
-  const addCommandToHistory = (type, command, hex, description) => {
-    const entry = {
-      timestamp: new Date(),
-      type, // 'sent' or 'received'
-      command,
-      hex,
-      description,
-    };
-    setCommandHistory(prev => [entry, ...prev].slice(0, 50)); // Keep last 50 entries
-    console.log(`📊 [${type.toUpperCase()}] ${command} (${hex}): ${description}`);
-  };
 
   // Get phone battery level
   const getPhoneBatteryLevel = async () => {
@@ -389,10 +375,7 @@ const HomeScreen = ({navigation, route}) => {
       onConnected: (device) => {
         console.log('✅ Connected to:', device?.name || 'Unknown Device');
         
-        // Clear and log connection
-        addCommandToHistory('connected', 'DEVICE_CONNECTED', '--', `Connected to ${device?.name || 'Unknown Device'}`);
-        addCommandToHistory('info', 'PASSWORD_WILL_BE_SENT', '0x19', 'Native module will send password after 1 second (iOS protocol)');
-        addCommandToHistory('info', 'SERVICE_DISCOVERY', '--', 'Discovering services and characteristics...');
+        console.log('✅ Connected to:', device?.name || 'Unknown Device');
         
         // iOS line 195-203: didConnect sets isConnected and discovers services
         // iOS line 262-263: didConnectPeripheral() immediately calls queryPowerBankStatus
@@ -407,18 +390,8 @@ const HomeScreen = ({navigation, route}) => {
         // Android needs time for: service discovery → characteristic discovery → notification enable → descriptor write
         setTimeout(() => {
           if (BLEManager.isConnected) {
-            addCommandToHistory('sent', 'QUERY_POWER_BANK_STATUS', '0x04', 'Requesting device status (battery, temp, charging state)');
-            console.log('🔍 Sending queryPowerBankStatus - check logs for response');
+            console.log('🔍 Sending queryPowerBankStatus');
             BLEManager.queryPowerBankStatus();
-            
-            // Add timeout check - if no response in 5 seconds, log warning
-            setTimeout(() => {
-              if (BLEManager.isConnected) {
-                // Check if we received data by checking if caseBatteryLevel is still 0
-                console.warn('⚠️ No response received after 5 seconds - check Android logs for onCharacteristicChanged');
-                addCommandToHistory('warning', 'NO_RESPONSE_TIMEOUT', '--', 'No response received after 5 seconds - check device connection');
-              }
-            }, 5000);
           }
         }, 2000); // Increased to 2 seconds to ensure notification setup is complete
       },
@@ -463,24 +436,13 @@ const HomeScreen = ({navigation, route}) => {
       onDataReceived: async (data) => {
         console.log('📥 HomeScreen: onDataReceived called with:', data);
         
-        // Determine command type from data
-        let commandType = 'UNKNOWN';
+        // iOS: After queryPowerBankStatus response, query charger config after 0.4 seconds (line 281-286)
         if (data && typeof data.caseBatPct === 'number') {
-          commandType = 'POWER_BANK_STATUS_RESPONSE (0x04)';
-          const dataStr = `Case: ${data.caseBatPct}%, Temp: ${data.caseTemp}°C, Charging: ${data.phoneCharging ? 'Yes' : 'No'}, Solar: ${data.solarCurr}mA`;
-          addCommandToHistory('received', 'POWER_BANK_STATUS_RESPONSE', '0x04', dataStr);
-          
-          // iOS: After queryPowerBankStatus response, query charger config after 0.4 seconds (line 281-286)
-          // iOS: DispatchQueue.main.asyncAfter(deadline: .now() + 0.4) { self.manager.sendCommand(.queryChargerConfigStatus) }
           setTimeout(() => {
             if (BLEManager.isConnected && BLEManager.queryChargerConfigStatus) {
-              addCommandToHistory('sent', 'QUERY_CHARGER_CONFIG_STATUS', '0x03', 'Querying charger config...');
               BLEManager.queryChargerConfigStatus();
             }
           }, 400); // 0.4 seconds like iOS
-        } else if (data) {
-          commandType = 'OTHER_RESPONSE';
-          addCommandToHistory('received', 'OTHER_RESPONSE', '?', JSON.stringify(data).substring(0, 50));
         }
         
         // Update UI with received data
@@ -518,7 +480,6 @@ const HomeScreen = ({navigation, route}) => {
       
       onPermissionError: (error) => {
         console.error('Permission error:', error);
-        addCommandToHistory('error', 'PERMISSION_ERROR', '--', `Bluetooth permission required: ${error}`);
         Alert.alert(
           'Bluetooth Permission Required',
           'Please grant Bluetooth permissions in Settings to connect to your iPowerUp device.',
@@ -528,39 +489,11 @@ const HomeScreen = ({navigation, route}) => {
         );
       },
       
-      // Debug callbacks for UI logging
-      onRawDataReceived: (rawData) => {
-        console.log('📥 Raw data received in UI from device:', rawData);
-        if (rawData && typeof rawData === 'string' && rawData.length > 0) {
-          const byteCount = Math.floor(rawData.length / 2);
-          // Format hex with spaces for readability (every 2 chars = 1 byte)
-          const formattedHex = rawData.match(/.{1,2}/g)?.join(' ').substring(0, 80) || rawData.substring(0, 80);
-          addCommandToHistory('received_raw', 'DEVICE_SENT_RAW', '--', 
-            `Device sent ${byteCount} bytes: ${formattedHex}${rawData.length > 80 ? '...' : ''}`);
-        }
-      },
-      
-      onDeviceResponse: (commandHex, rawHex, byteLength) => {
-        console.log('📥 Device response detected:', commandHex, 'Bytes:', byteLength);
-        // Format hex for display
-        const formattedHex = rawHex.match(/.{1,2}/g)?.slice(0, 10).join(' ') || rawHex.substring(0, 20);
-        addCommandToHistory('received', `DEVICE_RESPONSE_${commandHex}`, commandHex, 
-          `Device responded with ${commandHex} (${byteLength} bytes): ${formattedHex}${rawHex.length > 20 ? '...' : ''}`);
-      },
-      
-      onDataParseError: (error) => {
-        console.error('❌ Data parse error:', error);
-        addCommandToHistory('error', 'PARSE_ERROR', '--', error);
-      },
-      
-      onNotificationEnabled: (success) => {
-        if (success) {
-          addCommandToHistory('info', 'NOTIFICATIONS_ENABLED', '--', 
-            '✅ Notifications enabled - device can send responses');
-        } else {
-          addCommandToHistory('error', 'NOTIFICATIONS_FAILED', '--', 
-            '❌ Failed to enable notifications - responses may not be received');
-        }
+      // Charger config received - enable/disable button based on enPhCharger
+      onChargerConfigReceived: (config) => {
+        console.log('📊 Charger Config received:', config);
+        // iOS: Enable button if enPhCharger == true
+        setChargeConfigEnabled(config.enPhCharger === true);
       },
     });
     
@@ -588,38 +521,25 @@ const HomeScreen = ({navigation, route}) => {
       return;
     }
     
-    // IMPORTANT: Transfer Power requires USB connection between phone and case
-    // The BLE command only enables/disables charging - actual power transfer is via USB
-    if (isCharging) {
-      // Currently charging - stop it
-      console.log('🛑 Stopping phone charging...');
-      addCommandToHistory('sent', 'STOP_CHARGING', '0x18', 'Stopping phone charging');
+    // iOS logic (line 158-164): Toggle based on current enPhCharger state
+    // If enPhCharger is true (charging enabled in config), send stop command (0x18)
+    // If enPhCharger is false (charging disabled), send enable command (0x21)
+    if (chargeConfigEnabled) {
+      // Currently enabled in config - send stop command (0x18)
+      console.log('🛑 Stopping phone charging (0x18)...');
       BLEManager.stopCharging();
-      Alert.alert('Charging Stopped', 'Phone charging has been disabled. Disconnect USB cable to stop power transfer.');
     } else {
-      // Not charging - enable it
-      console.log('⚡ Enabling phone charging...');
-      Alert.alert(
-        'Enable Charging',
-        'Make sure your phone is connected to the case via USB cable. The case will now start charging your phone.',
-        [
-          {
-            text: 'Cancel',
-            style: 'cancel'
-          },
-          {
-            text: 'Enable',
-            onPress: () => {
-              addCommandToHistory('sent', 'ENABLE_PHONE_CHARGING', '0x21', 'Enabling phone charging (requires USB connection)');
-              BLEManager.enablePhoneCharging();
-            }
-          }
-        ]
-      );
+      // Currently disabled in config - send enable command (0x21)
+      console.log('⚡ Enabling phone charging (0x21)...');
+      BLEManager.enablePhoneCharging();
     }
     
-    // Note: Actual charging status case se response mein aayega (phoneCharging flag)
-    // UI update onDataReceived callback mein hoga
+    // After 2.5 seconds, query charger config to update button state (iOS line 271-273, 276-278)
+    setTimeout(() => {
+      if (BLEManager.isConnected && BLEManager.queryChargerConfigStatus) {
+        BLEManager.queryChargerConfigStatus();
+      }
+    }, 2500);
   };
 
   return (
@@ -684,39 +604,6 @@ const HomeScreen = ({navigation, route}) => {
 
           {/* Your Case Section */}
           <Text style={styles.sectionTitle}>Your Case</Text>
-          {/* Connection Status Indicator - Shows REAL connection status */}
-          {(() => {
-            const connectionStatus = BLEManager.getConnectionStatus ? BLEManager.getConnectionStatus() : null;
-            const reallyConnected = connectionStatus?.isReallyConnected || false;
-            const hasData = caseBatteryLevel > 0 || (caseTemperature > 0 && !isNaN(caseTemperature));
-            
-            if (reallyConnected && hasData) {
-              // Green: Really connected AND receiving data
-              return (
-                <View style={{padding: 8, backgroundColor: '#4CAF50', borderRadius: 8, marginBottom: 8}}>
-                  <Text style={{color: 'white', textAlign: 'center', fontSize: 12}}>
-                    ✅ Connected & Receiving Data
-                  </Text>
-                </View>
-              );
-            } else if (isConnected && !reallyConnected) {
-              // Orange: BLE connected but no data received yet
-              return (
-                <View style={{padding: 8, backgroundColor: '#FF9800', borderRadius: 8, marginBottom: 8}}>
-                  <Text style={{color: 'white', textAlign: 'center', fontSize: 12}}>
-                    ⚠️ Connected but Waiting for Data...
-                  </Text>
-                </View>
-              );
-            } else {
-              // Red: Not connected
-              return (
-                <View style={{padding: 8, backgroundColor: '#F44336', borderRadius: 8, marginBottom: 8}}>
-                  <Text style={{color: 'white', textAlign: 'center', fontSize: 12}}>❌ Not Connected</Text>
-                </View>
-              );
-            }
-          })()}
           <View style={styles.card}>
             <View style={styles.cardRow}>
               <View style={styles.cardTextContainer}>
@@ -759,94 +646,18 @@ const HomeScreen = ({navigation, route}) => {
             style={styles.sliderButton}
             onPress={handleTransferPower}
             activeOpacity={0.9}
+            disabled={!chargeConfigEnabled && !isConnected}
           >
             <Image
-              source={isCharging 
+              source={chargeConfigEnabled 
                 ? require('../../assets/home/newYellowSlider.png')
                 : require('../../assets/home/newWhiteSlider.png')
               }
-              style={styles.sliderImage}
+              style={[styles.sliderImage, (!chargeConfigEnabled && !isConnected) && {opacity: 0.4}]}
               resizeMode="contain"
             />
           </TouchableOpacity>
 
-          {/* Debug Panel - Command History */}
-          {isConnected && (
-            <View style={styles.debugSection}>
-              <TouchableOpacity
-                onPress={() => setShowDebugPanel(!showDebugPanel)}
-                style={styles.debugToggle}
-              >
-                <Text style={styles.debugToggleText}>
-                  {showDebugPanel ? '▼' : '▶'} Command Flow Debug ({commandHistory.length} entries)
-                </Text>
-              </TouchableOpacity>
-              
-              {showDebugPanel && (
-                <ScrollView 
-                  style={styles.debugScrollView}
-                  contentContainerStyle={styles.debugContent}
-                  showsVerticalScrollIndicator={true}
-                  nestedScrollEnabled={true}
-                >
-                  <View style={styles.debugInfoBox}>
-                    <Text style={styles.debugTitle}>📡 Expected Flow:</Text>
-                    <Text style={styles.debugValue}>Connect → Password (0x19) → Query Power Bank (0x04) → Query Charger Config (0x03)</Text>
-                  </View>
-
-                  {commandHistory.length === 0 ? (
-                    <Text style={styles.debugValue}>No commands yet. Connect to device to see command flow.</Text>
-                  ) : (
-                    commandHistory.map((entry, index) => {
-                      const time = new Date(entry.timestamp);
-                      const formattedTime = time.toLocaleTimeString('en-IN', {
-                        hour: '2-digit',
-                        minute: '2-digit',
-                        second: '2-digit',
-                        hour12: false,
-                      });
-                      
-                      // Different colors for different log types
-                      let bgColor = '#FFF3E0';
-                      let textColor = '#F57C00';
-                      if (entry.type === 'sent') {
-                        bgColor = '#E3F2FD';
-                        textColor = '#1976D2';
-                      } else if (entry.type === 'received' || entry.type === 'received_raw') {
-                        bgColor = '#E8F5E9';
-                        textColor = '#388E3C';
-                      } else if (entry.type === 'error') {
-                        bgColor = '#FFEBEE';
-                        textColor = '#C62828';
-                      } else if (entry.type === 'connected' || entry.type === 'info') {
-                        bgColor = '#FFF3E0';
-                        textColor = '#F57C00';
-                      }
-                      
-                      return (
-                        <View key={index} style={[styles.debugLogEntry, {backgroundColor: bgColor}]}>
-                          <View style={styles.debugLogHeader}>
-                            <Text style={[styles.debugLogTime, {color: textColor}]}>
-                              {formattedTime}
-                            </Text>
-                            <Text style={[styles.debugLogType, {color: textColor}]}>
-                              {entry.type.toUpperCase()}
-                            </Text>
-                          </View>
-                          <Text style={[styles.debugLogCommand, {color: textColor}]}>
-                            {entry.command} ({entry.hex})
-                          </Text>
-                          <Text style={styles.debugLogDescription}>
-                            {entry.description}
-                          </Text>
-                        </View>
-                      );
-                    })
-                  )}
-                </ScrollView>
-              )}
-            </View>
-          )}
 
         </ScrollView>
       </SafeAreaView>
@@ -965,84 +776,6 @@ const styles = StyleSheet.create({
   sliderImage: {
     width: '100%',
     height: 55,
-  },
-  debugSection: {
-    marginHorizontal: 20,
-    marginTop: 15,
-    borderWidth: 1,
-    borderColor: '#E0E0E0',
-    borderRadius: 8,
-    backgroundColor: '#F9F9F9',
-  },
-  debugInfoBox: {
-    marginBottom: 12,
-    paddingBottom: 8,
-    borderBottomWidth: 1,
-    borderBottomColor: '#E0E0E0',
-  },
-  debugToggle: {
-    padding: 12,
-    borderBottomWidth: 1,
-    borderBottomColor: '#E0E0E0',
-  },
-  debugToggleText: {
-    fontSize: 13,
-    fontWeight: '600',
-    color: '#0097D9',
-  },
-  debugScrollView: {
-    maxHeight: 400,
-  },
-  debugContent: {
-    padding: 12,
-  },
-  debugTitle: {
-    fontSize: 12,
-    fontWeight: '600',
-    color: '#1D2733',
-    marginBottom: 6,
-  },
-  debugValue: {
-    fontSize: 10,
-    color: '#666666',
-    fontFamily: 'monospace',
-    marginBottom: 4,
-    lineHeight: 16,
-  },
-  debugLogEntry: {
-    marginBottom: 8,
-    padding: 10,
-    borderRadius: 6,
-    borderLeftWidth: 3,
-    borderLeftColor: '#0097D9',
-  },
-  debugLogHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: 4,
-  },
-  debugLogTime: {
-    fontSize: 9,
-    fontWeight: '600',
-    flex: 1,
-  },
-  debugLogType: {
-    fontSize: 9,
-    fontWeight: '700',
-    paddingHorizontal: 6,
-    paddingVertical: 2,
-    borderRadius: 4,
-  },
-  debugLogCommand: {
-    fontSize: 11,
-    fontWeight: '600',
-    marginBottom: 4,
-  },
-  debugLogDescription: {
-    fontSize: 10,
-    color: '#666666',
-    fontFamily: 'monospace',
   },
 });
 
