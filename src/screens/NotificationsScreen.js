@@ -13,6 +13,7 @@ import {
   Alert,
 } from 'react-native';
 import {Colors, Constants, FontSizes} from '../constants/Constants';
+import {safeJsonParse} from '../utils/apiHelper';
 
 const {width, height} = Dimensions.get('window');
 
@@ -51,13 +52,21 @@ const NotificationsScreen = ({navigation}) => {
         },
       });
 
-      const data = await response.json();
+      const data = await safeJsonParse(response);
+
+      // Check if there's an error in the response
+      if (data && data.error) {
+        console.error('API Error:', data.message);
+        // Don't show alert for API errors, just log and use default notifications
+        return;
+      }
 
       if (data && data.data) {
         setNotifications(data.data);
       }
     } catch (error) {
-      Alert.alert('Error', error.message || 'Something went wrong');
+      console.error('Error fetching notifications:', error);
+      // Don't show alert, just use default notifications
     }
   };
 

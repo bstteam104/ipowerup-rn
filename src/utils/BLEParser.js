@@ -22,7 +22,7 @@
  * - phBatPct = Int(data[7])
  * - solarCurr = Int(data[8]) | (Int(data[9]) << 8)
  */
-export const parsePowerBankStatus = (data, temperatureUnit = 'celsius') => {
+export const parsePowerBankStatus = (data) => {
   // iOS: guard data.count >= 10 else { return } - line 32
   if (!data || data.length < 10) {
     console.error('❌ BLEParser: Invalid data length:', data?.length, 'Expected: >= 10');
@@ -58,14 +58,9 @@ export const parsePowerBankStatus = (data, temperatureUnit = 'celsius') => {
   const tcAboveMax = (flags & 0x40) !== 0;
   
   // iOS line 51: caseTemp = Double(data[5])
-  let caseTemp = data[5];
+  // Always return in Celsius - conversion happens at display time (iOS line 319-328)
+  const caseTemp = data[5];
   console.log('📊 BLEParser: caseTemp (raw) =', caseTemp, '°C');
-  
-  // iOS line 52-54: Convert to Fahrenheit if needed
-  if (temperatureUnit === 'fahrenheit') {
-    caseTemp = (caseTemp * 9.0 / 5.0) + 32.0;
-    console.log('📊 BLEParser: caseTemp (converted) =', caseTemp, '°F');
-  }
   
   // iOS line 57: phBatPct = Int(data[7])
   const phBatPct = data[7];

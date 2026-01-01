@@ -16,6 +16,7 @@ import {
 } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import DeviceInfo from 'react-native-device-info';
+import {useIsFocused} from '@react-navigation/native';
 // Use Native Kotlin BLE Manager (exact iOS match)
 import BLEManager from '../services/BLEManagerNative';
 import {BLE_CONSTANTS} from '../constants/BLEConstants';
@@ -38,17 +39,34 @@ const getBatteryImage = (level) => {
   return require('../../assets/batteries/bat_0.png');
 };
 
-const getTemperatureImage = (temp, unit = 'celsius') => {
-  let celsius = temp;
-  if (unit === 'fahrenheit') celsius = (temp - 32) * 5 / 9;
-  if (celsius <= 0) return require('../../assets/temperature/temp-blue.png');
-  if (celsius <= 15) return require('../../assets/temperature/temp-green.png');
-  if (celsius <= 25) return require('../../assets/temperature/temp-yellow.png');
-  if (celsius <= 35) return require('../../assets/temperature/temp-orange.png');
+const getTemperatureImage = (tempCelsius, unit = 'celsius') => {
+  // Always use Celsius for color determination (iOS BLETemperatureUnit.swift)
+  // The image color is based on Celsius value regardless of display unit
+  const celsius = tempCelsius;
+  
+  // iOS BLETemperatureUnit.swift color logic (always use Celsius ranges)
+  // Color thresholds are based on Celsius, even when displaying Fahrenheit
+  if (celsius < -10) {
+    // Purple not available, use blue as fallback
+    return require('../../assets/temperature/temp-blue.png');
+  }
+  if (celsius < -5) {
+    return require('../../assets/temperature/temp-blue.png');
+  }
+  if (celsius < 60) {
+    return require('../../assets/temperature/temp-green.png');
+  }
+  if (celsius < 65) {
+    return require('../../assets/temperature/temp-yellow.png');
+  }
+  if (celsius < 70) {
+    return require('../../assets/temperature/temp-orange.png');
+  }
   return require('../../assets/temperature/temp-red.png');
 };
 
 const HomeScreen = ({navigation, route}) => {
+  const isFocused = useIsFocused();
   const [userName, setUserName] = useState('User');
   const [phoneBatteryLevel, setPhoneBatteryLevel] = useState(0);
   const [caseBatteryLevel, setCaseBatteryLevel] = useState(0);
@@ -60,6 +78,8 @@ const HomeScreen = ({navigation, route}) => {
   const [showScanningModal, setShowScanningModal] = useState(false); // Scanning modal after permission
   const [allDiscoveredDevices, setAllDiscoveredDevices] = useState([]); // Devices for scanning modal
   const [chargeConfigEnabled, setChargeConfigEnabled] = useState(false); // Phone charging enabled in config
+  const [phoneCharging, setPhoneCharging] = useState(false); // Actual phone charging status from PowerBankStatus
+  const [usbCharging, setUsbCharging] = useState(false); // USB charging status from PowerBankStatus
   const batteryIntervalRef = useRef(null);
 
   // Get phone battery level
@@ -292,6 +312,13 @@ const HomeScreen = ({navigation, route}) => {
     }
   }, [route?.params?.openScanModal]);
 
+  // Reload temperature unit when screen is focused (iOS: NotificationCenter for temperatureDidChange)
+  useEffect(() => {
+    if (isFocused) {
+      loadUserData();
+    }
+  }, [isFocused]);
+
   const loadUserData = async () => {
     try {
       const userData = await AsyncStorage.getItem('loggedInUser');
@@ -321,6 +348,8 @@ const HomeScreen = ({navigation, route}) => {
           setCaseBatteryLevel(0);
           setCaseTemperature(0);
           setIsCharging(false);
+          setPhoneCharging(false);
+          setUsbCharging(false);
           // Stop periodic queries
           BLEManager.stopPeriodicQueries();
           Alert.alert(
@@ -380,6 +409,11 @@ const HomeScreen = ({navigation, route}) => {
         // iOS line 195-203: didConnect sets isConnected and discovers services
         // iOS line 262-263: didConnectPeripheral() immediately calls queryPowerBankStatus
         setIsConnected(true);
+        // IMPORTANT: Reset USB and charging states when connecting - button should be disabled
+        // until we receive actual PowerBankStatus showing USB is connected
+        setUsbCharging(false);
+        setPhoneCharging(false);
+        setIsCharging(false);
         // Close scanning modal when connected (iOS: modal closes on connect)
         setShowScanningModal(false);
         // iOS: Start periodic queries immediately
@@ -416,6 +450,8 @@ const HomeScreen = ({navigation, route}) => {
         setCaseBatteryLevel(0);
         setCaseTemperature(0);
         setIsCharging(false);
+        setPhoneCharging(false);
+        setUsbCharging(false);
         
         // Log disconnect reason for debugging
         console.log('📝 Disconnect Details:', {
@@ -456,7 +492,16 @@ const HomeScreen = ({navigation, route}) => {
         } else {
           console.warn('⚠️ Invalid caseTemp:', data?.caseTemp);
         }
-        setIsCharging(data?.phoneCharging || false);
+        // Update charging states from PowerBankStatus (actual status, not config)
+        const phoneChargingStatus = data?.phoneCharging === true;
+        const usbChargingStatus = data?.usbCharging === true;
+        console.log('🔌 USB Charging Status:', usbChargingStatus, '| Phone Charging Status:', phoneChargingStatus);
+        setPhoneCharging(phoneChargingStatus);
+        setUsbCharging(usbChargingStatus);
+        setIsCharging(phoneChargingStatus);
+        
+        // Log button state for debugging
+        console.log('🔘 Button will be:', (usbChargingStatus ? 'ENABLED' : 'DISABLED'), '- USB connected:', usbChargingStatus);
         
         // Get phone battery from phone (not from case)
         const phoneBattery = await getPhoneBatteryLevel();
@@ -510,9 +555,18 @@ const HomeScreen = ({navigation, route}) => {
     }
   };
 
-  const formatTemperature = (temp) => {
+  const formatTemperature = (tempCelsius) => {
+    // Convert to Fahrenheit if needed (iOS line 319-328)
+    let displayTemp = tempCelsius;
+    if (temperatureUnit === 'fahrenheit') {
+      if (tempCelsius === 0) {
+        displayTemp = 0;
+      } else {
+        displayTemp = (tempCelsius * 9.0 / 5.0) + 32.0;
+      }
+    }
     const unit = temperatureUnit === 'fahrenheit' ? 'F' : 'C';
-    return `${Math.round(temp)}° ${unit}`;
+    return `${Math.round(displayTemp)}° ${unit}`;
   };
 
   const handleTransferPower = () => {
@@ -521,23 +575,28 @@ const HomeScreen = ({navigation, route}) => {
       return;
     }
     
-    // iOS logic (line 158-164): Toggle based on current enPhCharger state
-    // If enPhCharger is true (charging enabled in config), send stop command (0x18)
-    // If enPhCharger is false (charging disabled), send enable command (0x21)
-    if (chargeConfigEnabled) {
-      // Currently enabled in config - send stop command (0x18)
+    // iOS logic (line 158-164, 308-312): Toggle based on ACTUAL phoneCharging status
+    // iOS: If phoneCharging == true, send stop command (0x18)
+    // iOS: If phoneCharging == false, send enable command (0x21)
+    // Use actual charging status, not config setting
+    if (phoneCharging) {
+      // Phone is actually charging - send stop command (0x18)
       console.log('🛑 Stopping phone charging (0x18)...');
       BLEManager.stopCharging();
     } else {
-      // Currently disabled in config - send enable command (0x21)
+      // Phone is not charging - send enable command (0x21)
       console.log('⚡ Enabling phone charging (0x21)...');
       BLEManager.enablePhoneCharging();
     }
     
-    // After 2.5 seconds, query charger config to update button state (iOS line 271-273, 276-278)
+    // After 2.5 seconds, query power bank status to update button state (iOS line 271-273, 276-278)
+    // Also query charger config to keep it in sync
     setTimeout(() => {
-      if (BLEManager.isConnected && BLEManager.queryChargerConfigStatus) {
-        BLEManager.queryChargerConfigStatus();
+      if (BLEManager.isConnected) {
+        BLEManager.queryPowerBankStatus();
+        if (BLEManager.queryChargerConfigStatus) {
+          BLEManager.queryChargerConfigStatus();
+        }
       }
     }, 2500);
   };
@@ -642,18 +701,27 @@ const HomeScreen = ({navigation, route}) => {
           </View>
 
           {/* Transfer Power Button */}
+          {/* iOS behavior: Button image based on phoneCharging status (line 308-312) */}
+          {/* 
+            Button Logic:
+            - Button is ENABLED only when: BLE connected AND USB actually connected (usbCharging == true)
+            - Button is DISABLED when: BLE not connected OR USB not connected
+            - Button shows YELLOW (Stop Charging) when phoneCharging == true
+            - Button shows WHITE (Start Charging) when phoneCharging == false
+            - Case connected != USB connected - button only works when real USB cable is connected
+          */}
           <TouchableOpacity 
             style={styles.sliderButton}
             onPress={handleTransferPower}
             activeOpacity={0.9}
-            disabled={!chargeConfigEnabled && !isConnected}
+            disabled={!isConnected || !usbCharging}
           >
             <Image
-              source={chargeConfigEnabled 
+              source={phoneCharging 
                 ? require('../../assets/home/newYellowSlider.png')
                 : require('../../assets/home/newWhiteSlider.png')
               }
-              style={[styles.sliderImage, (!chargeConfigEnabled && !isConnected) && {opacity: 0.4}]}
+              style={[styles.sliderImage, (!isConnected || !usbCharging) && {opacity: 0.4}]}
               resizeMode="contain"
             />
           </TouchableOpacity>

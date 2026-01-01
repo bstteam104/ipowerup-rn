@@ -186,10 +186,7 @@ class BLEManagerNativeService {
               // Check if it's Power Bank Status response (0x04)
               if (commandByte === BLE_CONSTANTS.COMMAND_QUERY_POWER_BANK_STATUS) {
                 console.log('✅ Detected Power Bank Status response (0x04)');
-                const parsed = parsePowerBankStatus(
-                  buffer,
-                  this.delegate?.getTemperatureUnit?.() || 'celsius'
-                );
+                const parsed = parsePowerBankStatus(buffer);
                 if (parsed) {
                   // Mark that we've received real data (connection verified)
                   this.hasReceivedData = true;

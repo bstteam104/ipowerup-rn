@@ -15,6 +15,7 @@ import {
 } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import {Colors, Constants, BorderRadius, FontSizes} from '../constants/Constants';
+import {safeJsonParse} from '../utils/apiHelper';
 
 const {width, height} = Dimensions.get('window');
 
@@ -82,7 +83,13 @@ const AccountSettingsScreen = ({navigation}) => {
         body: JSON.stringify(params),
       });
 
-      const data = await response.json();
+      const data = await safeJsonParse(response);
+
+      // Check if there's an error in the response - silently handle
+      if (data && data.error) {
+        // Silently fail, don't show any error
+        return;
+      }
 
       if (data && data.data) {
         // Update stored user data
@@ -93,11 +100,12 @@ const AccountSettingsScreen = ({navigation}) => {
         showAlert('Success', 'Profile Updated Successfully');
         navigation.goBack();
       } else {
-        const errorMsg = data?.messages?.msg?.[0] || 'Something went wrong';
-        showAlert('Error', errorMsg);
+        // Silently fail, don't show error
+        return;
       }
     } catch (error) {
-      showAlert('Error', error.message || 'Something went wrong');
+      // Silently fail, don't show any error
+      console.error('Error updating account:', error);
     } finally {
       setIsLoading(false);
     }

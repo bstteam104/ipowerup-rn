@@ -13,6 +13,7 @@ import {
   Alert,
 } from 'react-native';
 import {Colors, Constants, FontSizes} from '../constants/Constants';
+import {safeJsonParse} from '../utils/apiHelper';
 
 const {width, height} = Dimensions.get('window');
 
@@ -63,7 +64,13 @@ const TroubleshootingScreen = ({navigation}) => {
         },
       });
 
-      const data = await response.json();
+      const data = await safeJsonParse(response);
+
+      // Check if there's an error - if so, just use default FAQs
+      if (data && data.error) {
+        console.log('API Error, using default FAQs:', data.message);
+        return;
+      }
 
       if (data && data.data && data.data.length > 0) {
         // Add isExpanded property to each FAQ

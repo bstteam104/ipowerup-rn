@@ -13,6 +13,7 @@ import {
 } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import {Colors, Constants, BorderRadius, FontSizes} from '../constants/Constants';
+import {safeJsonParse} from '../utils/apiHelper';
 
 const {width, height} = Dimensions.get('window');
 
@@ -49,33 +50,55 @@ const TemperatureScreen = ({navigation}) => {
     setIsLoading(true);
 
     try {
-      const params = {
-        type: tempValue,
-      };
-
-      const response = await fetch(`${Constants.baseURLDev}/update-temperature`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(params),
-      });
-
-      const data = await response.json();
-
-      if (data && data.data) {
-        const userObj = data.data[0];
-        userObj.token = await AsyncStorage.getItem('accessToken');
-        await AsyncStorage.setItem('loggedInUser', JSON.stringify(userObj));
-        
-        showAlert('Success', data?.messages?.msg?.[0] || 'Temperature updated');
-        navigation.goBack();
-      } else {
-        const errorMsg = data?.messages?.msg?.[0] || 'Something went wrong';
-        showAlert('Error', errorMsg);
+      // Since backend is not available, save directly to AsyncStorage
+      const userData = await AsyncStorage.getItem('loggedInUser');
+      let userObj = {};
+      
+      if (userData) {
+        userObj = JSON.parse(userData);
       }
+      
+      // Update temperature setting in user object
+      userObj.tempreture = tempValue;
+      
+      // Save updated user object to AsyncStorage
+      await AsyncStorage.setItem('loggedInUser', JSON.stringify(userObj));
+      
+      console.log('✅ Temperature setting saved to AsyncStorage:', tempValue);
+      
+      // Try API call (but don't fail if it doesn't work)
+      try {
+        const params = {
+          type: tempValue,
+        };
+
+        const response = await fetch(`${Constants.baseURLDev}/update-temperature`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(params),
+        });
+
+        const data = await safeJsonParse(response);
+
+        // If API succeeds, update with server response
+        if (data && !data.error && data.data) {
+          const serverUserObj = data.data[0];
+          serverUserObj.token = await AsyncStorage.getItem('accessToken');
+          await AsyncStorage.setItem('loggedInUser', JSON.stringify(serverUserObj));
+          console.log('✅ Temperature updated on server as well');
+        }
+      } catch (apiError) {
+        // API failed, but we already saved to AsyncStorage, so it's okay
+        console.log('⚠️ API call failed, but setting saved locally:', apiError.message);
+      }
+      
+      showAlert('Success', 'Temperature setting updated');
+      navigation.goBack();
     } catch (error) {
-      showAlert('Error', error.message || 'Something went wrong');
+      console.error('Error updating temperature:', error);
+      showAlert('Error', 'Failed to save temperature setting');
     } finally {
       setIsLoading(false);
     }

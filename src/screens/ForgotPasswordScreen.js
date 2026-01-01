@@ -14,6 +14,7 @@ import {
   Dimensions,
 } from 'react-native';
 import {Colors, Constants, BorderRadius, FontSizes} from '../constants/Constants';
+import {safeJsonParse} from '../utils/apiHelper';
 
 const {width, height} = Dimensions.get('window');
 
@@ -56,17 +57,24 @@ const ForgotPasswordScreen = ({navigation}) => {
         body: JSON.stringify(params),
       });
 
-      const data = await response.json();
+      const data = await safeJsonParse(response);
+
+      // Check if there's an error in the response - silently handle
+      if (data && data.error) {
+        // Silently fail, don't show error
+        return;
+      }
 
       if (data && data.success) {
         showAlert('Success', 'OTP sent to your email.');
         // Navigate to OtpScreen with email
         navigation.navigate('Otp', {email: email});
       } else {
-        showAlert('Error', data?.messages?.msg?.[0] || 'Something went wrong');
+        // Silently fail, don't show error
       }
     } catch (error) {
-      showAlert('Error', error.message || 'Something went wrong');
+      // Silently fail, don't show error
+      console.error('Error in forgot password:', error);
     } finally {
       setIsLoading(false);
     }

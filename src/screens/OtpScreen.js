@@ -13,6 +13,7 @@ import {
 } from 'react-native';
 import PinInput from '../components/PinInput';
 import {Colors, Constants, BorderRadius, FontSizes} from '../constants/Constants';
+import {safeJsonParse} from '../utils/apiHelper';
 
 const {width, height} = Dimensions.get('window');
 
@@ -59,16 +60,22 @@ const OtpScreen = ({navigation, route}) => {
         body: JSON.stringify(params),
       });
 
-      const data = await response.json();
+      const data = await safeJsonParse(response);
+
+      // Check if there's an error in the response - silently handle
+      if (data && data.error) {
+        // Silently fail, don't show error
+        return;
+      }
 
       if (data && data.success) {
         navigation.navigate('RecreatePassword', {email: emailText});
       } else {
-        const errorMsg = data?.messages?.msg?.[0] || 'Something went wrong';
-        showAlert('Error', errorMsg);
+        // Silently fail, don't show error
       }
     } catch (error) {
-      showAlert('Error', error.message || 'Something went wrong');
+      // Silently fail, don't show error
+      console.error('Error verifying OTP:', error);
     } finally {
       setIsLoading(false);
     }

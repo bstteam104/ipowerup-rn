@@ -13,6 +13,7 @@ import {
   Alert,
 } from 'react-native';
 import {Colors, Constants, FontSizes} from '../constants/Constants';
+import {safeJsonParse} from '../utils/apiHelper';
 
 const {width, height} = Dimensions.get('window');
 
@@ -58,7 +59,13 @@ const TipsScreen = ({navigation}) => {
         },
       });
 
-      const data = await response.json();
+      const data = await safeJsonParse(response);
+
+      // Check if there's an error - if so, just use default tips
+      if (data && data.error) {
+        console.log('API Error, using default tips:', data.message);
+        return;
+      }
 
       if (data && data.data && data.data.length > 0) {
         setTips(data.data);

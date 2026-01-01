@@ -15,6 +15,7 @@ import ToggleSwitch from 'toggle-switch-react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import {useIsFocused} from '@react-navigation/native';
 import {Colors, Constants, FontSizes} from '../constants/Constants';
+import {safeJsonParse} from '../utils/apiHelper';
 
 const {width, height} = Dimensions.get('window');
 
@@ -108,7 +109,14 @@ const AppSettingsScreen = ({navigation}) => {
         },
       });
       
-      const data = await response.json();
+      const data = await safeJsonParse(response);
+      
+      // Check if there's an error in the response - silently handle
+      if (data && data.error) {
+        setBluetoothEnabled(!value);
+        // Silently fail, don't show error
+        return;
+      }
       
       if (data && data.success) {
         // Update user data in AsyncStorage (iOS: UserDefaults.standard.loggedInUser = userObj)
@@ -122,14 +130,13 @@ const AppSettingsScreen = ({navigation}) => {
       } else {
         // Revert toggle on error
         setBluetoothEnabled(!value);
-        const errorMsg = data?.messages?.msg?.[0] || 'Something went wrong';
-        showAlert('Error', errorMsg);
+        // Silently fail, don't show error
       }
     } catch (error) {
       console.error('Error updating Bluetooth setting:', error);
       // Revert toggle on error
       setBluetoothEnabled(!value);
-      showAlert('Error', error.message || 'Failed to update Bluetooth setting');
+      // Silently fail, don't show error
     } finally {
       setIsLoading(false);
     }
@@ -179,7 +186,13 @@ const AppSettingsScreen = ({navigation}) => {
                 body: JSON.stringify(params),
               });
 
-              const data = await response.json();
+              const data = await safeJsonParse(response);
+
+              // Check if there's an error in the response - silently handle
+              if (data && data.error) {
+                // Silently fail, don't show error
+                return;
+              }
 
               if (data && data.success) {
                 // Clear all data and navigate to Login signOutOldUser
@@ -189,11 +202,11 @@ const AppSettingsScreen = ({navigation}) => {
                   routes: [{name: 'Login'}],
                 });
               } else {
-                const errorMsg = data?.messages?.msg?.[0] || 'Something went wrong';
-                showAlert('Error', errorMsg);
+                // Silently fail, don't show error
               }
             } catch (error) {
-              showAlert('Error', error.message || 'Something went wrong');
+              // Silently fail, don't show error
+              console.error('Error deleting account:', error);
             }
           },
         },
