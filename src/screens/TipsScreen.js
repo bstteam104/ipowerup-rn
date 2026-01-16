@@ -12,37 +12,39 @@ import {
   Dimensions,
   Alert,
 } from 'react-native';
+import {useTranslation} from 'react-i18next';
 import {Colors, Constants, FontSizes} from '../constants/Constants';
 import {safeJsonParse} from '../utils/apiHelper';
 
 const {width, height} = Dimensions.get('window');
 
 const TipsScreen = ({navigation}) => {
+  const {t} = useTranslation();
   const [tips, setTips] = useState([
     {
       id: '1',
-      question: 'How to maximize solar charging?',
-      answer: 'Place your device in direct sunlight and ensure the solar panels are clean and unobstructed. The best charging occurs between 10 AM and 4 PM when sunlight is strongest.',
+      question: t('tips.tip1Question'),
+      answer: t('tips.tip1Answer'),
     },
     {
       id: '2',
-      question: 'What is the optimal temperature for charging?',
-      answer: 'The case works best between 0°C and 45°C. Avoid charging in extreme temperatures as it may affect battery life and charging efficiency.',
+      question: t('tips.tip2Question'),
+      answer: t('tips.tip2Answer'),
     },
     {
       id: '3',
-      question: 'How long does it take to fully charge the case?',
-      answer: 'Using solar power, it typically takes 4-6 hours of direct sunlight to fully charge the case. USB charging takes approximately 2-3 hours.',
+      question: t('tips.tip3Question'),
+      answer: t('tips.tip3Answer'),
     },
     {
       id: '4',
-      question: 'Can I charge my phone while the case is charging?',
-      answer: 'Yes! The case supports pass-through charging, allowing you to charge your phone while the case itself is being charged via solar or USB.',
+      question: t('tips.tip4Question'),
+      answer: t('tips.tip4Answer'),
     },
     {
       id: '5',
-      question: 'How do I transfer power from case to phone?',
-      answer: 'Simply tap the "Transfer Power To Phone" button on the Home screen. Make sure your phone is connected to the case via the charging port.',
+      question: t('tips.tip5Question'),
+      answer: t('tips.tip5Answer'),
     },
   ]);
 
@@ -113,7 +115,7 @@ const TipsScreen = ({navigation}) => {
               resizeMode="contain"
             />
           </TouchableOpacity>
-          <Text style={styles.headerTitle}>iPowerUp Tips</Text>
+          <Text style={styles.headerTitle}>{t('tips.title')}</Text>
           <View style={styles.placeholder} />
         </View>
 

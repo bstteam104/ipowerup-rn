@@ -14,17 +14,18 @@ import {
   Dimensions,
 } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import {useTranslation} from 'react-i18next';
 import {Colors, Constants, BorderRadius, FontSizes} from '../constants/Constants';
 import {safeJsonParse} from '../utils/apiHelper';
 
 const {width, height} = Dimensions.get('window');
 
 const ContactUsScreen = ({navigation}) => {
+  const {t} = useTranslation();
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [message, setMessage] = useState('');
   const [isLoading, setIsLoading] = useState(false);
-  const placeholderText = 'Your Message here';
 
   useEffect(() => {
     loadUserData();
@@ -68,6 +69,7 @@ const ContactUsScreen = ({navigation}) => {
       return false;
     }
 
+    const placeholderText = t('contactUs.messagePlaceholder');
     if (!message || message.trim() === '' || message === placeholderText) {
       showAlert('Error', 'Please enter your message');
       return false;
@@ -107,7 +109,7 @@ const ContactUsScreen = ({navigation}) => {
       }
 
       if (data && data.success) {
-        showAlert('Success', 'Thank you for Contacting us.');
+        showAlert(t('common.success'), t('contactUs.thankYou', 'Thank you for Contacting us.'));
         navigation.goBack();
       } else {
         // Silently fail, don't show error
@@ -119,6 +121,8 @@ const ContactUsScreen = ({navigation}) => {
       setIsLoading(false);
     }
   };
+
+  const placeholderText = t('contactUs.messagePlaceholder');
 
   const handleMessageFocus = () => {
     if (message === placeholderText) {
@@ -166,7 +170,7 @@ const ContactUsScreen = ({navigation}) => {
                   resizeMode="contain"
                 />
               </TouchableOpacity>
-              <Text style={styles.headerTitle}>Contact iPowerUp</Text>
+              <Text style={styles.headerTitle}>{t('contactUs.title')}</Text>
               <View style={styles.placeholder} />
             </View>
 
@@ -176,7 +180,7 @@ const ContactUsScreen = ({navigation}) => {
               <View style={styles.inputView}>
                 <TextInput
                   style={styles.input}
-                  placeholder="Name"
+                  placeholder={t('contactUs.name')}
                   placeholderTextColor={Colors.grayColor}
                   value={name}
                   onChangeText={setName}
@@ -188,7 +192,7 @@ const ContactUsScreen = ({navigation}) => {
               <View style={styles.inputView}>
                 <TextInput
                   style={styles.input}
-                  placeholder="Email"
+                  placeholder={t('contactUs.email')}
                   placeholderTextColor={Colors.grayColor}
                   value={email}
                   onChangeText={setEmail}
@@ -227,7 +231,7 @@ const ContactUsScreen = ({navigation}) => {
               activeOpacity={0.8}
             >
               <Text style={styles.submitButtonText}>
-                {isLoading ? 'Sending...' : 'Submit'}
+                {isLoading ? t('common.updating') : t('contactUs.submit')}
               </Text>
             </TouchableOpacity>
           </View>

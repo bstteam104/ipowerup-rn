@@ -14,11 +14,13 @@ import {
   Platform,
 } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import {useTranslation} from 'react-i18next';
 import {Colors, Constants, BorderRadius, FontSizes} from '../constants/Constants';
 
 const {width} = Dimensions.get('window');
 
 const LoginScreen = ({navigation}) => {
+  const {t} = useTranslation();
   const [email, setEmail] = useState('bstteam@gmail.com');
   const [password, setPassword] = useState('bstteam');
   const [showPassword, setShowPassword] = useState(false);
@@ -111,11 +113,11 @@ const LoginScreen = ({navigation}) => {
           />
 
           {/* Title */}
-          <Text style={styles.title}>Log in to your Account</Text>
+          <Text style={styles.title}>{t('login.title')}</Text>
 
           {/* Subtitle */}
           <Text style={styles.subtitle}>
-            Or Create a new App account. This is the same{'\n'}account used for iPowerUp.com
+            {t('login.subtitle')}
           </Text>
 
           {/* Form Container */}
@@ -130,7 +132,7 @@ const LoginScreen = ({navigation}) => {
                 />
                 <TextInput
                   style={styles.input}
-                  placeholder="Enter Email Address"
+                  placeholder={t('login.emailPlaceholder')}
                   placeholderTextColor={Colors.grayColor}
                   value={email}
                   onChangeText={setEmail}
@@ -151,7 +153,7 @@ const LoginScreen = ({navigation}) => {
                 />
                 <TextInput
                   style={styles.input}
-                  placeholder="Enter Password"
+                  placeholder={t('login.passwordPlaceholder')}
                   placeholderTextColor={Colors.grayColor}
                   value={password}
                   onChangeText={setPassword}
@@ -176,7 +178,7 @@ const LoginScreen = ({navigation}) => {
               onPress={() => navigation.navigate('ForgotPassword')}
               style={styles.forgotPasswordContainer}
             >
-              <Text style={styles.forgotPasswordText}>Forgot Password?</Text>
+              <Text style={styles.forgotPasswordText}>{t('login.forgotPassword')}</Text>
             </TouchableOpacity>
 
             {/* Sign In Button button styling */}
@@ -187,7 +189,7 @@ const LoginScreen = ({navigation}) => {
               activeOpacity={0.8}
             >
               <Text style={styles.signInButtonText}>
-                {isLoading ? 'Signing In...' : 'Sign In'}
+                {isLoading ? t('common.updating') : t('login.signIn')}
               </Text>
             </TouchableOpacity>
 
@@ -196,7 +198,7 @@ const LoginScreen = ({navigation}) => {
               onPress={() => navigation.navigate('SignUp')}
               style={styles.createAccountContainer}
             >
-              <Text style={styles.createAccountText}>Create an Account?</Text>
+              <Text style={styles.createAccountText}>{t('login.createAccount')}</Text>
             </TouchableOpacity>
           </View>
         </ScrollView>

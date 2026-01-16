@@ -14,12 +14,14 @@ import {
   Platform,
 } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import {useTranslation} from 'react-i18next';
 import {Colors, Constants, BorderRadius, FontSizes} from '../constants/Constants';
 import {safeJsonParse} from '../utils/apiHelper';
 
 const {width} = Dimensions.get('window');
 
 const SignUpScreen = ({navigation}) => {
+  const {t} = useTranslation();
   const [firstName, setFirstName] = useState('');
   const [lastName, setLastName] = useState('');
   const [email, setEmail] = useState('');
@@ -46,37 +48,37 @@ const SignUpScreen = ({navigation}) => {
 
   const handleSignUp = async () => {
     if (!firstName || firstName.trim() === '') {
-      showAlert('Error', 'Please enter your first name.');
+      showAlert(t('common.error'), t('validation.enterFirstName'));
       return;
     }
 
     if (!email || email.trim() === '') {
-      showAlert('Error', 'Please enter your email address.');
+      showAlert(t('common.error'), t('validation.enterEmail'));
       return;
     }
 
     if (!password || password.trim() === '') {
-      showAlert('Error', 'Please enter your password.');
+      showAlert(t('common.error'), t('validation.enterPassword'));
       return;
     }
 
     if (!country || country.trim() === '') {
-      showAlert('Error', 'Please enter your country.');
+      showAlert(t('common.error'), t('validation.enterCountry'));
       return;
     }
 
     if (!isValidEmail(email)) {
-      showAlert('Error', 'Please enter a valid email address.');
+      showAlert(t('common.error'), t('validation.validEmail'));
       return;
     }
 
     if (!isValidPassword(password)) {
-      showAlert('Invalid Password', 'Password must be at least 8 characters long, contain at least one letter, one number, and one special character.');
+      showAlert(t('validation.invalidPassword'), t('validation.passwordRequirements'));
       return;
     }
 
     if (!termsAccepted || !privacyAccepted) {
-      showAlert('Error', 'You must agree to the Terms & Conditions and Privacy Policy.');
+      showAlert(t('common.error'), t('validation.agreeTerms'));
       return;
     }
 
@@ -169,11 +171,11 @@ const SignUpScreen = ({navigation}) => {
           />
 
           {/* Title */}
-          <Text style={styles.title}>Create an Account</Text>
+          <Text style={styles.title}>{t('signup.title')}</Text>
 
           {/* Subtitle */}
           <Text style={styles.subtitle}>
-            Create a new App account. This is the same{'\n'}account used for iPowerUp.com
+            {t('signup.subtitle')}
           </Text>
 
           {/* Form Container */}
@@ -188,7 +190,7 @@ const SignUpScreen = ({navigation}) => {
                 />
                 <TextInput
                   style={styles.input}
-                  placeholder="First Name"
+                  placeholder={t('signup.firstNamePlaceholder')}
                   placeholderTextColor={Colors.grayColor}
                   value={firstName}
                   onChangeText={setFirstName}
@@ -208,7 +210,7 @@ const SignUpScreen = ({navigation}) => {
                 />
                 <TextInput
                   style={styles.input}
-                  placeholder="Last Name"
+                  placeholder={t('signup.lastNamePlaceholder')}
                   placeholderTextColor={Colors.grayColor}
                   value={lastName}
                   onChangeText={setLastName}
@@ -228,7 +230,7 @@ const SignUpScreen = ({navigation}) => {
                 />
                 <TextInput
                   style={styles.input}
-                  placeholder="Email Address"
+                  placeholder={t('signup.emailPlaceholder')}
                   placeholderTextColor={Colors.grayColor}
                   value={email}
                   onChangeText={setEmail}
@@ -249,7 +251,7 @@ const SignUpScreen = ({navigation}) => {
                 />
                 <TextInput
                   style={styles.input}
-                  placeholder="Password"
+                  placeholder={t('signup.passwordPlaceholder')}
                   placeholderTextColor={Colors.grayColor}
                   value={password}
                   onChangeText={setPassword}
@@ -279,7 +281,7 @@ const SignUpScreen = ({navigation}) => {
                 />
                 <TextInput
                   style={styles.input}
-                  placeholder="Country"
+                  placeholder={t('signup.countryPlaceholder')}
                   placeholderTextColor={Colors.grayColor}
                   value={country}
                   onChangeText={setCountry}
@@ -306,9 +308,10 @@ const SignUpScreen = ({navigation}) => {
                 />
               </TouchableOpacity>
               <Text style={styles.checkboxText}>
-                I agree to iPowerUp{' '}
+                {t('signup.agreeTerms')}
+                {' '}
                 <Text style={styles.linkText} onPress={handleTermsPress}>
-                  Terms & Conditions
+                  {t('common.terms', 'Terms & Conditions')}
                 </Text>
               </Text>
             </View>
@@ -330,9 +333,10 @@ const SignUpScreen = ({navigation}) => {
                 />
               </TouchableOpacity>
               <Text style={styles.checkboxText}>
-                I consent to the use of my personal information in accordance with iPowerUp{' '}
+                {t('signup.agreePrivacy')}
+                {' '}
                 <Text style={styles.linkText} onPress={handlePrivacyPress}>
-                  Privacy Policy
+                  {t('common.privacy', 'Privacy Policy')}
                 </Text>
               </Text>
             </View>
@@ -345,7 +349,7 @@ const SignUpScreen = ({navigation}) => {
               activeOpacity={0.8}
             >
               <Text style={styles.createButtonText}>
-                {isLoading ? 'Creating Account...' : 'Create Account'}
+                {isLoading ? t('common.updating') : t('signup.createAccount')}
               </Text>
             </TouchableOpacity>
 
@@ -354,7 +358,7 @@ const SignUpScreen = ({navigation}) => {
               onPress={() => navigation.goBack()}
               style={styles.backSignInContainer}
             >
-              <Text style={styles.backSignInText}>Back to Sign In</Text>
+              <Text style={styles.backSignInText}>{t('signup.backToSignIn', 'Back to Sign In')}</Text>
             </TouchableOpacity>
           </View>
         </ScrollView>

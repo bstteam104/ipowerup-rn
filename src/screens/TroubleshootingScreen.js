@@ -12,41 +12,43 @@ import {
   Dimensions,
   Alert,
 } from 'react-native';
+import {useTranslation} from 'react-i18next';
 import {Colors, Constants, FontSizes} from '../constants/Constants';
 import {safeJsonParse} from '../utils/apiHelper';
 
 const {width, height} = Dimensions.get('window');
 
 const TroubleshootingScreen = ({navigation}) => {
+  const {t} = useTranslation();
   const [faqs, setFaqs] = useState([
     {
       id: '1',
-      question: 'Bluetooth pairing issues',
-      answer: 'Device not found: Close the iPowerUp app. Open Settings on your iPhone to ensure Bluetooth is on. Reopen the PowerUp app, click the Connect New Device button, click Allow when prompted, and click your device name.',
+      question: t('troubleshooting.faq1Question'),
+      answer: t('troubleshooting.faq1Answer'),
       isExpanded: false,
     },
     {
       id: '2',
-      question: 'Charging with the case Solar Panel',
-      answer: 'Place your Uno case in a sunny location, then aim the solar panel in a direction and angle that gets the good sunlight. View the screen above the solar panel for mA levels for the best results.',
+      question: t('troubleshooting.faq2Question'),
+      answer: t('troubleshooting.faq2Answer'),
       isExpanded: false,
     },
     {
       id: '3',
-      question: 'Manually transfer power from the case to my phone',
-      answer: 'Press the Mode button at the bottom of the case two times quickly.',
+      question: t('troubleshooting.faq3Question'),
+      answer: t('troubleshooting.faq3Answer'),
       isExpanded: false,
     },
     {
       id: '4',
-      question: 'Charging Android phones',
-      answer: 'Connect a USB-C cable from the case to the Android device. Note: this App is not yet available for Android devices.',
+      question: t('troubleshooting.faq4Question'),
+      answer: t('troubleshooting.faq4Answer'),
       isExpanded: false,
     },
     {
       id: '5',
-      question: 'Getting the free Extended Warranty',
-      answer: "It's easy! Set up your iPowerUp App account. You'll get an email confirming your account and extended Warranty details.",
+      question: t('troubleshooting.faq5Question'),
+      answer: t('troubleshooting.faq5Answer'),
       isExpanded: false,
     },
   ]);
@@ -143,7 +145,7 @@ const TroubleshootingScreen = ({navigation}) => {
               resizeMode="contain"
             />
           </TouchableOpacity>
-          <Text style={styles.headerTitle}>Help</Text>
+          <Text style={styles.headerTitle}>{t('troubleshooting.title')}</Text>
           <View style={styles.placeholder} />
         </View>
 

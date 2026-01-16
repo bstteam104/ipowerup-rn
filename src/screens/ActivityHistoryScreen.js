@@ -11,12 +11,14 @@ import {
   Platform,
   Dimensions,
 } from 'react-native';
+import {useTranslation} from 'react-i18next';
 import ChartCardView from '../components/ChartCardView';
 import {Colors, FontSizes} from '../constants/Constants';
 
 const {width, height} = Dimensions.get('window');
 
 const ActivityHistoryScreen = ({navigation}) => {
+  const {t} = useTranslation();
   const [caseData, setCaseData] = useState([]);
   const [phoneData, setPhoneData] = useState([]);
   const [dayLabels, setDayLabels] = useState([]);
@@ -101,7 +103,7 @@ const ActivityHistoryScreen = ({navigation}) => {
               resizeMode="contain"
             />
           </TouchableOpacity>
-          <Text style={styles.headerTitle}>Activity History</Text>
+          <Text style={styles.headerTitle}>{t('history.activityHistory')}</Text>
           <View style={styles.placeholder} />
         </View>
 
@@ -114,8 +116,8 @@ const ActivityHistoryScreen = ({navigation}) => {
           {/* Case To Device Charging Chart */}
           <View style={styles.chartWrapper}>
             <ChartCardView
-              title="Case To Device Charging"
-              subtitle="Last 10 Days"
+              title={t('history.caseToDeviceCharging')}
+              subtitle={t('history.last10Days')}
               wallOutletColor="rgba(0, 204, 230, 1)" // Blue UIColor(red: 0.0, green: 0.8, blue: 0.9, alpha: 1.0)
               unoCaseColor="transparent" // Clear
               percentageLabels={casePercentageLabels}
@@ -129,7 +131,7 @@ const ActivityHistoryScreen = ({navigation}) => {
           {/* Solar/USB to Case Charging Chart */}
           <View style={styles.chartWrapper}>
             <ChartCardView
-              title="Solar/USB to Case Charging"
+              title={t('history.solarUsbToCaseCharging')}
               subtitle=""
               wallOutletColor="rgba(255, 128, 0, 1)" // Orange UIColor(red: 1.0, green: 0.5, blue: 0.0, alpha: 1.0)
               unoCaseColor="rgba(0, 128, 255, 1)" // Blue UIColor(red: 0.0, green: 0.5, blue: 1.0, alpha: 1.0)

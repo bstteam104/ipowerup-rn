@@ -14,12 +14,14 @@ import {
   Dimensions,
 } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import {useTranslation} from 'react-i18next';
 import {Colors, Constants, BorderRadius, FontSizes} from '../constants/Constants';
 import {safeJsonParse} from '../utils/apiHelper';
 
 const {width, height} = Dimensions.get('window');
 
 const AccountSettingsScreen = ({navigation}) => {
+  const {t} = useTranslation();
   const [firstName, setFirstName] = useState('');
   const [lastName, setLastName] = useState('');
   const [email, setEmail] = useState('');
@@ -57,7 +59,7 @@ const AccountSettingsScreen = ({navigation}) => {
 
   const handleUpdate = async () => {
     if (!firstName || firstName.trim() === '') {
-      showAlert('Error', 'Please enter your first name.');
+      showAlert(t('common.error'), t('validation.enterFirstName'));
       return;
     }
 
@@ -97,7 +99,7 @@ const AccountSettingsScreen = ({navigation}) => {
         userObj.token = await AsyncStorage.getItem('accessToken');
         await AsyncStorage.setItem('loggedInUser', JSON.stringify(userObj));
         
-        showAlert('Success', 'Profile Updated Successfully');
+        showAlert(t('common.success'), t('accountSettings.updated', 'Profile Updated Successfully'));
         navigation.goBack();
       } else {
         // Silently fail, don't show error
@@ -144,7 +146,7 @@ const AccountSettingsScreen = ({navigation}) => {
                 resizeMode="contain"
               />
             </TouchableOpacity>
-            <Text style={styles.headerTitle}>Account Settings</Text>
+            <Text style={styles.headerTitle}>{t('accountSettings.title')}</Text>
             <View style={styles.placeholder} />
           </View>
 
@@ -152,10 +154,10 @@ const AccountSettingsScreen = ({navigation}) => {
           <View style={styles.formContainer}>
             {/* First Name */}
             <View style={styles.inputContainer}>
-              <Text style={styles.label}>First Name</Text>
+              <Text style={styles.label}>{t('accountSettings.firstName')}</Text>
               <TextInput
                 style={styles.input}
-                placeholder="First Name"
+                placeholder={t('accountSettings.firstName')}
                 placeholderTextColor={Colors.grayColor}
                 value={firstName}
                 onChangeText={setFirstName}
@@ -165,10 +167,10 @@ const AccountSettingsScreen = ({navigation}) => {
 
             {/* Last Name */}
             <View style={styles.inputContainer}>
-              <Text style={styles.label}>Last Name</Text>
+              <Text style={styles.label}>{t('accountSettings.lastName')}</Text>
               <TextInput
                 style={styles.input}
-                placeholder="Last Name"
+                placeholder={t('accountSettings.lastName')}
                 placeholderTextColor={Colors.grayColor}
                 value={lastName}
                 onChangeText={setLastName}
@@ -192,10 +194,10 @@ const AccountSettingsScreen = ({navigation}) => {
 
             {/* Alternate Email */}
             <View style={styles.inputContainer}>
-              <Text style={styles.label}>Alternate Email</Text>
+              <Text style={styles.label}>{t('accountSettings.alternateEmail')}</Text>
               <TextInput
                 style={styles.input}
-                placeholder="Alternate Email"
+                placeholder={t('accountSettings.alternateEmail')}
                 placeholderTextColor={Colors.grayColor}
                 value={alternateEmail}
                 onChangeText={setAlternateEmail}
@@ -206,10 +208,10 @@ const AccountSettingsScreen = ({navigation}) => {
 
             {/* Phone */}
             <View style={styles.inputContainer}>
-              <Text style={styles.label}>Phone</Text>
+              <Text style={styles.label}>{t('accountSettings.phoneNumber')}</Text>
               <TextInput
                 style={styles.input}
-                placeholder="Phone"
+                placeholder={t('accountSettings.phoneNumber')}
                 placeholderTextColor={Colors.grayColor}
                 value={phone}
                 onChangeText={setPhone}
@@ -219,10 +221,10 @@ const AccountSettingsScreen = ({navigation}) => {
 
             {/* Emergency Number */}
             <View style={styles.inputContainer}>
-              <Text style={styles.label}>Emergency Number</Text>
+              <Text style={styles.label}>{t('accountSettings.emergencyNumber')}</Text>
               <TextInput
                 style={styles.input}
-                placeholder="Emergency Number"
+                placeholder={t('accountSettings.emergencyNumber')}
                 placeholderTextColor={Colors.grayColor}
                 value={emergencyNumber}
                 onChangeText={setEmergencyNumber}
@@ -251,7 +253,7 @@ const AccountSettingsScreen = ({navigation}) => {
               activeOpacity={0.8}
             >
               <Text style={styles.continueButtonText}>
-                {isLoading ? 'Updating...' : 'Continue'}
+                {isLoading ? t('common.updating') : t('common.continue')}
               </Text>
             </TouchableOpacity>
           </View>

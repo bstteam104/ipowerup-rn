@@ -12,12 +12,14 @@ import {
   Dimensions,
   Alert,
 } from 'react-native';
+import {useTranslation} from 'react-i18next';
 import {Colors, Constants, FontSizes} from '../constants/Constants';
 import {safeJsonParse} from '../utils/apiHelper';
 
 const {width, height} = Dimensions.get('window');
 
 const NotificationsScreen = ({navigation}) => {
+  const {t} = useTranslation();
   const [notifications, setNotifications] = useState([
     {
       id: '1',
@@ -125,7 +127,7 @@ const NotificationsScreen = ({navigation}) => {
               resizeMode="contain"
             />
           </TouchableOpacity>
-          <Text style={styles.headerTitle}>Notifications</Text>
+          <Text style={styles.headerTitle}>{t('notifications.title')}</Text>
           <View style={styles.placeholder} />
         </View>
 

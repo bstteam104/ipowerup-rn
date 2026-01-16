@@ -1,0 +1,292 @@
+{
+  "login": {
+    "title": "Inicia sesión en tu cuenta",
+    "subtitle": "O crea una nueva cuenta de la aplicación. Es la misma que usas para iPowerUp.com.",
+    "emailPlaceholder": "Introduzca su dirección de correo electrónico",
+    "passwordPlaceholder": "Introducir contraseña",
+    "forgotPassword": "¿Has olvidado tu contraseña?",
+    "signIn": "Iniciar sesión",
+    "createAccount": "¿Crear una cuenta?",
+    "connectNewDevice": "Conectar nuevo dispositivo"
+  },
+  "signup": {
+    "title": "Crear una cuenta",
+    "subtitle": "Cree una nueva cuenta de aplicación. Esta es la misma cuenta utilizada para iPowerUp.com",
+    "firstNamePlaceholder": "Ingrese su nombre o apodo",
+    "lastNamePlaceholder": "Ingrese Apellido (Opcional)",
+    "emailPlaceholder": "Introduzca su dirección de correo electrónico",
+    "passwordPlaceholder": "Introducir contraseña",
+    "countryPlaceholder": "País/Región",
+    "createAccount": "Crear una cuenta",
+    "agreeTerms": "Acepto",
+    "agreePrivacy": "Consiento el uso de mi información personal de acuerdo con",
+    "backToSignIn": "Volver a Iniciar sesión",
+    "agreePrivacy": "Doy mi consentimiento para el uso de mi información personal de acuerdo con la Política de privacidad de iPowerUp"
+  },
+  "forgotPassword": {
+    "title": "Has olvidado tu contraseña",
+    "subtitle": "Ingrese su dirección de correo electrónico y le enviaremos un enlace para restablecer su contraseña.",
+    "emailLabel": "Ingrese la dirección de correo electrónico",
+    "resendCode": "Reenviar código",
+    "backToSignIn": "Volver a Iniciar sesión",
+    "continue": "Enviar enlace de restablecimiento",
+    "otpSent": "OTP enviado a su correo electrónico."
+  },
+  "resetPassword": {
+    "title": "Restablecer contraseña",
+    "passwordLabel": "Contraseña",
+    "reenterPassword": "Escriba la contraseña otra vez",
+    "update": "Actualizar",
+    "confirmPassword": "confirmar Contraseña",
+    "backToSignIn": "Volver a Iniciar sesión",
+    "currentPassword": "Contraseña actual",
+    "newPassword": "Nueva contraseña",
+    "passwordRequirements": "Su nueva contraseña debe tener al menos 8 caracteres, contener al menos una letra mayúscula, una letra minúscula, un número y un carácter especial (por ejemplo, @, #, $, %).",
+    "currentPasswordRequired": "Por favor, introduzca su contraseña actual.",
+    "newPasswordRequired": "Por favor, introduzca una nueva contraseña.",
+    "confirmPasswordRequired": "Por favor, confirme su nueva contraseña.",
+    "passwordMismatch": "La nueva contraseña y la confirmación de contraseña no coinciden."
+  },
+  "recreatePassword": {
+    "title": "Restablecer contraseña",
+    "subtitle": "Ingrese su nueva contraseña a continuación",
+    "newPassword": "Nueva contraseña",
+    "confirmPassword": "Confirmar contraseña",
+    "updatePassword": "Actualizar contraseña",
+    "fillBoth": "Por favor, complete ambos campos de contraseña.",
+    "passwordMismatch": "Las contraseñas no coinciden.",
+    "passwordRequirements": "La contraseña debe tener al menos 8 caracteres y contener una mezcla de letras, números y caracteres especiales.",
+    "success": "Contraseña restablecida correctamente"
+  },
+  "splash": {
+    "welcome": "Bienvenido a la aplicación inteligente iPowerUp",
+    "appBenefits": "Beneficios de la aplicación",
+    "realTimePower": "Datos de potencia en tiempo real",
+    "autoAlerts": "Alertas y recordatorios automáticos",
+    "warranty": "Garantía de 2 años*",
+    "realTimeSolar": "Datos de recolección de energía solar en tiempo real",
+    "connectNewDevice": "Conectar nuevo dispositivo",
+    "backToPrevious": "Volver a la pantalla anterior"
+  },
+  "subscription": {
+    "title": "La suscripción a la aplicación debe estar activa.",
+    "pairPhone": "Empareja tu teléfono",
+    "waitingToPair": "Esperando para emparejar con Bluetooth",
+    "step1": "1. Mantente cerca de tu teléfono",
+    "step1Desc": "Mantén tu teléfono cerca de tu funda iPowerUp",
+    "step2": "2. Encienda el Bluetooth del teléfono",
+    "step2Desc": "Habilite Bluetooth y permita el acceso a Bluetooth en su teléfono",
+    "step3": "3. Encienda el Bluetooth de la funda",
+    "step3Desc": "Configure su estuche iPowerUp en Emparejamiento manteniendo presionado el botón de Modo durante 5 segundos.",
+    "scanForPhone": "Escanee su teléfono",
+    "backToPrevious": "Volver a la pantalla anterior"
+  },
+  "notifications": {
+    "title": "Notificaciones",
+    "notAvailable": "Notificación no disponible.",
+    "alert": "Alerta",
+    "phoneBatteryLow": "Batería del teléfono: baja",
+    "phoneBatteryLowDesc": "Nivel de carga aproximado: 20 % Acción: Transferir energía de la batería del estuche a la batería del teléfono",
+    "caseBatteryHigh": "Batería del estuche: alta",
+    "caseBatteryHighDesc": "Nivel de carga aproximado: 80%"
+  },
+  "home": {
+    "greetings": "Saludos",
+    "yourPhone": "Tu teléfono",
+    "yourCase": "Su caso",
+    "phoneBattery": "Batería del teléfono",
+    "batteryLevel": "Nivel de batería",
+    "caseBattery": "Batería de caja",
+    "caseTemperature": "Temperatura de la caja",
+    "temperatureLevel": "Nivel de temperatura",
+    "transferPowerToPhone": "Transferir energía al teléfono",
+    "stopCharging": "Dejar de cargar"
+  },
+  "help": {
+    "title": "Ayuda y soporte",
+    "contact": "Contacta con iPowerUp",
+    "tips": "Consejos de iPowerUp"
+  },
+  "accountSettings": {
+    "title": "Configuraciones de la cuenta",
+    "firstName": "Ingrese el nombre",
+    "lastName": "Ingrese Apellido",
+    "alternateEmail": "Correo electrónico alternativo",
+    "phoneNumber": "Número de teléfono",
+    "emergencyNumber": "Número de emergencia",
+    "update": "Actualizar",
+    "submit": "Entregar",
+    "updated": "Perfil actualizado correctamente"
+  },
+  "temperature": {
+    "title": "Temperatura de la caja",
+    "fahrenheit": "Fahrenheit",
+    "celsius": "Celsius",
+    "updated": "Configuración de temperatura actualizada"
+  },
+  "peaceOfMind": {
+    "title": "Suscripción a la tranquilidad",
+    "subtitle": "Suscríbete y entérate de lo que tu caso sabe",
+    "description": "Obtenga tranquilidad con un estuche y una aplicación que monitorea su estuche y teléfono para que usted no tenga que hacerlo.",
+    "batteryAlerts": "Reciba alertas en niveles de carga de batería del 5%, 20%, 80% y 100%, además de niveles opcionales adicionales.",
+    "bluetoothRange": "Habilite la comunicación entre el estuche y el teléfono incluso cuando el estuche esté separado dentro del alcance de Bluetooth de hasta 33 pies o 10 metros.",
+    "temperatureAlerts": "Recibe alertas de temperatura para evitar que tu funda y teléfono sufran daños por temperaturas extremas. Por encima de 40 °C (104 °F) y por debajo de 0 °C (32 °F).",
+    "history": "Consulte el historial de uso de la batería para comprender las oportunidades de mejorar el rendimiento.",
+    "enhancements": "Disfrute de mejoras en la aplicación durante todo el año que le brindarán tranquilidad continua.",
+    "select": "Seleccionar"
+  },
+  "terms": {
+    "title": "Por favor, revise los siguientes términos y condiciones que rigen el uso de este sitio web. Su uso del sitio constituye su aceptación de estos términos y condiciones. Este sitio web y todos los productos o servicios que se ofrecen en él están dirigidos a adultos, y al realizar cualquier compra o enviar información, usted se declara como adulto. La compra de cualquier producto o servicio de IPOWERUP a través de este sitio está sujeta a términos y condiciones de venta independientes, que pueden consultarse en las páginas correspondientes del producto y del pago. El término \"IPOWERUP\" se refiere a IPOWERUP CORPORATION."
+  },
+  "privacy": {
+    "title": "Por favor, revise los siguientes términos y condiciones que rigen el uso de este sitio web. Su uso del sitio constituye su aceptación de estos términos y condiciones. Este sitio web y todos los productos o servicios que se ofrecen en él están dirigidos a adultos, y al realizar cualquier compra o enviar información, usted se declara como adulto. La compra de cualquier producto o servicio de IPOWERUP a través de este sitio está sujeta a términos y condiciones de venta independientes, que pueden consultarse en las páginas correspondientes del producto y del pago. El término \"IPOWERUP\" se refiere a IPOWERUP CORPORATION."
+  },
+  "saleDisclaimer": {
+    "title": "Bienvenido, 10% de descuento:",
+    "description": "¡Bienvenido! Disfruta de un 10% de descuento, válido solo para nuevos clientes que se suscriban a las comunicaciones por correo electrónico y SMS. Esta oferta no aplica a productos sin anunciar ni artículos de caja abierta, y es válida solo para clientes de EE. UU. No es acumulable con otras ofertas ni aplica a artículos en oferta."
+  },
+  "profile": {
+    "myAccount": "Mi cuenta",
+    "accountSettings": "Configuraciones de la cuenta",
+    "notifications": "Notificaciones",
+    "appSettings": "Configuración de la aplicación",
+    "history": "Historia",
+    "peaceOfMind": "Suscripción a la tranquilidad",
+    "logOut": "Finalizar la sesión",
+    "noCaseConnected": "No hay ningún caso conectado",
+    "caseConnected": "Caso conectado",
+    "searchingForCase": "¿Estás buscando la funda Uno o la funda Duo?",
+    "connectNewDevice": "Conectar nuevo dispositivo",
+    "manageDevice": "Administrar dispositivo"
+  },
+  "appSettings": {
+    "title": "Configuración de la aplicación",
+    "resetPassword": "Restablecer contraseña",
+    "deleteAccount": "Eliminar cuenta",
+    "caseTemperature": "Temperatura de la caja",
+    "bluetooth": "Bluetooth",
+    "subscribeToMessages": "Suscribirse a mensajes",
+    "language": "Idioma",
+    "english": "Inglés",
+    "spanish": "Español",
+    "chooseLanguage": "Elegir idioma",
+    "languageUpdated": "Idioma actualizado correctamente"
+  },
+  "solar": {
+    "title": "Solar",
+    "solarEnergyReceiving": "Recepción de energía solar",
+    "solarCollectionNow": "Colección Solar Ahora",
+    "solarPanels": "Paneles solares #",
+    "milliamps": "mA = miliamperios de corriente*",
+    "milliampNote": "*Un miliamperio es una milésima de un Amperio, una unidad de corriente eléctrica.",
+    "improveSolar": "Mejorar la captación de energía solar",
+    "improveSolarDesc": "Para una captación solar más rápida:",
+    "adjustCase": "Ajustar la dirección y el ángulo de la caja"
+  },
+  "contactUs": {
+    "title": "Contactar iPowerUp",
+    "name": "Nombre",
+    "email": "Correo electrónico",
+    "messagePlaceholder": "Tu mensaje aquí",
+    "submit": "Enviar",
+    "nameRequired": "Por favor, ingrese su nombre.",
+    "emailRequired": "Por favor, ingrese su correo electrónico.",
+    "messageRequired": "Por favor, ingrese su mensaje",
+    "thankYou": "Gracias por contactarnos."
+  },
+  "tips": {
+    "title": "Consejos de iPowerUp",
+    "tip1Question": "¿Cómo maximizar la carga solar?",
+    "tip1Answer": "Coloque su dispositivo a la luz solar directa y asegúrese de que los paneles solares estén limpios y sin obstáculos. La mejor carga ocurre entre las 10 AM y las 4 PM cuando la luz solar es más fuerte.",
+    "tip2Question": "¿Cuál es la temperatura óptima para cargar?",
+    "tip2Answer": "La funda funciona mejor entre 0°C y 45°C. Evite cargar en temperaturas extremas ya que puede afectar la vida útil de la batería y la eficiencia de carga.",
+    "tip3Question": "¿Cuánto tiempo se tarda en cargar completamente la funda?",
+    "tip3Answer": "Usando energía solar, normalmente toma de 4 a 6 horas de luz solar directa para cargar completamente la funda. La carga USB toma aproximadamente de 2 a 3 horas.",
+    "tip4Question": "¿Puedo cargar mi teléfono mientras la funda se está cargando?",
+    "tip4Answer": "¡Sí! La funda admite carga pasante, lo que le permite cargar su teléfono mientras la funda misma se está cargando mediante energía solar o USB.",
+    "tip5Question": "¿Cómo transfiero energía de la funda al teléfono?",
+    "tip5Answer": "Simplemente toque el botón \"Transferir energía al teléfono\" en la pantalla de inicio. Asegúrese de que su teléfono esté conectado a la funda a través del puerto de carga."
+  },
+  "troubleshooting": {
+    "title": "Ayuda",
+    "faq1Question": "Problemas de emparejamiento Bluetooth",
+    "faq1Answer": "Dispositivo no encontrado: Cierre la aplicación iPowerUp. Abra Configuración en su iPhone para asegurarse de que Bluetooth esté activado. Vuelva a abrir la aplicación PowerUp, haga clic en el botón Conectar nuevo dispositivo, haga clic en Permitir cuando se le solicite y haga clic en el nombre de su dispositivo.",
+    "faq2Question": "Carga con el panel solar de la funda",
+    "faq2Answer": "Coloque su funda Uno en un lugar soleado, luego apunte el panel solar en una dirección y ángulo que reciba buena luz solar. Vea la pantalla sobre el panel solar para los niveles de mA para obtener los mejores resultados.",
+    "faq3Question": "Transferir manualmente energía de la funda a mi teléfono",
+    "faq3Answer": "Presione el botón Modo en la parte inferior de la funda dos veces rápidamente.",
+    "faq4Question": "Carga de teléfonos Android",
+    "faq4Answer": "Conecte un cable USB-C de la funda al dispositivo Android. Nota: esta aplicación aún no está disponible para dispositivos Android.",
+    "faq5Question": "Obtener la garantía extendida gratuita",
+    "faq5Answer": "¡Es fácil! Configure su cuenta de la aplicación iPowerUp. Recibirá un correo electrónico confirmando su cuenta y los detalles de la garantía extendida."
+  },
+  "otp": {
+    "title": "Ingrese OTP",
+    "subtitle": "Hemos enviado un código de verificación a",
+    "yourEmail": "su correo electrónico",
+    "resend": "Reenviar OTP",
+    "invalid": "OTP inválido"
+  },
+  "history": {
+    "title": "Historia",
+    "noDeviceConnected": "No hay ningún dispositivo conectado. Conecta un dispositivo para seguir viendo el historial.",
+    "activityHistory": "Historial de actividad",
+    "caseToDeviceCharging": "Carga de la funda al dispositivo",
+    "last10Days": "Últimos 10 días",
+    "solarUsbToCaseCharging": "Carga solar/USB a la funda"
+  },
+  "common": {
+    "home": "Hogar",
+    "solar": "Solar",
+    "help": "Ayuda",
+    "profile": "Perfil",
+    "cancel": "Cancelar",
+    "logout": "Cerrar sesión",
+    "delete": "Borrar",
+    "continue": "Continuar",
+    "back": "Atrás",
+    "update": "Actualizar",
+    "submit": "Entregar",
+    "somethingWentWrong": "Algo salió mal",
+    "information": "Información",
+    "warning": "⚠️ Advertencia",
+    "success": "Éxito",
+    "error": "Error",
+    "updating": "Actualizando...",
+    "close": "Cerrar"
+  },
+  "validation": {
+    "enterFirstName": "Por favor, introduzca su nombre.",
+    "enterEmail": "Por favor, introduzca su dirección de correo electrónico.",
+    "enterPassword": "Por favor, introduzca su contraseña.",
+    "enterCountry": "Por favor ingrese su país.",
+    "validEmail": "Por favor, introduce una dirección de correo electrónico válida.",
+    "invalidPassword": "Contraseña inválida",
+    "passwordRequirements": "La contraseña debe tener al menos 8 caracteres, contener al menos una letra, un número y un carácter especial.",
+    "agreeTerms": "Debe aceptar los Términos y Condiciones y la Política de Privacidad.",
+    "passwordMinLength": "La contraseña debe tener al menos 6 caracteres."
+  },
+  "alerts": {
+    "caseBatteryLow": "La carga de la batería del estuche está por debajo del mínimo. Por favor, cárguela.",
+    "caseBatteryHigh": "La batería del estuche está por encima del máximo. Deje de cargar.",
+    "caseTempLow": "La temperatura de la caja se acerca al punto de apagado por temperatura baja.",
+    "caseTempHigh": "La temperatura de la caja se acerca al punto de apagado por temperatura alta.",
+    "logoutConfirm": "¿Estás seguro que deseas cerrar la sesión?",
+    "deleteAccountConfirm": "¿Estás seguro que deseas eliminar tu cuenta?"
+  },
+  "subscription": {
+    "success": "Suscripción exitosa."
+  },
+  "permissions": {
+    "bluetoothTitle": "¿Permitir que 'iPowerUp' encuentre dispositivos Bluetooth?",
+    "permissionRequired": "Permiso requerido",
+    "bluetoothDescription": "Esta aplicación requiere Bluetooth para conectarse a dispositivos BLE.",
+    "permissionDescription": "Este permiso es necesario para que la aplicación funcione correctamente.",
+    "deviceFound": "dispositivo encontrado",
+    "devicesFound": "dispositivos encontrados",
+    "bluetoothPrivacyInfo": "La información de los dispositivos Bluetooth se puede utilizar para determinar su ubicación y crear un perfil de usted.",
+    "dontAllow": "No permitir",
+    "allow": "Permitir"
+  }
+}
+

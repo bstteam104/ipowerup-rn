@@ -22,6 +22,7 @@ import ContactUsScreen from '../screens/ContactUsScreen';
 import TroubleshootingScreen from '../screens/TroubleshootingScreen';
 import TipsScreen from '../screens/TipsScreen';
 import TemperatureScreen from '../screens/TemperatureScreen';
+import LanguageScreen from '../screens/LanguageScreen';
 import TermsAndConditionsScreen from '../screens/TermsAndConditionsScreen';
 import PrivacyPolicyScreen from '../screens/PrivacyPolicyScreen';
 import TabNavigator from './TabNavigator';
@@ -74,6 +75,7 @@ const AppNavigator = () => {
         <Stack.Screen name="AccountSettings" component={AccountSettingsScreen} />
         <Stack.Screen name="AppSettings" component={AppSettingsScreen} />
         <Stack.Screen name="Temperature" component={TemperatureScreen} />
+        <Stack.Screen name="Language" component={LanguageScreen} />
         <Stack.Screen name="ResetPassword" component={ResetPasswordScreen} />
         
         {/* History & Subscription */}

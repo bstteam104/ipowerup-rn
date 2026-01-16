@@ -1,4 +1,5 @@
 import React, {useState} from 'react';
+import {useTranslation} from 'react-i18next';
 import {
   View,
   Text,
@@ -15,6 +16,7 @@ import {
 const {width, height} = Dimensions.get('window');
 
 const SolarScreen = ({navigation}) => {
+  const {t, i18n} = useTranslation();
   const [solarMilliAmps, setSolarMilliAmps] = useState(0);
   const [selectedPanel, setSelectedPanel] = useState(1); // 1 or 2, matches iOS radio buttons
 
@@ -37,8 +39,8 @@ const SolarScreen = ({navigation}) => {
         >
           {/* Header */}
           <View style={styles.header}>
-            <Text style={styles.headerTitle}>Solar Energy Receiving</Text>
-            <Text style={styles.headerSubtitle}>Solar Collection Now</Text>
+            <Text style={styles.headerTitle}>{t('solar.solarEnergyReceiving')}</Text>
+            <Text style={styles.headerSubtitle}>{t('solar.solarCollectionNow')}</Text>
           </View>
 
           {/* Gauge Card */}
@@ -48,9 +50,11 @@ const SolarScreen = ({navigation}) => {
             <View style={styles.gaugeImageShadowBox}>
               <Image
                 source={
-                  selectedPanel === 1
-                    ? require('../../assets/solar/solarImage1.png')
-                    : require('../../assets/solar/solarImage2.png')
+                  i18n.language === 'es'
+                    ? require('../../assets/solar/Speed_spanish.png')
+                    : selectedPanel === 1
+                      ? require('../../assets/solar/solarImage1.png')
+                      : require('../../assets/solar/solarImage2.png')
                 }
                 style={styles.gaugeImage}
                 resizeMode="contain"
@@ -59,7 +63,7 @@ const SolarScreen = ({navigation}) => {
 
             {/* Solar Panels Label */}
             <View style={styles.panelsRow}>
-              <Text style={styles.panelsLabel}>Solar Panels #</Text>
+              <Text style={styles.panelsLabel}>{t('solar.solarPanels')}</Text>
 
               {/* Panel 1 radio */}
               <TouchableOpacity
@@ -98,11 +102,11 @@ const SolarScreen = ({navigation}) => {
 
             {/* mA Value */}
             <Text style={styles.maValue}>{solarMilliAmps} mA</Text>
-            <Text style={styles.maSubtext}>mA = Milliamps of Current*</Text>
+            <Text style={styles.maSubtext}>{t('solar.milliamps')}</Text>
           </View>
 
           {/* Improve Solar Collection subtitle (outside card, like design) */}
-          <Text style={styles.sectionSubtitle}>Improve Solar Collection</Text>
+          <Text style={styles.sectionSubtitle}>{t('solar.improveSolar')}</Text>
 
           {/* Improve Solar Collection image in white card container */}
           <View style={styles.imageCard}>
@@ -114,11 +118,11 @@ const SolarScreen = ({navigation}) => {
           </View>
 
           {/* Tips & note below card (outside), inline like PDF */}
-          <Text style={styles.tipTitle}>For faster solar collection:</Text>
-          <Text style={styles.tipText}>Adjust case direction and angle</Text>
+          <Text style={styles.tipTitle}>{t('solar.improveSolarDesc')}</Text>
+          <Text style={styles.tipText}>{t('solar.adjustCase')}</Text>
 
           <Text style={styles.noteText}>
-            *A Milliamp is one thousandth of an Ampere, a unit of electrical current.
+            {t('solar.milliampNote', '*A Milliamp is one thousandth of an Ampere, a unit of electrical current.')}
           </Text>
 
         </ScrollView>

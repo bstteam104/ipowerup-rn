@@ -14,29 +14,25 @@ import {
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import {useTranslation} from 'react-i18next';
 import {Colors, Constants, BorderRadius, FontSizes} from '../constants/Constants';
-import {safeJsonParse} from '../utils/apiHelper';
+import {changeLanguage, getCurrentLanguage} from '../i18n';
 
 const {width, height} = Dimensions.get('window');
 
-const TemperatureScreen = ({navigation}) => {
-  const {t} = useTranslation();
-  const [tempValue, setTempValue] = useState('fahrenheit');
+const LanguageScreen = ({navigation}) => {
+  const {t, i18n} = useTranslation();
+  const [selectedLanguage, setSelectedLanguage] = useState('en');
   const [isLoading, setIsLoading] = useState(false);
 
   useEffect(() => {
-    loadTemperatureSetting();
+    loadLanguageSetting();
   }, []);
 
-  const loadTemperatureSetting = async () => {
+  const loadLanguageSetting = async () => {
     try {
-      const userData = await AsyncStorage.getItem('loggedInUser');
-      if (userData) {
-        const user = JSON.parse(userData);
-        const savedTemp = user.tempreture || 'fahrenheit';
-        setTempValue(savedTemp === 'celsius' ? 'celsius' : 'fahrenheit');
-      }
+      const currentLang = getCurrentLanguage();
+      setSelectedLanguage(currentLang || 'en');
     } catch (error) {
-      console.error('Error loading temperature setting:', error);
+      console.error('Error loading language setting:', error);
     }
   };
 
@@ -44,63 +40,28 @@ const TemperatureScreen = ({navigation}) => {
     Alert.alert(title, message, [{text: 'OK', style: 'default'}]);
   };
 
-  const selectButton = (value) => {
-    setTempValue(value);
+  const selectLanguage = (languageCode) => {
+    setSelectedLanguage(languageCode);
   };
 
   const handleContinue = async () => {
     setIsLoading(true);
 
     try {
-      // Since backend is not available, save directly to AsyncStorage
-      const userData = await AsyncStorage.getItem('loggedInUser');
-      let userObj = {};
+      // Change language immediately - this will update all screens
+      await changeLanguage(selectedLanguage);
       
-      if (userData) {
-        userObj = JSON.parse(userData);
-      }
+      console.log('✅ Language setting saved:', selectedLanguage);
       
-      // Update temperature setting in user object
-      userObj.tempreture = tempValue;
-      
-      // Save updated user object to AsyncStorage
-      await AsyncStorage.setItem('loggedInUser', JSON.stringify(userObj));
-      
-      console.log('✅ Temperature setting saved to AsyncStorage:', tempValue);
-      
-      // Try API call (but don't fail if it doesn't work)
-      try {
-        const params = {
-          type: tempValue,
-        };
-
-        const response = await fetch(`${Constants.baseURLDev}/update-temperature`, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify(params),
-        });
-
-        const data = await safeJsonParse(response);
-
-        // If API succeeds, update with server response
-        if (data && !data.error && data.data) {
-          const serverUserObj = data.data[0];
-          serverUserObj.token = await AsyncStorage.getItem('accessToken');
-          await AsyncStorage.setItem('loggedInUser', JSON.stringify(serverUserObj));
-          console.log('✅ Temperature updated on server as well');
-        }
-      } catch (apiError) {
-        // API failed, but we already saved to AsyncStorage, so it's okay
-        console.log('⚠️ API call failed, but setting saved locally:', apiError.message);
-      }
-      
-      showAlert(t('common.success'), t('temperature.updated', 'Temperature setting updated'));
-      navigation.goBack();
+      // Show success message in the new language
+      // Wait a bit for i18n to update
+      setTimeout(() => {
+        showAlert(t('common.success'), t('appSettings.languageUpdated'));
+        navigation.goBack();
+      }, 100);
     } catch (error) {
-      console.error('Error updating temperature:', error);
-      showAlert('Error', 'Failed to save temperature setting');
+      console.error('Error updating language:', error);
+      showAlert(t('common.error'), t('common.somethingWentWrong'));
     } finally {
       setIsLoading(false);
     }
@@ -134,44 +95,44 @@ const TemperatureScreen = ({navigation}) => {
               resizeMode="contain"
             />
           </TouchableOpacity>
-          <Text style={styles.headerTitle}>{t('temperature.title')}</Text>
+          <Text style={styles.headerTitle}>{t('appSettings.language')}</Text>
           <View style={styles.placeholder} />
         </View>
 
-        {/* Temperature Options */}
+        {/* Language Options */}
         <View style={styles.optionsContainer}>
           <TouchableOpacity
             style={styles.optionItem}
-            onPress={() => selectButton('fahrenheit')}
+            onPress={() => selectLanguage('en')}
             activeOpacity={0.7}
           >
             <Image
               source={
-                tempValue === 'fahrenheit'
+                selectedLanguage === 'en'
                   ? require('../../assets/icons/checkbox-checked.png')
                   : require('../../assets/icons/checkbox-unchecked.png')
               }
               style={styles.checkIcon}
               resizeMode="contain"
             />
-            <Text style={styles.optionText}>{t('temperature.fahrenheit')}</Text>
+            <Text style={styles.optionText}>{t('appSettings.english')}</Text>
           </TouchableOpacity>
 
           <TouchableOpacity
             style={styles.optionItem}
-            onPress={() => selectButton('celsius')}
+            onPress={() => selectLanguage('es')}
             activeOpacity={0.7}
           >
             <Image
               source={
-                tempValue === 'celsius'
+                selectedLanguage === 'es'
                   ? require('../../assets/icons/checkbox-checked.png')
                   : require('../../assets/icons/checkbox-unchecked.png')
               }
               style={styles.checkIcon}
               resizeMode="contain"
             />
-            <Text style={styles.optionText}>{t('temperature.celsius')}</Text>
+            <Text style={styles.optionText}>{t('appSettings.spanish')}</Text>
           </TouchableOpacity>
         </View>
 
@@ -183,7 +144,7 @@ const TemperatureScreen = ({navigation}) => {
           activeOpacity={0.8}
         >
           <Text style={styles.continueButtonText}>
-            {isLoading ? t('common.updating') : t('common.continue')}
+            {isLoading ? t('common.updating', 'Updating...') : t('common.continue')}
           </Text>
         </TouchableOpacity>
       </ScrollView>
@@ -279,13 +240,5 @@ const styles = StyleSheet.create({
   },
 });
 
-export default TemperatureScreen;
-
-
-
-
-
-
-
-
+export default LanguageScreen;
 

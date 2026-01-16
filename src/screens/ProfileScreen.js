@@ -14,6 +14,7 @@ import {
 } from 'react-native';
 import ToggleSwitch from 'toggle-switch-react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import {useTranslation} from 'react-i18next';
 import {Colors} from '../constants/Constants';
 import {BLE_CONSTANTS} from '../constants/BLEConstants';
 import {useIsFocused} from '@react-navigation/native';
@@ -27,6 +28,7 @@ const MAX_DEBUG_LOGS = 50; // Keep last 50 connection attempts
 const {width, height} = Dimensions.get('window');
 
 const ProfileScreen = ({navigation}) => {
+  const {t} = useTranslation();
   const [isNotificationEnabled, setIsNotificationEnabled] = useState(true);
   const [isCaseConnected, setIsCaseConnected] = useState(false);
   const [connectedDeviceName, setConnectedDeviceName] = useState(null);
@@ -373,12 +375,12 @@ const ProfileScreen = ({navigation}) => {
 
   const handleLogout = () => {
     Alert.alert(
-      'Logout',
-      'Are you sure you want to log out?',
+      t('common.logout'),
+      t('alerts.logoutConfirm'),
       [
-        {text: 'Cancel', style: 'cancel'},
+        {text: t('common.cancel'), style: 'cancel'},
         {
-          text: 'Logout',
+          text: t('common.logout'),
           style: 'destructive',
           onPress: async () => {
             await AsyncStorage.clear();
@@ -609,20 +611,20 @@ const ProfileScreen = ({navigation}) => {
         >
           {/* Header */}
           <View style={styles.header}>
-            <Text style={styles.headerTitle}>My Account</Text>
+            <Text style={styles.headerTitle}>{t('profile.myAccount')}</Text>
           </View>
 
           {/* Menu Items */}
           <View style={styles.menuContainer}>
             <MenuItem
               icon={require('../../assets/icons/setting-account.png')}
-              title="Account Settings"
+              title={t('profile.accountSettings')}
               onPress={() => navigation.navigate('AccountSettings')}
             />
             
             <MenuItem
               icon={require('../../assets/icons/bell-notification.png')}
-              title="Notifications"
+              title={t('profile.notifications')}
               onPress={() => {}}
               showArrow={false}
               rightComponent={
@@ -642,24 +644,24 @@ const ProfileScreen = ({navigation}) => {
             
             <MenuItem
               icon={require('../../assets/icons/setting-account.png')}
-              title="App Settings"
+              title={t('profile.appSettings')}
               onPress={() => navigation.navigate('AppSettings')}
             />
             
             <MenuItem
               icon={require('../../assets/icons/file-history.png')}
-              title="History"
+              title={t('profile.history')}
               onPress={() => navigation.navigate('ActivityHistory')}
             />
             
             <MenuItem
               icon={require('../../assets/icons/philosophy-peace.png')}
-              title="Peace of Mind Subscription"
+              title={t('profile.peaceOfMind')}
               onPress={() => navigation.navigate('Subscription')}
             />
             
             <MenuItem
-              title="Log Out"
+              title={t('profile.logOut')}
               onPress={handleLogout}
               showIcon={false}
               rightIcon={require('../../assets/icons/logout-icon.png')}
@@ -669,14 +671,14 @@ const ProfileScreen = ({navigation}) => {
           {/* Device Connection Section */}
           <View style={styles.deviceSection}>
             <Text style={styles.deviceTitle}>
-              {isCaseConnected ? 'Case Connected' : 'No Case Connected'}
+              {isCaseConnected ? t('profile.caseConnected', 'Case Connected') : t('profile.noCaseConnected')}
             </Text>
             <Text style={styles.deviceSubtitle}>
               {isCaseConnected
                 ? connectedDeviceName 
                   ? `Your ${connectedDeviceName} case is connected.`
                   : 'Your iPowerUp Uno case is connected.'
-                : 'Searching for the Uno case, or Duo case?'}
+                : t('profile.searchingForCase')}
             </Text>
             
             <TouchableOpacity
@@ -691,7 +693,7 @@ const ProfileScreen = ({navigation}) => {
                   const isProperlyConnected = (BLEManager && BLEManager.isConnected) && 
                                             deviceInfo && 
                                             isCaseConnected;
-                  return isProperlyConnected ? 'Manage Device' : 'Connect New Device';
+                  return isProperlyConnected ? t('profile.manageDevice') : t('profile.connectNewDevice');
                 })()}
               </Text>
             </TouchableOpacity>

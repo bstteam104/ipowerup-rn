@@ -11,15 +11,17 @@ import {
   Platform,
   Dimensions,
 } from 'react-native';
+import {useTranslation} from 'react-i18next';
 import {Colors, BorderRadius, FontSizes} from '../constants/Constants';
 
 const {width, height} = Dimensions.get('window');
 
 const SubscriptionScreen = ({navigation}) => {
+  const {t} = useTranslation();
   const handleSelect = () => {
-    Alert.alert('Success', 'Subscription Successful.', [
+    Alert.alert(t('common.success'), t('subscription.success', 'Subscription Successful.'), [
       {
-        text: 'OK',
+        text: t('common.ok', 'OK'),
         onPress: () => {
           // Navigate back after 0.8 seconds
           setTimeout(() => {
@@ -58,7 +60,7 @@ const SubscriptionScreen = ({navigation}) => {
               resizeMode="contain"
             />
           </TouchableOpacity>
-          <Text style={styles.headerTitle}>Peace of Mind Subscription</Text>
+          <Text style={styles.headerTitle}>{t('peaceOfMind.title')}</Text>
           <View style={styles.placeholder} />
         </View>
 
@@ -66,31 +68,31 @@ const SubscriptionScreen = ({navigation}) => {
         <View style={styles.content}>
           {/* White Card with Content */}
           <View style={styles.cardContainer}>
-            <Text style={styles.cardTitle}>Subscribe and know what your case knows</Text>
+            <Text style={styles.cardTitle}>{t('peaceOfMind.subtitle')}</Text>
             
             <View style={styles.textContainer}>
               <Text style={styles.paragraph}>
-                Get peace of mind from a case and app that monitors your case and phone so you don't need to.
+                {t('peaceOfMind.description')}
               </Text>
               
               <Text style={styles.paragraph}>
-                Get alerts at 5%, 20%, 80%, and 100% battery power levels, plus additional optional levels.
+                {t('peaceOfMind.batteryAlerts')}
               </Text>
               
               <Text style={styles.paragraph}>
-                Enable case-to-phone communication even when the case is detached within Bluetooth range of up to 33 feet or 10 meters.
+                {t('peaceOfMind.bluetoothRange')}
               </Text>
               
               <Text style={styles.paragraph}>
-                Get case temperature alerts to prevent your case and phone from extreme temperature damage. Above 104° F or 40° C and below 32° F or 0° C.
+                {t('peaceOfMind.temperatureAlerts')}
               </Text>
               
               <Text style={styles.paragraph}>
-                Check your battery usage history to understand opportunities for enhanced performance.
+                {t('peaceOfMind.history')}
               </Text>
               
               <Text style={styles.paragraph}>
-                Enjoy app enhancements throughout the year that provide continuous peace-of-mind improvements.
+                {t('peaceOfMind.enhancements')}
               </Text>
             </View>
           </View>
@@ -101,7 +103,7 @@ const SubscriptionScreen = ({navigation}) => {
             onPress={handleSelect}
             activeOpacity={0.8}
           >
-            <Text style={styles.selectButtonText}>Select</Text>
+            <Text style={styles.selectButtonText}>{t('peaceOfMind.select')}</Text>
           </TouchableOpacity>
         </View>
       </ScrollView>

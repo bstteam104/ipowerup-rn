@@ -14,12 +14,14 @@ import {
   Dimensions,
 } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import {useTranslation} from 'react-i18next';
 import {Colors, Constants, BorderRadius, FontSizes} from '../constants/Constants';
 import {safeJsonParse} from '../utils/apiHelper';
 
 const {width, height} = Dimensions.get('window');
 
 const RecreatePasswordScreen = ({navigation, route}) => {
+  const {t} = useTranslation();
   const email = route?.params?.email || '';
   const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
@@ -38,17 +40,17 @@ const RecreatePasswordScreen = ({navigation, route}) => {
 
   const handleUpdate = async () => {
     if (!newPassword || newPassword.trim() === '' || !confirmPassword || confirmPassword.trim() === '') {
-      showAlert('Error', 'Please fill in both password fields.');
+      showAlert(t('common.error'), t('recreatePassword.fillBoth', 'Please fill in both password fields.'));
       return;
     }
 
     if (newPassword !== confirmPassword) {
-      showAlert('Error', 'Passwords do not match.');
+      showAlert(t('common.error'), t('recreatePassword.passwordMismatch', 'Passwords do not match.'));
       return;
     }
 
     if (!isValidPassword(newPassword)) {
-      showAlert('Error', 'Password must be at least 8 characters long and contain a mix of letters, numbers, and special characters.');
+      showAlert(t('common.error'), t('recreatePassword.passwordRequirements', 'Password must be at least 8 characters long and contain a mix of letters, numbers, and special characters.'));
       return;
     }
 
@@ -78,7 +80,7 @@ const RecreatePasswordScreen = ({navigation, route}) => {
       }
 
       if (data && data.success) {
-        showAlert('Success', 'Password Reset Successfully');
+        showAlert(t('common.success'), t('recreatePassword.success', 'Password Reset Successfully'));
         // Navigate to Login and reset stack setRootController
         navigation.reset({
           index: 0,
@@ -115,13 +117,13 @@ const RecreatePasswordScreen = ({navigation, route}) => {
               onPress={() => navigation.replace('Login')}
               style={styles.backSignInContainer}
             >
-              <Text style={styles.backSignInText}>Back to Sign In</Text>
+              <Text style={styles.backSignInText}>{t('forgotPassword.backToSignIn')}</Text>
             </TouchableOpacity>
 
             {/* Title */}
-            <Text style={styles.title}>Reset Password</Text>
+            <Text style={styles.title}>{t('recreatePassword.title')}</Text>
             <Text style={styles.subtitle}>
-              Enter your new password below
+              {t('recreatePassword.subtitle', 'Enter your new password below')}
             </Text>
 
             {/* New Password Field CustomPaswordTextField */}
@@ -134,7 +136,7 @@ const RecreatePasswordScreen = ({navigation, route}) => {
                 />
                 <TextInput
                   style={styles.input}
-                  placeholder="New Password"
+                  placeholder={t('recreatePassword.newPassword')}
                   placeholderTextColor={Colors.grayColor}
                   value={newPassword}
                   onChangeText={setNewPassword}
@@ -164,7 +166,7 @@ const RecreatePasswordScreen = ({navigation, route}) => {
                 />
                 <TextInput
                   style={styles.input}
-                  placeholder="Confirm Password"
+                  placeholder={t('recreatePassword.confirmPassword')}
                   placeholderTextColor={Colors.grayColor}
                   value={confirmPassword}
                   onChangeText={setConfirmPassword}
@@ -192,7 +194,7 @@ const RecreatePasswordScreen = ({navigation, route}) => {
               activeOpacity={0.8}
             >
               <Text style={styles.updateButtonText}>
-                {isLoading ? 'Updating...' : 'Update Password'}
+                {isLoading ? t('common.updating') : t('recreatePassword.updatePassword', 'Update Password')}
               </Text>
             </TouchableOpacity>
           </View>

@@ -12,12 +12,14 @@ import {
   Dimensions,
 } from 'react-native';
 import PinInput from '../components/PinInput';
+import {useTranslation} from 'react-i18next';
 import {Colors, Constants, BorderRadius, FontSizes} from '../constants/Constants';
 import {safeJsonParse} from '../utils/apiHelper';
 
 const {width, height} = Dimensions.get('window');
 
 const OtpScreen = ({navigation, route}) => {
+  const {t} = useTranslation();
   const emailText = route?.params?.email || '';
   const [pin, setPin] = useState('');
   const [isLoading, setIsLoading] = useState(false);
@@ -35,12 +37,12 @@ const OtpScreen = ({navigation, route}) => {
   };
 
   const handleResendOtp = () => {
-    showAlert('Alert', 'OTP sent to your email.');
+    showAlert(t('common.alert'), t('forgotPassword.otpSent', 'OTP sent to your email.'));
   };
 
   const handleContinue = async () => {
     if (pin.length !== 4) {
-      showAlert('Error', 'Invalid OTP');
+      showAlert(t('common.error'), t('otp.invalid', 'Invalid OTP'));
       return;
     }
 
@@ -101,14 +103,15 @@ const OtpScreen = ({navigation, route}) => {
               onPress={() => navigation.replace('Login')}
               style={styles.backSignInContainer}
             >
-              <Text style={styles.backSignInText}>Back to Sign In</Text>
+              <Text style={styles.backSignInText}>{t('forgotPassword.backToSignIn')}</Text>
             </TouchableOpacity>
 
             {/* Title */}
-            <Text style={styles.title}>Enter OTP</Text>
+            <Text style={styles.title}>{t('otp.title')}</Text>
             <Text style={styles.subtitle}>
-              We've sent a verification code to{'\n'}
-              {emailText || 'your email'}
+              {t('otp.subtitle')}
+              {'\n'}
+              {emailText || t('otp.yourEmail', 'your email')}
             </Text>
 
             {/* PIN Input SVPinView */}
@@ -125,7 +128,7 @@ const OtpScreen = ({navigation, route}) => {
               onPress={handleResendOtp}
               style={styles.resendContainer}
             >
-              <Text style={styles.resendText}>Resend OTP</Text>
+              <Text style={styles.resendText}>{t('otp.resend')}</Text>
             </TouchableOpacity>
 
             {/* Continue Button */}
@@ -136,7 +139,7 @@ const OtpScreen = ({navigation, route}) => {
               activeOpacity={0.8}
             >
               <Text style={styles.continueButtonText}>
-                {isLoading ? 'Verifying...' : 'Continue'}
+                {isLoading ? t('common.updating') : t('common.continue')}
               </Text>
             </TouchableOpacity>
           </View>

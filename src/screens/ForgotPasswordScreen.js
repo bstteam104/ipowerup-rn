@@ -13,12 +13,14 @@ import {
   Platform,
   Dimensions,
 } from 'react-native';
+import {useTranslation} from 'react-i18next';
 import {Colors, Constants, BorderRadius, FontSizes} from '../constants/Constants';
 import {safeJsonParse} from '../utils/apiHelper';
 
 const {width, height} = Dimensions.get('window');
 
 const ForgotPasswordScreen = ({navigation}) => {
+  const {t} = useTranslation();
   const [email, setEmail] = useState('');
   const [isLoading, setIsLoading] = useState(false);
 
@@ -33,12 +35,12 @@ const ForgotPasswordScreen = ({navigation}) => {
 
   const handleSendCode = async () => {
     if (!email || email.trim() === '') {
-      showAlert('Error', 'Please enter your email address.');
+      showAlert(t('common.error'), t('validation.enterEmail'));
       return;
     }
 
     if (!isValidEmail(email)) {
-      showAlert('Error', 'Please enter a valid email address.');
+      showAlert(t('common.error'), t('validation.validEmail'));
       return;
     }
 
@@ -66,7 +68,7 @@ const ForgotPasswordScreen = ({navigation}) => {
       }
 
       if (data && data.success) {
-        showAlert('Success', 'OTP sent to your email.');
+        showAlert(t('common.success'), t('forgotPassword.otpSent', 'OTP sent to your email.'));
         // Navigate to OtpScreen with email
         navigation.navigate('Otp', {email: email});
       } else {
@@ -123,11 +125,11 @@ const ForgotPasswordScreen = ({navigation}) => {
           />
 
           {/* Title */}
-          <Text style={styles.title}>Forgot Password</Text>
+          <Text style={styles.title}>{t('forgotPassword.title')}</Text>
 
           {/* Subtitle */}
           <Text style={styles.subtitle}>
-            Enter your email address and we'll send{'\n'}you a link to reset your password.
+            {t('forgotPassword.subtitle')}
           </Text>
 
           {/* Form Container */}
@@ -142,7 +144,7 @@ const ForgotPasswordScreen = ({navigation}) => {
                 />
                 <TextInput
                   style={styles.input}
-                  placeholder="Enter Email Address"
+                  placeholder={t('forgotPassword.emailLabel')}
                   placeholderTextColor={Colors.grayColor}
                   value={email}
                   onChangeText={setEmail}
@@ -161,7 +163,7 @@ const ForgotPasswordScreen = ({navigation}) => {
               activeOpacity={0.8}
             >
               <Text style={styles.sendButtonText}>
-                {isLoading ? 'Sending...' : 'Send Reset Link'}
+                {isLoading ? t('common.updating') : t('forgotPassword.continue')}
               </Text>
             </TouchableOpacity>
 
@@ -170,7 +172,7 @@ const ForgotPasswordScreen = ({navigation}) => {
               onPress={() => navigation.goBack()}
               style={styles.backSignInContainer}
             >
-              <Text style={styles.backSignInText}>Back to Sign In</Text>
+              <Text style={styles.backSignInText}>{t('forgotPassword.backToSignIn')}</Text>
             </TouchableOpacity>
           </View>
         </ScrollView>

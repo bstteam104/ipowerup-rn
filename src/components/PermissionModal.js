@@ -11,6 +11,7 @@ import {
   Animated,
   ScrollView,
 } from 'react-native';
+import {useTranslation} from 'react-i18next';
 
 const {width, height} = Dimensions.get('window');
 
@@ -28,6 +29,7 @@ const PermissionModal = ({
   connectionError = null, // Error message
   protocolInfo = null, // Protocol details for debugging
 }) => {
+  const {t} = useTranslation();
   const [pulseAnim] = useState(new Animated.Value(1));
   const [iPowerUpDevice, setIPowerUpDevice] = useState(null);
   const [otherDevices, setOtherDevices] = useState([]);
@@ -111,16 +113,16 @@ const PermissionModal = ({
 
   const getTitle = () => {
     if (permissionType === 'bluetooth') {
-      return "Allow 'iPowerUp' to find Bluetooth devices?";
+      return t('permissions.bluetoothTitle');
     }
-    return "Permission Required";
+    return t('permissions.permissionRequired');
   };
 
   const getDescription = () => {
     if (permissionType === 'bluetooth') {
-      return "This app requires Bluetooth to connect to BLE devices.";
+      return t('permissions.bluetoothDescription');
     }
-    return 'This permission is required for the app to function properly.';
+    return t('permissions.permissionDescription');
   };
 
 
@@ -233,13 +235,13 @@ const PermissionModal = ({
 
             {/* Device Count - Real-time */}
             <Text style={styles.deviceCountText}>
-              {displayCount} {displayCount === 1 ? 'device' : 'devices'} found
+              {displayCount} {displayCount === 1 ? t('permissions.deviceFound') : t('permissions.devicesFound')}
             </Text>
 
 
             {/* Additional Info */}
             <Text style={styles.infoText}>
-              Information from Bluetooth devices can be used to determine your location and create a profile of you.
+              {t('permissions.bluetoothPrivacyInfo')}
             </Text>
           </View>
 
@@ -251,7 +253,7 @@ const PermissionModal = ({
                 onPress={onDontAllow}
                 activeOpacity={0.7}
               >
-                <Text style={styles.dontAllowText}>Don't Allow</Text>
+                <Text style={styles.dontAllowText}>{t('permissions.dontAllow')}</Text>
               </TouchableOpacity>
 
               <TouchableOpacity
@@ -259,7 +261,7 @@ const PermissionModal = ({
                 onPress={onAllow}
                 activeOpacity={0.7}
               >
-                <Text style={styles.allowText}>Allow</Text>
+                <Text style={styles.allowText}>{t('permissions.allow')}</Text>
               </TouchableOpacity>
             </View>
           )}
@@ -271,7 +273,7 @@ const PermissionModal = ({
               onPress={onDontAllow}
               activeOpacity={0.7}
             >
-              <Text style={styles.closeButtonText}>Close</Text>
+              <Text style={styles.closeButtonText}>{t('common.close', 'Close')}</Text>
             </TouchableOpacity>
           )}
         </View>

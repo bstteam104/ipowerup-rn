@@ -13,12 +13,14 @@ import {
   Platform,
   Dimensions,
 } from 'react-native';
+import {useTranslation} from 'react-i18next';
 import {Colors, Constants, BorderRadius, FontSizes} from '../constants/Constants';
 import {safeJsonParse} from '../utils/apiHelper';
 
 const {width, height} = Dimensions.get('window');
 
 const ResetPasswordScreen = ({navigation}) => {
+  const {t} = useTranslation();
   const [currentPassword, setCurrentPassword] = useState('');
   const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
@@ -38,27 +40,27 @@ const ResetPasswordScreen = ({navigation}) => {
 
   const handleSubmit = async () => {
     if (!currentPassword || currentPassword.trim() === '') {
-      showAlert('Error', 'Please enter your current password.');
+      showAlert(t('common.error'), t('resetPassword.currentPasswordRequired', 'Please enter your current password.'));
       return;
     }
 
     if (!newPassword || newPassword.trim() === '') {
-      showAlert('Error', 'Please enter a new password.');
+      showAlert(t('common.error'), t('resetPassword.newPasswordRequired', 'Please enter a new password.'));
       return;
     }
 
     if (!confirmPassword || confirmPassword.trim() === '') {
-      showAlert('Error', 'Please confirm your new password.');
+      showAlert(t('common.error'), t('resetPassword.confirmPasswordRequired', 'Please confirm your new password.'));
       return;
     }
 
     if (newPassword !== confirmPassword) {
-      showAlert('Error', 'New password and confirm password do not match.');
+      showAlert(t('common.error'), t('resetPassword.passwordMismatch', 'New password and confirm password do not match.'));
       return;
     }
 
     if (!isValidPassword(newPassword)) {
-      showAlert('Error', 'Password must be at least 8 characters long, contain at least one letter, one number, and one special character.');
+      showAlert(t('common.error'), t('resetPassword.passwordRequirements'));
       return;
     }
 
@@ -134,7 +136,7 @@ const ResetPasswordScreen = ({navigation}) => {
                 resizeMode="contain"
               />
             </TouchableOpacity>
-            <Text style={styles.headerTitle}>Reset Password</Text>
+            <Text style={styles.headerTitle}>{t('resetPassword.title')}</Text>
             <View style={styles.placeholder} />
           </View>
 
@@ -150,7 +152,7 @@ const ResetPasswordScreen = ({navigation}) => {
                 />
                 <TextInput
                   style={styles.input}
-                  placeholder="Current Password"
+                  placeholder={t('resetPassword.currentPassword')}
                   placeholderTextColor={Colors.black} //  placeholderColor: black
                   value={currentPassword}
                   onChangeText={setCurrentPassword}
@@ -184,7 +186,7 @@ const ResetPasswordScreen = ({navigation}) => {
                 />
                 <TextInput
                   style={styles.input}
-                  placeholder="New Password"
+                  placeholder={t('resetPassword.newPassword')}
                   placeholderTextColor={Colors.black} //  placeholderColor: black
                   value={newPassword}
                   onChangeText={setNewPassword}
@@ -218,7 +220,7 @@ const ResetPasswordScreen = ({navigation}) => {
                 />
                 <TextInput
                   style={styles.input}
-                  placeholder="Confirm Password"
+                  placeholder={t('resetPassword.confirmPassword')}
                   placeholderTextColor={Colors.black} //  placeholderColor: black
                   value={confirmPassword}
                   onChangeText={setConfirmPassword}
@@ -244,7 +246,7 @@ const ResetPasswordScreen = ({navigation}) => {
 
             {/* Password Requirements Text */}
             <Text style={styles.requirementsText}>
-              Your new password must be at least 8 characters long, contain at least one uppercase letter, one lowercase letter, one number, and one special character (e.g., @, #, $, %).
+              {t('resetPassword.passwordRequirements')}
             </Text>
 
             {/* Submit Button - Yellow,/PDF */}
@@ -255,7 +257,7 @@ const ResetPasswordScreen = ({navigation}) => {
               activeOpacity={0.8}
             >
               <Text style={styles.submitButtonText}>
-                {isLoading ? 'Submitting...' : 'Submit'}
+                {isLoading ? t('common.updating') : t('accountSettings.update')}
               </Text>
             </TouchableOpacity>
           </View>

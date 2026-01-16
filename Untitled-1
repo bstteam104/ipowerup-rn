@@ -1,7 +1,6 @@
 cd /home/ankush/ipowerup/ipowerup-rn/android
-
-# 1) Purane build artifacts clean (old APKs, outputs delete ho jayenge)
 ./gradlew clean
+./gradlew assembleRelease
 
-# 2) Naya release APK build
+cd /home/ankush/ipowerup/ipowerup-rn/android
 ./gradlew assembleRelease

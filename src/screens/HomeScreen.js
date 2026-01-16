@@ -17,6 +17,7 @@ import {
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import DeviceInfo from 'react-native-device-info';
 import {useIsFocused} from '@react-navigation/native';
+import {useTranslation} from 'react-i18next';
 // Use Native Kotlin BLE Manager (exact iOS match)
 import BLEManager from '../services/BLEManagerNative';
 import {BLE_CONSTANTS} from '../constants/BLEConstants';
@@ -66,6 +67,7 @@ const getTemperatureImage = (tempCelsius, unit = 'celsius') => {
 };
 
 const HomeScreen = ({navigation, route}) => {
+  const {t, i18n} = useTranslation();
   const isFocused = useIsFocused();
   const [userName, setUserName] = useState('User');
   const [phoneBatteryLevel, setPhoneBatteryLevel] = useState(0);
@@ -633,7 +635,7 @@ const HomeScreen = ({navigation, route}) => {
           {/* Header */}
           <View style={styles.header}>
             <Text style={styles.greetingText}>
-              Greetings, <Text style={styles.greetingName}>{userName}</Text>.
+              {t('home.greetings')}, <Text style={styles.greetingName}>{userName}</Text>.
             </Text>
             <TouchableOpacity onPress={() => navigation.navigate('Notifications')}>
               <Image
@@ -645,13 +647,13 @@ const HomeScreen = ({navigation, route}) => {
           </View>
 
           {/* Your Phone Section */}
-          <Text style={styles.sectionTitle}>Your Phone</Text>
+          <Text style={styles.sectionTitle}>{t('home.yourPhone')}</Text>
           <View style={styles.card}>
             <View style={styles.cardRow}>
               <View style={styles.cardTextContainer}>
-                <Text style={styles.cardTitle}>Phone Battery</Text>
+                <Text style={styles.cardTitle}>{t('home.phoneBattery')}</Text>
                 <Text style={styles.cardValue}>{phoneBatteryLevel}%</Text>
-                <Text style={styles.cardSubtitle}>Battery Level</Text>
+                <Text style={styles.cardSubtitle}>{t('home.batteryLevel')}</Text>
               </View>
               <Image
                 source={getBatteryImage(phoneBatteryLevel)}
@@ -662,15 +664,15 @@ const HomeScreen = ({navigation, route}) => {
           </View>
 
           {/* Your Case Section */}
-          <Text style={styles.sectionTitle}>Your Case</Text>
+          <Text style={styles.sectionTitle}>{t('home.yourCase')}</Text>
           <View style={styles.card}>
             <View style={styles.cardRow}>
               <View style={styles.cardTextContainer}>
-                <Text style={styles.cardTitle}>Case Battery</Text>
+                <Text style={styles.cardTitle}>{t('home.caseBattery')}</Text>
                 <Text style={styles.cardValue}>
                   {caseBatteryLevel !== undefined && caseBatteryLevel !== null ? `${caseBatteryLevel}%` : '--%'}
                 </Text>
-                <Text style={styles.cardSubtitle}>Battery Level</Text>
+                <Text style={styles.cardSubtitle}>{t('home.batteryLevel')}</Text>
               </View>
               <Image
                 source={getBatteryImage(caseBatteryLevel)}
@@ -684,13 +686,13 @@ const HomeScreen = ({navigation, route}) => {
           <View style={styles.card}>
             <View style={styles.cardRow}>
               <View style={styles.cardTextContainer}>
-                <Text style={styles.cardTitle}>Case Temperature</Text>
+                <Text style={styles.cardTitle}>{t('home.caseTemperature')}</Text>
                 <Text style={styles.cardValue}>
                   {!isNaN(caseTemperature) && caseTemperature !== undefined && caseTemperature !== null 
                     ? formatTemperature(caseTemperature) 
                     : '--° C'}
                 </Text>
-                <Text style={styles.cardSubtitleRed}>Temperature Level</Text>
+                <Text style={styles.cardSubtitleRed}>{t('home.temperatureLevel')}</Text>
               </View>
               <Image
                 source={getTemperatureImage(caseTemperature, temperatureUnit)}
@@ -717,9 +719,14 @@ const HomeScreen = ({navigation, route}) => {
             disabled={!isConnected || !usbCharging}
           >
             <Image
-              source={phoneCharging 
-                ? require('../../assets/home/newYellowSlider.png')
-                : require('../../assets/home/newWhiteSlider.png')
+              source={
+                i18n.language === 'es'
+                  ? phoneCharging
+                    ? require('../../assets/home/Stop_Charging_spanish.png')
+                    : require('../../assets/home/Transfer_spanish.png')
+                  : phoneCharging
+                    ? require('../../assets/home/newYellowSlider.png')
+                    : require('../../assets/home/newWhiteSlider.png')
               }
               style={[styles.sliderImage, (!isConnected || !usbCharging) && {opacity: 0.4}]}
               resizeMode="contain"

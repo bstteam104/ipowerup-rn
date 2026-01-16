@@ -11,11 +11,13 @@ import {
   ScrollView,
   Dimensions,
 } from 'react-native';
+import {useTranslation} from 'react-i18next';
 import {Colors} from '../constants/Constants';
 
 const {width, height} = Dimensions.get('window');
 
 const HelpScreen = ({navigation}) => {
+  const {t} = useTranslation();
   const MenuItem = ({icon, title, onPress}) => (
     <TouchableOpacity style={styles.menuItem} onPress={onPress} activeOpacity={0.7}>
       <View style={styles.menuIconContainer}>
@@ -49,26 +51,26 @@ const HelpScreen = ({navigation}) => {
         >
           {/* Header */}
           <View style={styles.header}>
-            <Text style={styles.headerTitle}>Help & Support</Text>
+            <Text style={styles.headerTitle}>{t('help.title')}</Text>
           </View>
 
           {/* Menu Items */}
           <View style={styles.menuContainer}>
             <MenuItem
               icon={require('../../assets/icons/phone-help.png')}
-              title="Contact iPowerUp"
+              title={t('help.contact')}
               onPress={() => navigation.navigate('ContactUs')}
             />
             
             <MenuItem
               icon={require('../../assets/icons/wrench-help.png')}
-              title="Help"
+              title={t('common.help')}
               onPress={() => navigation.navigate('Troubleshooting')}
             />
             
             <MenuItem
               icon={require('../../assets/icons/idea-tips.png')}
-              title="iPowerUp Tips"
+              title={t('help.tips')}
               onPress={() => navigation.navigate('Tips')}
             />
           </View>

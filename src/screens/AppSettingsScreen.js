@@ -14,8 +14,10 @@ import {
 import ToggleSwitch from 'toggle-switch-react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import {useIsFocused} from '@react-navigation/native';
+import {useTranslation} from 'react-i18next';
 import {Colors, Constants, FontSizes} from '../constants/Constants';
 import {safeJsonParse} from '../utils/apiHelper';
+import {getCurrentLanguage} from '../i18n';
 
 const {width, height} = Dimensions.get('window');
 
@@ -56,9 +58,11 @@ const MenuItem = React.memo(({icon, title, onPress, showSwitch = false, switchVa
 ));
 
 const AppSettingsScreen = ({navigation}) => {
+  const {t, i18n} = useTranslation();
   const [bluetoothEnabled, setBluetoothEnabled] = useState(false);
   const [alertEnabled, setAlertEnabled] = useState(false);
   const [subscribeEnabled, setSubscribeEnabled] = useState(false);
+  const [currentLanguage, setCurrentLanguage] = useState('en');
   const [isLoading, setIsLoading] = useState(false);
   const isFocused = useIsFocused();
 
@@ -66,8 +70,9 @@ const AppSettingsScreen = ({navigation}) => {
   useEffect(() => {
     if (isFocused) {
       loadSettings();
+      setCurrentLanguage(getCurrentLanguage());
     }
-  }, [isFocused]);
+  }, [isFocused, i18n.language]); // Reload when language changes
 
   const loadSettings = async () => {
     try {
@@ -126,7 +131,7 @@ const AppSettingsScreen = ({navigation}) => {
           ...(data.data?.[0] || {}),
         };
         await AsyncStorage.setItem('loggedInUser', JSON.stringify(updatedUser));
-        showAlert('Success', data.messages?.msg?.[0] || 'Bluetooth setting updated');
+        showAlert(t('common.success'), data.messages?.msg?.[0] || t('appSettings.languageUpdated'));
       } else {
         // Revert toggle on error
         setBluetoothEnabled(!value);
@@ -158,18 +163,22 @@ const AppSettingsScreen = ({navigation}) => {
     navigation.navigate('Temperature');
   };
 
+  const handleLanguagePress = () => {
+    navigation.navigate('Language');
+  };
+
   const handleResetPasswordPress = () => {
     navigation.navigate('ResetPassword');
   };
 
   const handleDeleteAccount = () => {
     Alert.alert(
-      'Delete Account',
-      'Are you sure you want to delete your account?',
+      t('appSettings.deleteAccount'),
+      t('alerts.deleteAccountConfirm'),
       [
-        {text: 'Cancel', style: 'cancel'},
+        {text: t('common.cancel'), style: 'cancel'},
         {
-          text: 'Delete',
+          text: t('common.delete'),
           style: 'destructive',
           onPress: async () => {
             try {
@@ -243,7 +252,7 @@ const AppSettingsScreen = ({navigation}) => {
               resizeMode="contain"
             />
           </TouchableOpacity>
-          <Text style={styles.headerTitle}>App Settings</Text>
+          <Text style={styles.headerTitle}>{t('appSettings.title')}</Text>
           <View style={styles.placeholder} />
         </View>
 
@@ -251,27 +260,33 @@ const AppSettingsScreen = ({navigation}) => {
         <View style={styles.menuContainer}>
           <MenuItem
             icon={require('../../assets/icons/reset-password.png')}
-            title="Reset Password"
+            title={t('appSettings.resetPassword')}
             onPress={handleResetPasswordPress}
           />
 
           <MenuItem
             icon={require('../../assets/icons/delete-account.png')}
-            title="Delete Account"
+            title={t('appSettings.deleteAccount')}
             onPress={handleDeleteAccount}
           />
 
           <MenuItem
             icon={require('../../assets/icons/celsius-temperature.png')}
-            title="Case Temperature"
+            title={t('appSettings.caseTemperature')}
             onPress={handleTemperaturePress}
+          />
+
+          <MenuItem
+            icon={require('../../assets/icons/setting-account.png')}
+            title={`${t('appSettings.language')}: ${currentLanguage === 'en' ? t('appSettings.english') : t('appSettings.spanish')}`}
+            onPress={handleLanguagePress}
           />
 
           <MenuItem
             key="alert"
             switchKey="alert-switch"
             icon={require('../../assets/icons/exclamation-alert.png')}
-            title="Alert"
+            title={t('common.warning')}
             showSwitch={true}
             switchValue={alertEnabled}
             onSwitchChange={handleAlertToggle}
@@ -281,7 +296,7 @@ const AppSettingsScreen = ({navigation}) => {
             key="bluetooth"
             switchKey="bluetooth-switch"
             icon={require('../../assets/icons/bluetooth-black.png')}
-            title="Bluetooth"
+            title={t('appSettings.bluetooth')}
             showSwitch={true}
             switchValue={bluetoothEnabled}
             onSwitchChange={handleBluetoothToggle}
@@ -291,7 +306,7 @@ const AppSettingsScreen = ({navigation}) => {
             key="subscribe"
             switchKey="subscribe-switch"
             icon={require('../../assets/icons/subscribe-messages.png')}
-            title="Subscribe to messages"
+            title={t('appSettings.subscribeToMessages')}
             showSwitch={true}
             switchValue={subscribeEnabled}
             onSwitchChange={handleSubscribeToggle}
