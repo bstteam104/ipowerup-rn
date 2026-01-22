@@ -13,10 +13,10 @@ import {
   Platform,
   Dimensions,
 } from 'react-native';
-import AsyncStorage from '@react-native-async-storage/async-storage';
 import {useTranslation} from 'react-i18next';
 import {Colors, Constants, BorderRadius, FontSizes} from '../constants/Constants';
-import {safeJsonParse} from '../utils/apiHelper';
+import {resetPasswordAPI} from '../services/AuthService';
+import {showSuccessToast, showErrorToast} from '../utils/toastHelper';
 
 const {width, height} = Dimensions.get('window');
 
@@ -57,41 +57,26 @@ const RecreatePasswordScreen = ({navigation, route}) => {
     setIsLoading(true);
 
     try {
-      const params = {
-        email: email,
-        password: newPassword,
-        confirm_password: confirmPassword,
-      };
+      const result = await resetPasswordAPI(email, newPassword, confirmPassword);
 
-      const response = await fetch(`${Constants.baseURLDev}/forgot-password-set-new`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(params),
-      });
-
-      const data = await safeJsonParse(response);
-
-      // Check if there's an error in the response - silently handle
-      if (data && data.error) {
-        // Silently fail, don't show error
-        return;
-      }
-
-      if (data && data.success) {
-        showAlert(t('common.success'), t('recreatePassword.success', 'Password Reset Successfully'));
-        // Navigate to Login and reset stack setRootController
-        navigation.reset({
-          index: 0,
-          routes: [{name: 'Login'}],
-        });
+      if (result.success) {
+        // Show success message in toast
+        showSuccessToast(t('recreatePassword.success', 'Password Reset Successfully'));
+        // Navigate to Login and reset stack
+        setTimeout(() => {
+          navigation.reset({
+            index: 0,
+            routes: [{name: 'Login'}],
+          });
+        }, 1500);
       } else {
-        // Silently fail, don't show error
+        // Show error message from backend
+        const errorMessage = result.error?.message || t('common.somethingWentWrong', 'Something went wrong. Please try again.');
+        showErrorToast(errorMessage);
       }
     } catch (error) {
-      // Silently fail, don't show error
-      console.error('Error recreating password:', error);
+      const errorMessage = error.message || t('common.somethingWentWrong', 'Something went wrong. Please try again.');
+      showErrorToast(errorMessage);
     } finally {
       setIsLoading(false);
     }
@@ -100,6 +85,7 @@ const RecreatePasswordScreen = ({navigation, route}) => {
   return (
     <View style={styles.container}>
       <StatusBar barStyle="dark-content" backgroundColor={Colors.white} />
+      
       <KeyboardAvoidingView
         style={styles.flex}
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
@@ -194,7 +180,7 @@ const RecreatePasswordScreen = ({navigation, route}) => {
               activeOpacity={0.8}
             >
               <Text style={styles.updateButtonText}>
-                {isLoading ? t('common.updating') : t('recreatePassword.updatePassword', 'Update Password')}
+                {isLoading ? t('common.resetting', 'Resetting...') : t('recreatePassword.updatePassword', 'Update Password')}
               </Text>
             </TouchableOpacity>
           </View>

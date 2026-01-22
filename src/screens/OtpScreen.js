@@ -10,11 +10,13 @@ import {
   ScrollView,
   Alert,
   Dimensions,
+  Image,
 } from 'react-native';
 import PinInput from '../components/PinInput';
 import {useTranslation} from 'react-i18next';
 import {Colors, Constants, BorderRadius, FontSizes} from '../constants/Constants';
-import {safeJsonParse} from '../utils/apiHelper';
+import {verifyOTPAPI, forgotPasswordAPI} from '../services/AuthService';
+import {showSuccessToast, showErrorToast} from '../utils/toastHelper';
 
 const {width, height} = Dimensions.get('window');
 
@@ -36,8 +38,24 @@ const OtpScreen = ({navigation, route}) => {
     setPin(pinValue);
   };
 
-  const handleResendOtp = () => {
-    showAlert(t('common.alert'), t('forgotPassword.otpSent', 'OTP sent to your email.'));
+  const handleResendOtp = async () => {
+    if (!emailText) {
+      showAlert(t('common.error'), t('validation.enterEmail', 'Please enter your email address.'));
+      return;
+    }
+
+    try {
+      const result = await forgotPasswordAPI(emailText);
+      if (result.success) {
+        showSuccessToast(t('forgotPassword.otpSent', 'OTP sent to your email.'));
+      } else {
+        const errorMessage = result.error?.message || t('common.somethingWentWrong', 'Something went wrong. Please try again.');
+        showErrorToast(errorMessage);
+      }
+    } catch (error) {
+      const errorMessage = error.message || t('common.somethingWentWrong', 'Something went wrong. Please try again.');
+      showErrorToast(errorMessage);
+    }
   };
 
   const handleContinue = async () => {
@@ -49,35 +67,19 @@ const OtpScreen = ({navigation, route}) => {
     setIsLoading(true);
 
     try {
-      const params = {
-        email: emailText,
-        code: pin,
-      };
+      const result = await verifyOTPAPI(emailText, pin);
 
-      const response = await fetch(`${Constants.baseURLDev}/forgot-password-otp`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(params),
-      });
-
-      const data = await safeJsonParse(response);
-
-      // Check if there's an error in the response - silently handle
-      if (data && data.error) {
-        // Silently fail, don't show error
-        return;
-      }
-
-      if (data && data.success) {
+      if (result.success) {
+        // Navigate to RecreatePassword screen
         navigation.navigate('RecreatePassword', {email: emailText});
       } else {
-        // Silently fail, don't show error
+        // Show error message from backend
+        const errorMessage = result.error?.message || t('otp.invalid', 'Invalid OTP');
+        showErrorToast(errorMessage);
       }
     } catch (error) {
-      // Silently fail, don't show error
-      console.error('Error verifying OTP:', error);
+      const errorMessage = error.message || t('common.somethingWentWrong', 'Something went wrong. Please try again.');
+      showErrorToast(errorMessage);
     } finally {
       setIsLoading(false);
     }
@@ -85,7 +87,15 @@ const OtpScreen = ({navigation, route}) => {
 
   return (
     <View style={styles.container}>
-      <StatusBar barStyle="dark-content" backgroundColor={Colors.white} />
+      <StatusBar barStyle="dark-content" backgroundColor="transparent" translucent />
+      
+      {/* Background Image */}
+      <Image
+        source={require('../../assets/images/background.png')}
+        style={styles.backgroundImage}
+        resizeMode="cover"
+      />
+      
       <KeyboardAvoidingView
         style={styles.flex}
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
@@ -139,7 +149,7 @@ const OtpScreen = ({navigation, route}) => {
               activeOpacity={0.8}
             >
               <Text style={styles.continueButtonText}>
-                {isLoading ? t('common.updating') : t('common.continue')}
+                {isLoading ? t('common.verifying', 'Verifying...') : t('common.continue')}
               </Text>
             </TouchableOpacity>
           </View>
@@ -152,7 +162,17 @@ const OtpScreen = ({navigation, route}) => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: Colors.white,
+    backgroundColor: 'transparent',
+  },
+  backgroundImage: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    width: '100%',
+    height: '100%',
+    opacity: 0.55,
   },
   flex: {
     flex: 1,
@@ -162,13 +182,10 @@ const styles = StyleSheet.create({
   },
   cornerView: {
     flex: 1,
-    backgroundColor: Colors.white,
-    borderTopLeftRadius: 20,
-    borderTopRightRadius: 20,
+    backgroundColor: 'transparent',
     paddingTop: 40,
     paddingHorizontal: 30,
     paddingBottom: 40,
-    marginTop: height * 0.2,
   },
   backSignInContainer: {
     alignSelf: 'flex-start',

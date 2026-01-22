@@ -253,7 +253,12 @@
     "success": "Éxito",
     "error": "Error",
     "updating": "Actualizando...",
-    "close": "Cerrar"
+    "close": "Cerrar",
+    "signingIn": "Iniciando sesión...",
+    "creatingAccount": "Creando cuenta...",
+    "sending": "Enviando...",
+    "verifying": "Verificando...",
+    "resetting": "Restableciendo..."
   },
   "validation": {
     "enterFirstName": "Por favor, introduzca su nombre.",

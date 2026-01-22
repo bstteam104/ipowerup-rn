@@ -1,4 +1,4 @@
-import React, {useState} from 'react';
+import React, {useState, useMemo, useCallback} from 'react';
 import {
   View,
   Text,
@@ -13,75 +13,78 @@ import {
   KeyboardAvoidingView,
   Platform,
 } from 'react-native';
-import AsyncStorage from '@react-native-async-storage/async-storage';
 import {useTranslation} from 'react-i18next';
 import {Colors, Constants, BorderRadius, FontSizes} from '../constants/Constants';
+import {loginAPI} from '../services/AuthService';
+import {showErrorToast} from '../utils/toastHelper';
 
 const {width} = Dimensions.get('window');
 
 const LoginScreen = ({navigation}) => {
   const {t} = useTranslation();
-  const [email, setEmail] = useState('bstteam@gmail.com');
-  const [password, setPassword] = useState('bstteam');
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
 
-  const isValidEmail = (email) => {
+  const isValidEmail = useCallback((email) => {
     const emailRegex = /[A-Z0-9a-z._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,64}/;
     return emailRegex.test(email);
-  };
+  }, []);
 
-  const isValidPassword = (password) => {
-    // Minimum 8 characters, at least one letter, one number, and one special character
-    const passwordRegex = /^(?=.*[a-zA-Z])(?=.*\d)(?=.*[^a-zA-Z\d]).{8,}$/;
-    return passwordRegex.test(password);
-  };
+  const isValidPassword = useCallback((password) => {
+    return password && password.length >= 6;
+  }, []);
 
-  const showAlert = (title, message) => {
+  const showAlert = useCallback((title, message) => {
     Alert.alert(title, message, [{text: 'OK', style: 'default'}]);
-  };
+  }, []);
 
   const handleSignIn = async () => {
-    // For UI testing - skip validation and API, directly go to dashboard
-    // TODO: Enable validation and API call when backend is ready
-    
-    /*
+    // Validation
     if (!email || email.trim() === '') {
-      showAlert('Error', 'Please enter your email address.');
+      showAlert(t('common.error'), t('validation.enterEmail', 'Please enter your email address.'));
       return;
     }
 
     if (!password || password.trim() === '') {
-      showAlert('Error', 'Please enter your password.');
+      showAlert(t('common.error'), t('validation.enterPassword', 'Please enter your password.'));
       return;
     }
 
     if (!isValidEmail(email)) {
-      showAlert('Error', 'Please enter a valid email address.');
+      showAlert(t('common.error'), t('validation.validEmail', 'Please enter a valid email address.'));
       return;
     }
 
     if (!isValidPassword(password)) {
-      showAlert('Error', 'Password must be at least 8 characters long, contain at least one letter, one number, and one special character.');
+      showAlert(t('common.error'), 'Password must be at least 6 characters long.');
       return;
     }
-    */
 
-    // Temporarily save mock user data for UI testing
-    const mockUser = {
-      id: 1,
-      first_name: 'Test',
-      last_name: 'User',
-      full_name: 'Test User',
-      email: email || 'test@ipowerup.com',
-      tempreture: 'celsius',
-    };
-    
-    await AsyncStorage.setItem('loggedInUser', JSON.stringify(mockUser));
-    await AsyncStorage.setItem('isUserLoggedIn', 'true');
-    
-    // Navigate directly to TabBar (Dashboard)
-    navigation.replace('TabBar');
+    setIsLoading(true);
+
+    try {
+      const result = await loginAPI(email.trim(), password);
+
+      if (result.success && result.user) {
+        // Successfully logged in, navigate to TabBar (reset navigation stack like iOS setRootController)
+        navigation.reset({
+          index: 0,
+          routes: [{name: 'TabBar'}],
+        });
+      } else {
+        // Show error message from backend
+        const errorMessage = result.error?.message || t('common.somethingWentWrong', 'Something went wrong. Please try again.');
+        showErrorToast(errorMessage);
+      }
+    } catch (error) {
+      // Show error message
+      const errorMessage = error.message || t('common.somethingWentWrong', 'Something went wrong. Please try again.');
+      showErrorToast(errorMessage);
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -93,6 +96,7 @@ const LoginScreen = ({navigation}) => {
         source={require('../../assets/images/background.png')}
         style={styles.backgroundImage}
         resizeMode="cover"
+        resizeMethod="resize"
       />
       
       <KeyboardAvoidingView 
@@ -189,7 +193,7 @@ const LoginScreen = ({navigation}) => {
               activeOpacity={0.8}
             >
               <Text style={styles.signInButtonText}>
-                {isLoading ? t('common.updating') : t('login.signIn')}
+                {isLoading ? t('common.signingIn', 'Signing in...') : t('login.signIn')}
               </Text>
             </TouchableOpacity>
 

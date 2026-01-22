@@ -91,12 +91,16 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     width: '100%',
     paddingHorizontal: 20,
+    gap: 10,
   },
   input: {
-    width: (width - 80) / 4 - 10,
+    flex: 1,
+    aspectRatio: 1,
+    minWidth: 50,
+    maxWidth: 60,
     height: 50,
     borderWidth: 1,
-    borderRadius: BorderRadius.small,
+    borderRadius: BorderRadius.small || 8,
     textAlign: 'center',
     fontSize: 24,
     fontWeight: '600',
@@ -105,6 +109,7 @@ const styles = StyleSheet.create({
   },
   inputEmpty: {
     borderColor: Colors.grayColor,
+    borderWidth: 1,
   },
   inputFilled: {
     borderColor: Colors.black,

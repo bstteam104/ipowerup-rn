@@ -255,7 +255,12 @@
     "success": "Success",
     "error": "Error",
     "updating": "Updating...",
-    "close": "Close"
+    "close": "Close",
+    "signingIn": "Signing in...",
+    "creatingAccount": "Creating account...",
+    "sending": "Sending...",
+    "verifying": "Verifying...",
+    "resetting": "Resetting..."
   },
   "validation": {
     "enterFirstName": "Please enter your first name.",

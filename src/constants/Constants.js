@@ -10,8 +10,9 @@ export const Constants = {
   imageMimeType: "image/*",
   imageFileType: ".jpg",
   
-  // Base URL
-  baseURLDev: "https://demo-cmolds1.com/projects/ipowerup_be_2024/public/api",
+  // Base URL - Environment variable support
+  // Set API_BASE_URL in .env file, falls back to default if not set
+  baseURLDev: process.env.API_BASE_URL || "https://demo-cmolds1.com/projects/ipowerup_be_2024/public/api",
 };
 
 // Colors
@@ -95,11 +96,15 @@ export const ValidationStrings = {
 export const APIEndpoints = {
   login: "/login",
   register: "/register",
-  logout: "/logout",
-  forgotPassword: "/forgot-password",
+  logout: "/user/logout",
+  forgotPassword: "/request-code",
+  verifyOTP: "/verify-code",
   resetPassword: "/reset-password",
-  getUserProfile: "/user-profile",
-  updateNotificationStatus: "/update-notification-status",
+  changePassword: "/user/change-password",
+  getUserProfile: "/user/profile",
+  updateNotificationStatus: "/user/update-notification-status",
+  deleteAccount: "/user/delete-account",
+  updateAccount: "/user/update-profile",
 };
 
 // Helper function to convert hex to RGB

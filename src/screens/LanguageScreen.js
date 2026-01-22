@@ -15,6 +15,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import {useTranslation} from 'react-i18next';
 import {Colors, Constants, BorderRadius, FontSizes} from '../constants/Constants';
 import {changeLanguage, getCurrentLanguage} from '../i18n';
+import {showSuccessToast, showErrorToast} from '../utils/toastHelper';
 
 const {width, height} = Dimensions.get('window');
 
@@ -53,15 +54,17 @@ const LanguageScreen = ({navigation}) => {
       
       console.log('✅ Language setting saved:', selectedLanguage);
       
-      // Show success message in the new language
+      // Show success message in banner
       // Wait a bit for i18n to update
       setTimeout(() => {
-        showAlert(t('common.success'), t('appSettings.languageUpdated'));
-        navigation.goBack();
+        showSuccessToast(t('appSettings.languageUpdated'));
+        setTimeout(() => {
+          navigation.goBack();
+        }, 1500);
       }, 100);
     } catch (error) {
       console.error('Error updating language:', error);
-      showAlert(t('common.error'), t('common.somethingWentWrong'));
+      showErrorToast(t('common.somethingWentWrong'));
     } finally {
       setIsLoading(false);
     }

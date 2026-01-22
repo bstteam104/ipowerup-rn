@@ -15,7 +15,8 @@ import {
 } from 'react-native';
 import {useTranslation} from 'react-i18next';
 import {Colors, Constants, BorderRadius, FontSizes} from '../constants/Constants';
-import {safeJsonParse} from '../utils/apiHelper';
+import {forgotPasswordAPI} from '../services/AuthService';
+import {showSuccessToast, showErrorToast} from '../utils/toastHelper';
 
 const {width, height} = Dimensions.get('window');
 
@@ -47,36 +48,24 @@ const ForgotPasswordScreen = ({navigation}) => {
     setIsLoading(true);
 
     try {
-      const params = {
-        email: email,
-      };
+      const result = await forgotPasswordAPI(email.trim());
 
-      const response = await fetch(`${Constants.baseURLDev}/forgot-password`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(params),
-      });
-
-      const data = await safeJsonParse(response);
-
-      // Check if there's an error in the response - silently handle
-      if (data && data.error) {
-        // Silently fail, don't show error
-        return;
-      }
-
-      if (data && data.success) {
-        showAlert(t('common.success'), t('forgotPassword.otpSent', 'OTP sent to your email.'));
-        // Navigate to OtpScreen with email
-        navigation.navigate('Otp', {email: email});
+      if (result.success) {
+        // Show success message in toast
+        showSuccessToast(t('forgotPassword.otpSent', 'OTP sent to your email.'));
+        // Navigate to OtpScreen with email (use replace to prevent blinking)
+        setTimeout(() => {
+          navigation.replace('Otp', {email: email.trim()});
+        }, 1500);
       } else {
-        // Silently fail, don't show error
+        // Show error message from backend
+        const errorMessage = result.error?.message || t('common.somethingWentWrong', 'Something went wrong. Please try again.');
+        showErrorToast(errorMessage);
       }
     } catch (error) {
-      // Silently fail, don't show error
-      console.error('Error in forgot password:', error);
+      // Show error message
+      const errorMessage = error.message || t('common.somethingWentWrong', 'Something went wrong. Please try again.');
+      showErrorToast(errorMessage);
     } finally {
       setIsLoading(false);
     }
@@ -163,7 +152,7 @@ const ForgotPasswordScreen = ({navigation}) => {
               activeOpacity={0.8}
             >
               <Text style={styles.sendButtonText}>
-                {isLoading ? t('common.updating') : t('forgotPassword.continue')}
+                {isLoading ? t('common.sending', 'Sending...') : t('forgotPassword.continue')}
               </Text>
             </TouchableOpacity>
 

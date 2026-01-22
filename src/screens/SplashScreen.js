@@ -8,8 +8,8 @@ import {
   StatusBar,
   Dimensions,
 } from 'react-native';
-import AsyncStorage from '@react-native-async-storage/async-storage';
 import {Colors} from '../constants/Constants';
+import {isUserLoggedIn} from '../services/AuthService';
 
 const {width, height} = Dimensions.get('window');
 
@@ -51,8 +51,8 @@ const SplashScreen = ({navigation}) => {
 
   const checkLoginStatus = async () => {
     try {
-      const loggedInUser = await AsyncStorage.getItem('loggedInUser');
-      if (loggedInUser) {
+      const isLoggedIn = await isUserLoggedIn();
+      if (isLoggedIn) {
         navigation.replace('TabBar');
       } else {
         navigation.replace('Login');

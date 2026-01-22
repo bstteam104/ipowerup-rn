@@ -18,6 +18,8 @@ import {useTranslation} from 'react-i18next';
 import {Colors, Constants, FontSizes} from '../constants/Constants';
 import {safeJsonParse} from '../utils/apiHelper';
 import {getCurrentLanguage} from '../i18n';
+import ConfirmModal from '../components/ConfirmModal';
+import {showSuccessToast} from '../utils/toastHelper';
 
 const {width, height} = Dimensions.get('window');
 
@@ -64,15 +66,31 @@ const AppSettingsScreen = ({navigation}) => {
   const [subscribeEnabled, setSubscribeEnabled] = useState(false);
   const [currentLanguage, setCurrentLanguage] = useState('en');
   const [isLoading, setIsLoading] = useState(false);
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
   const isFocused = useIsFocused();
 
   // Load settings when screen is focused (fixes toggle reset issue)
   useEffect(() => {
     if (isFocused) {
       loadSettings();
-      setCurrentLanguage(getCurrentLanguage());
+      const newLanguage = getCurrentLanguage();
+      setCurrentLanguage(newLanguage);
     }
-  }, [isFocused, i18n.language]); // Reload when language changes
+  }, [isFocused]);
+
+  // Check for language change separately to prevent blinking
+  useEffect(() => {
+    if (isFocused) {
+      const newLanguage = getCurrentLanguage();
+      const oldLanguage = currentLanguage;
+      
+      // Check if language changed (user came back from LanguageScreen)
+      if (oldLanguage && newLanguage && newLanguage !== oldLanguage && oldLanguage !== '') {
+        // Show success banner
+        showSuccessToast(t('appSettings.languageUpdated'));
+      }
+    }
+  }, [i18n.language, isFocused]); // Only trigger when language actually changes
 
   const loadSettings = async () => {
     try {
@@ -172,60 +190,64 @@ const AppSettingsScreen = ({navigation}) => {
   };
 
   const handleDeleteAccount = () => {
-    Alert.alert(
-      t('appSettings.deleteAccount'),
-      t('alerts.deleteAccountConfirm'),
-      [
-        {text: t('common.cancel'), style: 'cancel'},
-        {
-          text: t('common.delete'),
-          style: 'destructive',
-          onPress: async () => {
-            try {
-              const params = {
-                udid: Constants.UDID,
-                _method: 'delete',
-              };
+    setShowDeleteModal(true);
+  };
 
-              const response = await fetch(`${Constants.baseURLDev}/delete-account`, {
-                method: 'POST',
-                headers: {
-                  'Content-Type': 'application/json',
-                },
-                body: JSON.stringify(params),
-              });
+  const handleDeleteConfirm = async () => {
+    setShowDeleteModal(false);
+    try {
+      const params = {
+        udid: Constants.UDID,
+        _method: 'delete',
+      };
 
-              const data = await safeJsonParse(response);
-
-              // Check if there's an error in the response - silently handle
-              if (data && data.error) {
-                // Silently fail, don't show error
-                return;
-              }
-
-              if (data && data.success) {
-                // Clear all data and navigate to Login signOutOldUser
-                await AsyncStorage.clear();
-                navigation.reset({
-                  index: 0,
-                  routes: [{name: 'Login'}],
-                });
-              } else {
-                // Silently fail, don't show error
-              }
-            } catch (error) {
-              // Silently fail, don't show error
-              console.error('Error deleting account:', error);
-            }
-          },
+      const response = await fetch(`${Constants.baseURLDev}/delete-account`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
         },
-      ],
-    );
+        body: JSON.stringify(params),
+      });
+
+      const data = await safeJsonParse(response);
+
+      // Check if there's an error in the response - silently handle
+      if (data && data.error) {
+        // Silently fail, don't show error
+        return;
+      }
+
+      if (data && data.success) {
+        // Clear all data and navigate to Login signOutOldUser
+        await AsyncStorage.clear();
+        navigation.reset({
+          index: 0,
+          routes: [{name: 'Login'}],
+        });
+      } else {
+        // Silently fail, don't show error
+      }
+    } catch (error) {
+      // Silently fail, don't show error
+      console.error('Error deleting account:', error);
+    }
   };
 
   return (
     <View style={styles.container}>
       <StatusBar barStyle="dark-content" backgroundColor="transparent" translucent />
+      
+      {/* Delete Account Confirmation Modal */}
+      <ConfirmModal
+        visible={showDeleteModal}
+        title={t('appSettings.deleteAccount')}
+        message={t('alerts.deleteAccountConfirm')}
+        confirmText={t('common.delete')}
+        cancelText={t('common.cancel')}
+        onConfirm={handleDeleteConfirm}
+        onCancel={() => setShowDeleteModal(false)}
+        confirmStyle="destructive"
+      />
       
       {/* Background Image */}
       <Image

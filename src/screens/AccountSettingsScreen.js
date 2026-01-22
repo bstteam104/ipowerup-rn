@@ -16,7 +16,8 @@ import {
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import {useTranslation} from 'react-i18next';
 import {Colors, Constants, BorderRadius, FontSizes} from '../constants/Constants';
-import {safeJsonParse} from '../utils/apiHelper';
+import {updateAccountAPI, getLoggedInUser} from '../services/AuthService';
+import {showSuccessToast, showErrorToast} from '../utils/toastHelper';
 
 const {width, height} = Dimensions.get('window');
 
@@ -37,9 +38,8 @@ const AccountSettingsScreen = ({navigation}) => {
 
   const loadUserData = async () => {
     try {
-      const userData = await AsyncStorage.getItem('loggedInUser');
-      if (userData) {
-        const user = JSON.parse(userData);
+      const user = await getLoggedInUser();
+      if (user) {
         setFirstName(user.first_name || '');
         setLastName(user.last_name || '');
         setEmail(user.email || '');
@@ -66,48 +66,34 @@ const AccountSettingsScreen = ({navigation}) => {
     setIsLoading(true);
 
     try {
-      const params = {
-        first_name: firstName,
-        last_name: lastName,
-        email: email,
-        alternate_email: alternateEmail,
-        phone: phone,
-        emergency_number: emergencyNumber,
-        country: country || 'USA',
-        _method: 'patch',
-      };
-
-      const response = await fetch(`${Constants.baseURLDev}/update-account`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(params),
+      const result = await updateAccountAPI({
+        firstName: firstName.trim(),
+        lastName: lastName.trim(),
+        email: email.trim(),
+        alternateEmail: alternateEmail.trim(),
+        phone: phone.trim(),
+        emergencyNumber: emergencyNumber.trim(),
+        country: country.trim() || 'USA',
       });
 
-      const data = await safeJsonParse(response);
-
-      // Check if there's an error in the response - silently handle
-      if (data && data.error) {
-        // Silently fail, don't show any error
-        return;
-      }
-
-      if (data && data.data) {
-        // Update stored user data
-        const userObj = data.data[0];
-        userObj.token = await AsyncStorage.getItem('accessToken');
-        await AsyncStorage.setItem('loggedInUser', JSON.stringify(userObj));
-        
-        showAlert(t('common.success'), t('accountSettings.updated', 'Profile Updated Successfully'));
-        navigation.goBack();
+      if (result.success && result.user) {
+        // Show success message in banner
+        showSuccessToast(t('accountSettings.updated', 'Profile Updated Successfully'));
+        setTimeout(() => {
+          navigation.goBack();
+        }, 1500);
       } else {
-        // Silently fail, don't show error
-        return;
+        // Show error message from backend
+        const errorMessage = result.error?.message || t('common.somethingWentWrong', 'Something went wrong. Please try again.');
+        setBannerMessage(errorMessage);
+        setBannerType('error');
+        setShowBanner(true);
       }
     } catch (error) {
-      // Silently fail, don't show any error
-      console.error('Error updating account:', error);
+      const errorMessage = error.message || t('common.somethingWentWrong', 'Something went wrong. Please try again.');
+      setBannerMessage(errorMessage);
+      setBannerType('error');
+      setShowBanner(true);
     } finally {
       setIsLoading(false);
     }

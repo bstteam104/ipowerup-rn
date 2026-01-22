@@ -13,10 +13,10 @@ import {
   KeyboardAvoidingView,
   Platform,
 } from 'react-native';
-import AsyncStorage from '@react-native-async-storage/async-storage';
 import {useTranslation} from 'react-i18next';
 import {Colors, Constants, BorderRadius, FontSizes} from '../constants/Constants';
-import {safeJsonParse} from '../utils/apiHelper';
+import {registerAPI} from '../services/AuthService';
+import {showErrorToast} from '../utils/toastHelper';
 
 const {width} = Dimensions.get('window');
 
@@ -73,7 +73,7 @@ const SignUpScreen = ({navigation}) => {
     }
 
     if (!isValidPassword(password)) {
-      showAlert(t('validation.invalidPassword'), t('validation.passwordRequirements'));
+      showAlert('Invalid Password', 'Password must be at least 8 characters long, contain at least one letter, one number, and one special character.');
       return;
     }
 
@@ -85,50 +85,31 @@ const SignUpScreen = ({navigation}) => {
     setIsLoading(true);
 
     try {
-      const params = {
-        first_name: firstName,
-        last_name: lastName,
-        email: email,
-        country: country,
+      const result = await registerAPI({
+        firstName: firstName.trim(),
+        lastName: lastName.trim(),
+        email: email.trim(),
         password: password,
-        password_confirmation: password,
-        terms_conditions: termsAccepted ? "1" : "0",
-        privacy_policy: privacyAccepted ? "1" : "0",
-        udid: Constants.UDID,
-        device_type: Constants.platform,
-        device_token: Constants.deviceToken,
-        device_brand: Constants.deviceBrand,
-        device_os: Constants.platform,
-        app_version: "0.1"
-      };
-
-      const response = await fetch(`${Constants.baseURLDev}/register`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(params),
+        country: country.trim(),
+        termsAccepted: termsAccepted,
+        privacyAccepted: privacyAccepted,
       });
 
-      const data = await safeJsonParse(response);
-
-      // Check if there's an error in the response - silently handle
-      if (data && data.error) {
-        // Silently fail, don't show error
-        return;
-      }
-
-      if (data && data.data) {
-        await AsyncStorage.setItem('loggedInUser', JSON.stringify(data.data));
-        await AsyncStorage.setItem('accessToken', data.data.token || '');
-        await AsyncStorage.setItem('isUserLoggedIn', 'true');
-        navigation.replace('TabBar');
+      if (result.success && result.user) {
+        // Successfully registered and logged in, navigate to TabBar (like iOS nextViewController)
+        navigation.reset({
+          index: 0,
+          routes: [{name: 'TabBar'}],
+        });
       } else {
-        // Silently fail, don't show error
+        // Show error message from backend
+        const errorMessage = result.error?.message || t('common.somethingWentWrong', 'Something went wrong. Please try again.');
+        showErrorToast(errorMessage);
       }
     } catch (error) {
-      // Silently fail, don't show error
-      console.error('Error in signup:', error);
+      // Show error message
+      const errorMessage = error.message || t('common.somethingWentWrong', 'Something went wrong. Please try again.');
+      showErrorToast(errorMessage);
     } finally {
       setIsLoading(false);
     }
@@ -349,7 +330,7 @@ const SignUpScreen = ({navigation}) => {
               activeOpacity={0.8}
             >
               <Text style={styles.createButtonText}>
-                {isLoading ? t('common.updating') : t('signup.createAccount')}
+                {isLoading ? t('common.creatingAccount', 'Creating account...') : t('signup.createAccount')}
               </Text>
             </TouchableOpacity>
 

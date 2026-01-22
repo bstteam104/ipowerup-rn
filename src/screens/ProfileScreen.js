@@ -21,6 +21,9 @@ import {useIsFocused} from '@react-navigation/native';
 // Use Native Kotlin BLE Manager (exact iOS match)
 import BLEManager from '../services/BLEManagerNative';
 import PermissionModal from '../components/PermissionModal';
+import {showSuccessToast} from '../utils/toastHelper';
+import ConfirmModal from '../components/ConfirmModal';
+import {isUserLoggedIn, logout} from '../services/AuthService';
 
 const DEBUG_LOG_KEY = '@ipowerup:ble_debug_logs';
 const MAX_DEBUG_LOGS = 50; // Keep last 50 connection attempts
@@ -39,13 +42,27 @@ const ProfileScreen = ({navigation}) => {
   const [protocolInfo, setProtocolInfo] = useState(null);
   const [debugLogs, setDebugLogs] = useState([]); // Persistent debug logs
   const [showDebugInfo, setShowDebugInfo] = useState(false); // Show debug on "No Case Connected"
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [showLogoutModal, setShowLogoutModal] = useState(false);
   const isFocused = useIsFocused();
   const scanIntervalRef = useRef(null);
 
   // Load persistent debug logs
   useEffect(() => {
     loadDebugLogs();
+    checkLoginStatus();
   }, []);
+
+  // Check login status
+  const checkLoginStatus = async () => {
+    try {
+      const loggedIn = await isUserLoggedIn();
+      setIsLoggedIn(loggedIn);
+    } catch (error) {
+      console.error('Error checking login status:', error);
+      setIsLoggedIn(false);
+    }
+  };
 
   // Load debug logs from AsyncStorage
   const loadDebugLogs = async () => {
@@ -374,21 +391,33 @@ const ProfileScreen = ({navigation}) => {
   }, []);
 
   const handleLogout = () => {
-    Alert.alert(
-      t('common.logout'),
-      t('alerts.logoutConfirm'),
-      [
-        {text: t('common.cancel'), style: 'cancel'},
-        {
-          text: t('common.logout'),
-          style: 'destructive',
-          onPress: async () => {
-            await AsyncStorage.clear();
-            navigation.reset({index: 0, routes: [{name: 'Login'}]});
-          },
-        },
-      ],
-    );
+    setShowLogoutModal(true);
+  };
+
+  const handleLogoutConfirm = async () => {
+    setShowLogoutModal(false);
+    try {
+      const result = await logout();
+      
+      if (result.success) {
+        // Show success message in banner
+        showSuccessToast(t('common.loggedOut', 'Logged out successfully'));
+        
+        // Navigate to login after a short delay
+        setTimeout(() => {
+          navigation.reset({index: 0, routes: [{name: 'Login'}]});
+        }, 1500);
+      } else {
+        // Still logout locally even if API fails
+        await AsyncStorage.clear();
+        navigation.reset({index: 0, routes: [{name: 'Login'}]});
+      }
+    } catch (error) {
+      console.error('Logout error:', error);
+      // Still logout locally on error
+      await AsyncStorage.clear();
+      navigation.reset({index: 0, routes: [{name: 'Login'}]});
+    }
   };
 
   const MenuItem = ({icon, title, onPress, showArrow = true, rightComponent, showIcon = true, rightIcon}) => (
@@ -580,6 +609,18 @@ const ProfileScreen = ({navigation}) => {
     <View style={styles.container}>
       <StatusBar barStyle="dark-content" backgroundColor="transparent" translucent />
       
+      {/* Logout Confirmation Modal */}
+      <ConfirmModal
+        visible={showLogoutModal}
+        title={t('common.logout')}
+        message={t('alerts.logoutConfirm')}
+        confirmText={t('common.logout')}
+        cancelText={t('common.cancel')}
+        onConfirm={handleLogoutConfirm}
+        onCancel={() => setShowLogoutModal(false)}
+        confirmStyle="destructive"
+      />
+      
       {/* Bluetooth scanning popup on Profile (same screen) */}
       <PermissionModal
         visible={showScanningModal}
@@ -660,12 +701,14 @@ const ProfileScreen = ({navigation}) => {
               onPress={() => navigation.navigate('Subscription')}
             />
             
-            <MenuItem
-              title={t('profile.logOut')}
-              onPress={handleLogout}
-              showIcon={false}
-              rightIcon={require('../../assets/icons/logout-icon.png')}
-            />
+            {isLoggedIn && (
+              <MenuItem
+                title={t('profile.logOut')}
+                onPress={handleLogout}
+                showIcon={false}
+                rightIcon={require('../../assets/icons/logout-icon.png')}
+              />
+            )}
           </View>
 
           {/* Device Connection Section */}
@@ -813,10 +856,8 @@ const styles = StyleSheet.create({
   switchContainer: {
     justifyContent: 'center',
     alignItems: 'center',
-    paddingVertical: 4,
-    paddingHorizontal: 6,
-    height: 38,
-    width: 50,
+    paddingVertical: 0,
+    paddingHorizontal: 0,
   },
   debugContainer: {
     width: '100%',

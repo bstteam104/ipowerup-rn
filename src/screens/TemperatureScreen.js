@@ -15,6 +15,8 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import {useTranslation} from 'react-i18next';
 import {Colors, Constants, BorderRadius, FontSizes} from '../constants/Constants';
 import {safeJsonParse} from '../utils/apiHelper';
+import {showSuccessToast, showErrorToast} from '../utils/toastHelper';
+import ConfirmModal from '../components/ConfirmModal';
 
 const {width, height} = Dimensions.get('window');
 
@@ -22,6 +24,8 @@ const TemperatureScreen = ({navigation}) => {
   const {t} = useTranslation();
   const [tempValue, setTempValue] = useState('fahrenheit');
   const [isLoading, setIsLoading] = useState(false);
+  const [showConfirmModal, setShowConfirmModal] = useState(false);
+  const [pendingTempValue, setPendingTempValue] = useState(null);
 
   useEffect(() => {
     loadTemperatureSetting();
@@ -48,10 +52,19 @@ const TemperatureScreen = ({navigation}) => {
     setTempValue(value);
   };
 
-  const handleContinue = async () => {
+  const handleContinue = () => {
+    // Show confirmation modal before updating
+    setPendingTempValue(tempValue);
+    setShowConfirmModal(true);
+  };
+
+  const handleConfirmUpdate = async () => {
+    setShowConfirmModal(false);
     setIsLoading(true);
 
     try {
+      const finalValue = pendingTempValue || tempValue;
+      
       // Since backend is not available, save directly to AsyncStorage
       const userData = await AsyncStorage.getItem('loggedInUser');
       let userObj = {};
@@ -61,17 +74,17 @@ const TemperatureScreen = ({navigation}) => {
       }
       
       // Update temperature setting in user object
-      userObj.tempreture = tempValue;
+      userObj.tempreture = finalValue;
       
       // Save updated user object to AsyncStorage
       await AsyncStorage.setItem('loggedInUser', JSON.stringify(userObj));
       
-      console.log('✅ Temperature setting saved to AsyncStorage:', tempValue);
+      console.log('✅ Temperature setting saved to AsyncStorage:', finalValue);
       
       // Try API call (but don't fail if it doesn't work)
       try {
         const params = {
-          type: tempValue,
+          type: finalValue,
         };
 
         const response = await fetch(`${Constants.baseURLDev}/update-temperature`, {
@@ -96,19 +109,39 @@ const TemperatureScreen = ({navigation}) => {
         console.log('⚠️ API call failed, but setting saved locally:', apiError.message);
       }
       
-      showAlert(t('common.success'), t('temperature.updated', 'Temperature setting updated'));
-      navigation.goBack();
+      // Show success message in banner
+      showSuccessToast(t('temperature.updated', 'Temperature setting updated'));
+      
+      setTimeout(() => {
+        navigation.goBack();
+      }, 1500);
     } catch (error) {
       console.error('Error updating temperature:', error);
-      showAlert('Error', 'Failed to save temperature setting');
+      showErrorToast('Failed to save temperature setting');
     } finally {
       setIsLoading(false);
     }
   };
 
+
   return (
     <View style={styles.container}>
       <StatusBar barStyle="dark-content" backgroundColor="transparent" translucent />
+      
+      {/* Temperature Update Confirmation Modal */}
+      <ConfirmModal
+        visible={showConfirmModal}
+        title={t('temperature.confirmTitle', 'Update Temperature')}
+        message={t('temperature.confirmMessage', 'Are you sure you want to update the temperature setting?')}
+        confirmText={t('common.continue')}
+        cancelText={t('common.cancel')}
+        onConfirm={handleConfirmUpdate}
+        onCancel={() => {
+          setShowConfirmModal(false);
+          setPendingTempValue(null);
+        }}
+        confirmStyle="default"
+      />
       
       {/* Background Image */}
       <Image
