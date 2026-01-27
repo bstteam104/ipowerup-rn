@@ -29,7 +29,7 @@ class BLEManagerNativeService {
     this.allDiscoveredDevices = []; // For UI display
     this.connectedDevice = null;
     this.delegate = null;
-    this.queryInterval = null;
+    this.queryInterval = null; // Expose for debugging
     this.currentCommand = null;
     this.getPhoneBatteryLevel = null;
     
@@ -143,10 +143,23 @@ class BLEManagerNativeService {
     // iOS: didReceiveData(_:commandSent:) - line 335
     bleEventEmitter.addListener('onDataReceived', (data) => {
       const rawDataStr = data.data || '';
-      console.log('📥 BLEManagerNative: Received raw data from device:', rawDataStr);
+      const dataLength = data.dataLength || 0;
+      console.log('📥 BLEManagerNative: Received raw data from device');
+      console.log('📥 Data hex string:', rawDataStr);
       console.log('📥 Data type:', typeof rawDataStr);
-      console.log('📥 Data length (hex chars):', rawDataStr?.length, 'bytes:', rawDataStr?.length / 2);
+      console.log('📥 Data length (hex chars):', rawDataStr?.length, '| Native bytes:', dataLength);
+      console.log('📥 Characteristic UUID:', data.characteristicUuid);
       console.log('📥 Current command (expected):', this.currentCommand);
+      
+      // CRITICAL: Log if data is empty or invalid
+      if (!rawDataStr || rawDataStr.length === 0) {
+        console.error('❌ Received empty data from device!');
+        console.error('❌ Data object:', JSON.stringify(data, null, 2));
+        if (this.delegate?.onDataParseError) {
+          this.delegate.onDataParseError('Empty data received from device');
+        }
+        return;
+      }
       
       // ALWAYS log raw hex data to UI first (before parsing)
       if (this.delegate?.onRawDataReceived) {
@@ -224,13 +237,33 @@ class BLEManagerNativeService {
                 // iOS doesn't wait for password ACK before sending 0x04, but we log it for debugging
                 // The actual data will come from queryPowerBankStatus (0x04) response
                 this.hasReceivedData = true; // Mark that we've received some response
+              } else if (commandByte === BLE_CONSTANTS.COMMAND_ENABLE_PHONE_CHARGING) {
+                // iOS: enablePhoneCharging response (0x21) - just debugPrint, no UI update
+                // iOS line 287-290: case .enablePhoneCharging: debugPrint(data)
+                console.log('✅ Device acknowledged ENABLE_PHONE_CHARGING (0x21 response)');
+                console.log('📝 iOS pattern: Ignoring 0x21 response - status will come from PowerBankStatus (0x04)');
+                if (this.delegate?.onDeviceResponse) {
+                  this.delegate.onDeviceResponse('0x21 (ENABLE_CHARGING_ACK)', rawDataStr, buffer.length);
+                }
+                // Don't update UI from command response - wait for PowerBankStatus query
+                // iOS relies on periodic query to update charging status
+              } else if (commandByte === BLE_CONSTANTS.COMMAND_STOP_CHARGING) {
+                // iOS: stopCharging response (0x18) - just debugPrint, no UI update
+                // iOS line 291-294: case .stopCharging: debugPrint(data)
+                console.log('✅ Device acknowledged STOP_CHARGING (0x18 response)');
+                console.log('📝 iOS pattern: Ignoring 0x18 response - status will come from PowerBankStatus (0x04)');
+                if (this.delegate?.onDeviceResponse) {
+                  this.delegate.onDeviceResponse('0x18 (STOP_CHARGING_ACK)', rawDataStr, buffer.length);
+                }
+                // Don't update UI from command response - wait for PowerBankStatus query
+                // iOS relies on periodic query to update charging status
               } else {
                 // For other/unknown commands, log them
                 console.log('⚠️ Unknown/unexpected command byte:', commandHex);
                 if (this.delegate?.onDeviceResponse) {
                   this.delegate.onDeviceResponse(commandHex + ' (UNKNOWN)', rawDataStr, buffer.length);
                 }
-                this.delegate.onDataReceived(rawDataStr, this.currentCommand);
+                // Don't call onDataReceived for unknown commands - they're not PowerBankStatus
               }
             } else {
               console.error('❌ Empty buffer received - no data from device');
@@ -486,35 +519,27 @@ class BLEManagerNativeService {
     await this.sendCommand(BLE_CONSTANTS.COMMAND_QUERY_POWER_BANK_STATUS, phoneBattery);
   }
   
-  // iOS: sendCommand(.enablePhoneCharging)
+  // iOS: sendCommand(.enablePhoneCharging) - line 166
+  // iOS: Just sends command, no immediate query (periodic query will handle updates)
   async enablePhoneCharging() {
     console.log('⚡ Sending ENABLE_PHONE_CHARGING command (0x21)...');
     console.log('⚠️ IMPORTANT: Make sure phone is connected to case via USB cable for charging to work');
     await this.sendCommand(BLE_CONSTANTS.COMMAND_ENABLE_PHONE_CHARGING);
     console.log('✅ ENABLE_PHONE_CHARGING command sent successfully');
     
-    // iOS: After 2.5 seconds, query charger config status to verify (line 271-273)
-    setTimeout(() => {
-      if (this.isConnected) {
-        console.log('📊 Querying charger config status after enable charging...');
-        this.queryChargerConfigStatus();
-      }
-    }, 2500);
+    // iOS: No immediate query after command - periodic query (every 5 seconds) will update status
+    // iOS line 287-290: Just debugPrint, no query
   }
   
-  // iOS: sendCommand(.stopCharging)
+  // iOS: sendCommand(.stopCharging) - line 163
+  // iOS: Just sends command, no immediate query (periodic query will handle updates)
   async stopCharging() {
     console.log('🛑 Sending STOP_CHARGING command (0x18)...');
     await this.sendCommand(BLE_CONSTANTS.COMMAND_STOP_CHARGING);
     console.log('✅ STOP_CHARGING command sent successfully');
     
-    // iOS: After 2.5 seconds, query charger config status to verify (line 276-278)
-    setTimeout(() => {
-      if (this.isConnected) {
-        console.log('📊 Querying charger config status after stop charging...');
-        this.queryChargerConfigStatus();
-      }
-    }, 2500);
+    // iOS: No immediate query after command - periodic query (every 5 seconds) will update status
+    // iOS line 291-294: Just debugPrint, no query
   }
   
   // iOS: sendCommand(.queryChargerConfigStatus)
@@ -602,16 +627,36 @@ class BLEManagerNativeService {
   
   // Start periodic query (iOS pattern)
   startPeriodicQuery() {
+    // CRITICAL: Always clear existing interval first to prevent duplicates
     if (this.queryInterval) {
+      console.log('🛑 Stopping existing periodic query before starting new one');
       clearInterval(this.queryInterval);
+      this.queryInterval = null;
     }
     
+    console.log('🔄 Starting periodic query (every', BLE_CONSTANTS.QUERY_INTERVAL / 1000, 'seconds)');
+    
     // Query every 5 seconds (iOS pattern)
+    // Add error handling to prevent silent failures
     this.queryInterval = setInterval(() => {
       if (this.isConnected) {
-        this.queryPowerBankStatus();
+        console.log('⏰ Periodic query tick - sending queryPowerBankStatus...');
+        this.queryPowerBankStatus().catch((error) => {
+          console.error('❌ Periodic query failed:', error);
+          // Don't stop interval on single failure - keep retrying
+          // This handles intermittent connection issues
+        });
+      } else {
+        console.warn('⚠️ Periodic query tick but not connected - skipping');
       }
     }, BLE_CONSTANTS.QUERY_INTERVAL);
+    
+    // Verify interval was created
+    if (this.queryInterval) {
+      console.log('✅ Periodic query interval created successfully');
+    } else {
+      console.error('❌ Failed to create periodic query interval!');
+    }
   }
   
   // Stop periodic query - alias for compatibility

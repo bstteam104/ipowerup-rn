@@ -273,11 +273,16 @@ class BLEManagerNative(reactContext: ReactApplicationContext) : ReactContextBase
             writeCharacteristic!!.writeType = BluetoothGattCharacteristic.WRITE_TYPE_NO_RESPONSE
             
             // CRITICAL: Double-check connection before writing
-            if (!isConnected || bluetoothGatt == null) {
+            // CRITICAL: Verify actual GATT state, not just our flag
+            val actualGattState = verifyActualConnectionState()
+            if (!isConnected || bluetoothGatt == null || !actualGattState) {
+                Log.w(TAG, "⚠️ Connection check failed before write - isConnected=$isConnected, gatt=${bluetoothGatt != null}, actualState=$actualGattState")
                 promise.reject("CONNECTION_LOST", "Connection lost before write")
                 return
             }
             
+            // CRITICAL: Don't close or reset GATT connection when sending commands
+            // Commands should not affect the connection state
             val success = bluetoothGatt!!.writeCharacteristic(writeCharacteristic!!)
             
             if (success) {
@@ -863,6 +868,7 @@ class BLEManagerNative(reactContext: ReactApplicationContext) : ReactContextBase
         ) {
             if (status == BluetoothGatt.GATT_SUCCESS) {
                 Log.d(TAG, "✅ Notification descriptor written successfully - ready to receive data")
+                Log.d(TAG, "✅ Notifications are now ENABLED - device can send data")
                 // Send event to JS to track notification setup success
                 val eventMap = Arguments.createMap()
                 eventMap.putString("status", "success")
@@ -870,12 +876,28 @@ class BLEManagerNative(reactContext: ReactApplicationContext) : ReactContextBase
                 sendEvent("onNotificationEnabled", eventMap)
             } else {
                 Log.e(TAG, "❌ Failed to write notification descriptor: $status")
+                Log.e(TAG, "❌ Notifications NOT enabled - device cannot send data!")
                 // Send error event to JS
                 val eventMap = Arguments.createMap()
                 eventMap.putString("status", "failed")
                 eventMap.putInt("errorCode", status)
                 eventMap.putString("descriptorUuid", descriptor.uuid.toString())
                 sendEvent("onNotificationEnabled", eventMap)
+                
+                // CRITICAL: Retry notification enable if it failed
+                // This is critical for data reception
+                mainHandler.postDelayed({
+                    if (isConnected && bluetoothGatt != null && notifyCharacteristic != null) {
+                        Log.d(TAG, "🔄 Retrying notification enable after failure...")
+                        val retryDesc = notifyCharacteristic!!.getDescriptor(
+                            UUID.fromString("00002902-0000-1000-8000-00805f9b34fb")
+                        )
+                        retryDesc?.let {
+                            it.value = BluetoothGattDescriptor.ENABLE_NOTIFICATION_VALUE
+                            bluetoothGatt?.writeDescriptor(it)
+                        }
+                    }
+                }, 1000)
             }
         }
         
@@ -1024,13 +1046,23 @@ class BLEManagerNative(reactContext: ReactApplicationContext) : ReactContextBase
             // iOS: func peripheral(_:didWriteValueFor:) - line 307
             if (status == BluetoothGatt.GATT_SUCCESS) {
                 Log.d(TAG, "✅ Wrote to ${characteristic.uuid}")
+                // CRITICAL: Don't modify connection state after successful write
+                // Commands like 0x21 and 0x18 should not affect connection
             } else {
                 Log.e(TAG, "❌ Write failed: $status for ${characteristic.uuid}")
-                // CRITICAL: If write fails, connection might be unstable
-                // Check if this is a critical write (password command)
+                // CRITICAL: If write fails, don't immediately disconnect
+                // Some write failures are temporary and connection might still be valid
+                // Only disconnect if connection state callback indicates disconnection
                 if (characteristic.uuid == TX_CHARACTERISTIC_UUID) {
-                    Log.w(TAG, "⚠️ Password command write failed - connection may be unstable")
-                    // Don't disconnect here - let the connection state callback handle it
+                    Log.w(TAG, "⚠️ Command write failed: $status - connection may still be valid")
+                    // Verify actual connection state before assuming disconnection
+                    val actualState = verifyActualConnectionState()
+                    if (!actualState) {
+                        Log.w(TAG, "⚠️ Actual GATT state is disconnected after write failure")
+                        // Let connection state callback handle the disconnect
+                    } else {
+                        Log.d(TAG, "✅ Connection is still valid despite write failure")
+                    }
                 }
             }
         }
@@ -1047,13 +1079,30 @@ class BLEManagerNative(reactContext: ReactApplicationContext) : ReactContextBase
             
             // iOS: func peripheral(_:didUpdateValueFor:) - line 329
             val value = characteristic.value
-            if (value != null) {
+            if (value != null && value.isNotEmpty()) {
                 val hexString = value.joinToString("") { "%02x".format(it) }
-                Log.d(TAG, "📥 Received data: $hexString")
+                Log.d(TAG, "📥 Received data from characteristic: ${characteristic.uuid}")
+                Log.d(TAG, "📥 Data length: ${value.size} bytes")
+                Log.d(TAG, "📥 Received data (hex): $hexString")
+                Log.d(TAG, "📥 Received data (bytes): ${value.joinToString(", ") { it.toString() }}")
                 
                 val dataMap = Arguments.createMap()
                 dataMap.putString("data", hexString)
                 dataMap.putString("characteristicUuid", characteristic.uuid.toString())
+                dataMap.putInt("dataLength", value.size)
+                Log.d(TAG, "📤 Sending onDataReceived event to React Native (${value.size} bytes)")
+                sendEvent("onDataReceived", dataMap)
+            } else {
+                Log.w(TAG, "⚠️ onCharacteristicChanged called but value is null or empty")
+                Log.w(TAG, "⚠️ Characteristic UUID: ${characteristic.uuid}")
+                Log.w(TAG, "⚠️ Value: $value")
+                
+                // Send event even if empty to track that callback was called
+                val dataMap = Arguments.createMap()
+                dataMap.putString("data", "")
+                dataMap.putString("characteristicUuid", characteristic.uuid.toString())
+                dataMap.putInt("dataLength", 0)
+                dataMap.putString("error", "Empty data received")
                 sendEvent("onDataReceived", dataMap)
             }
         }

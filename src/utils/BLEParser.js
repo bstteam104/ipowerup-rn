@@ -48,6 +48,8 @@ export const parsePowerBankStatus = (data) => {
   
   // iOS line 41: let flags = data[4]
   const flags = data[4];
+  console.log('📊 BLEParser: Flags byte (data[4]) =', '0x' + flags.toString(16).padStart(2, '0'), '=', flags.toString(2).padStart(8, '0'), '(binary)');
+  
   // iOS line 42-48: flag parsing
   const solarCharging = (flags & 0x01) !== 0;
   const usbCharging = (flags & 0x02) !== 0;
@@ -56,6 +58,11 @@ export const parsePowerBankStatus = (data) => {
   const vcAboveMax = (flags & 0x10) !== 0;
   const tcBelowMin = (flags & 0x20) !== 0;
   const tcAboveMax = (flags & 0x40) !== 0;
+  
+  // CRITICAL: Log USB status parsing for debugging
+  console.log('🔌 BLEParser: USB Charging Status =', usbCharging, '(flags & 0x02 =', (flags & 0x02), ')');
+  console.log('🔌 BLEParser: Phone Charging Status =', phoneCharging, '(flags & 0x04 =', (flags & 0x04), ')');
+  console.log('🔌 BLEParser: Solar Charging Status =', solarCharging, '(flags & 0x01 =', (flags & 0x01), ')');
   
   // iOS line 51: caseTemp = Double(data[5])
   // Always return in Celsius - conversion happens at display time (iOS line 319-328)
@@ -81,9 +88,19 @@ export const parsePowerBankStatus = (data) => {
     caseTemp,           // Case temperature (°C or °F)
     phBatPct,           // Phone battery % (confirmation, ignore)
     solarCurr,          // Solar current (mA)
+    flags,              // Raw flags byte for debugging
   };
   
   console.log('✅ BLEParser: Parsed result:', JSON.stringify(result, null, 2));
+  console.log('🔌 BLEParser: USB Status Summary:', {
+    flagsByte: '0x' + flags.toString(16).padStart(2, '0'),
+    flagsBinary: flags.toString(2).padStart(8, '0'),
+    usbBit: (flags & 0x02) !== 0,
+    usbCharging: result.usbCharging,
+    phoneCharging: result.phoneCharging,
+    solarCharging: result.solarCharging,
+  });
+  
   return result;
 };
 

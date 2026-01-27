@@ -724,22 +724,53 @@ const ProfileScreen = ({navigation}) => {
                 : t('profile.searchingForCase')}
             </Text>
             
-            <TouchableOpacity
-              style={styles.connectButton}
-              onPress={startScanOnProfile}
-              activeOpacity={0.8}
-            >
-              <Text style={styles.connectButtonText}>
-                {(() => {
-                  // Only show "Manage Device" if device is properly connected
-                  const deviceInfo = (BLEManager && BLEManager.getConnectedDeviceInfo) ? BLEManager.getConnectedDeviceInfo() : null;
-                  const isProperlyConnected = (BLEManager && BLEManager.isConnected) && 
-                                            deviceInfo && 
-                                            isCaseConnected;
-                  return isProperlyConnected ? t('profile.manageDevice') : t('profile.connectNewDevice');
-                })()}
-              </Text>
-            </TouchableOpacity>
+            {isCaseConnected && BLEManager && BLEManager.isConnected ? (
+              // Show disconnect button when connected
+              <View style={styles.deviceButtonsContainer}>
+                <TouchableOpacity
+                  style={[styles.connectButton, styles.disconnectButton]}
+                  onPress={async () => {
+                    try {
+                      if (BLEManager && BLEManager.disconnectDevice) {
+                        await BLEManager.disconnectDevice();
+                        setIsCaseConnected(false);
+                        setConnectedDeviceName(null);
+                        setConnectionStatus('idle');
+                        showSuccessToast('Device disconnected');
+                      }
+                    } catch (error) {
+                      console.error('Error disconnecting:', error);
+                      Alert.alert('Error', 'Failed to disconnect device');
+                    }
+                  }}
+                  activeOpacity={0.8}
+                >
+                  <Text style={styles.disconnectButtonText}>
+                    {t('profile.disconnectDevice', 'Disconnect Device')}
+                  </Text>
+                </TouchableOpacity>
+                
+                <TouchableOpacity
+                  style={[styles.connectButton, styles.manageButton]}
+                  onPress={startScanOnProfile}
+                  activeOpacity={0.8}
+                >
+                  <Text style={styles.connectButtonText}>
+                    {t('profile.manageDevice')}
+                  </Text>
+                </TouchableOpacity>
+              </View>
+            ) : (
+              <TouchableOpacity
+                style={styles.connectButton}
+                onPress={startScanOnProfile}
+                activeOpacity={0.8}
+              >
+                <Text style={styles.connectButtonText}>
+                  {t('profile.connectNewDevice')}
+                </Text>
+              </TouchableOpacity>
+            )}
 
           </View>
 
@@ -852,6 +883,22 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: '600',
     color: Colors.black,
+  },
+  deviceButtonsContainer: {
+    width: '100%',
+    gap: 10,
+  },
+  disconnectButton: {
+    backgroundColor: '#FF3B30', // Red for disconnect
+    marginBottom: 0,
+  },
+  disconnectButtonText: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: '#FFFFFF',
+  },
+  manageButton: {
+    backgroundColor: Colors.progressYellow,
   },
   switchContainer: {
     justifyContent: 'center',
