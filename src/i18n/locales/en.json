@@ -159,7 +159,10 @@
     "caseConnected": "Case Connected",
     "searchingForCase": "Searching for the Uno case, or Duo case?",
     "connectNewDevice": "Connect New Device",
-    "manageDevice": "Manage Device"
+    "manageDevice": "Manage Device",
+    "disconnectDevice": "Disconnect Device",
+    "caseConnectedMessage": "Your {{deviceName}} case is connected.",
+    "caseConnectedDefault": "Your iPowerUp Uno case is connected."
   },
   "appSettings": {
     "title": "App Settings",
@@ -171,6 +174,7 @@
     "language": "Language",
     "english": "English",
     "spanish": "Spanish",
+    "german": "German",
     "chooseLanguage": "Choose Language",
     "languageUpdated": "Language updated successfully"
   },

@@ -68,7 +68,7 @@ const LoginScreen = ({navigation}) => {
       const result = await loginAPI(email.trim(), password);
 
       if (result.success && result.user) {
-        // Successfully logged in, navigate to TabBar (reset navigation stack like iOS setRootController)
+        // Successfully logged in, navigate to TabBar (reset navigation stack)
         navigation.reset({
           index: 0,
           routes: [{name: 'TabBar'}],

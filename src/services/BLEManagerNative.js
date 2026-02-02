@@ -1,4 +1,3 @@
-// BLE Manager Native - Uses Kotlin Native Module (exact iOS match)
 import {NativeModules, NativeEventEmitter} from 'react-native';
 import {BLE_CONSTANTS} from '../constants/BLEConstants';
 import {
@@ -22,7 +21,7 @@ class BLEManagerNativeService {
     this.isScanning = false;
     this.isConnected = false;
     this.isConnecting = false;
-    this.isAutoScanEnabled = true; // iOS default: true (line 26)
+    this.isAutoScanEnabled = true;
     this.hasReceivedData = false; // Track if we've received actual data (real connection verification)
     this.lastDataReceivedTime = null; // Track when last data was received
     this.discoveredDevices = []; // Only iPowerUp Uno devices
@@ -47,25 +46,20 @@ class BLEManagerNativeService {
       return;
     }
     
-    // iOS: didDiscoverPeripheral() - line 184
     bleEventEmitter.addListener('onDeviceDiscovered', (device) => {
       console.log('✅ Device discovered:', device.name, device.id);
       
-      // Avoid duplicates (iOS: !self.discoveredDevices.contains - line 164)
       if (!this.discoveredDevices.find(d => d.id === device.id)) {
         this.discoveredDevices.push(device);
         this.allDiscoveredDevices.push(device);
         
-        // iOS: delegate?.didDiscoverPeripheral() - line 184
         if (this.delegate?.onDeviceDiscovered) {
           this.delegate.onDeviceDiscovered(device);
         }
         
-        // iOS line 598-607: Auto-connect if isAutoScanEnabled == true
-        // iOS: if self.manager.isAutoScanEnabled == false { NotificationCenter } else { connectToDevice }
         if (this.isAutoScanEnabled && !this.isConnected && !this.isConnecting) {
-          console.log('🔄 Auto-connecting to device (iOS behavior)');
-          // Auto-connect to first device found (iOS line 603-604)
+          console.log('🔄 Auto-connecting to device');
+          // Auto-connect to first device found
           setTimeout(() => {
             if (!this.isConnected && !this.isConnecting && this.discoveredDevices.length > 0) {
               const firstDevice = this.discoveredDevices[0];
@@ -80,7 +74,6 @@ class BLEManagerNativeService {
       }
     });
     
-        // iOS: didConnect(to:) - line 199
         bleEventEmitter.addListener('onConnected', (device) => {
           console.log('🎉 Connected to:', device.name);
           console.log('🔍 Actual GATT connected:', device.actualGattConnected);
@@ -103,7 +96,6 @@ class BLEManagerNativeService {
           }
         });
     
-    // iOS: didDisconnect(from:) - line 214
     bleEventEmitter.addListener('onDisconnected', (disconnectInfo) => {
       const reason = disconnectInfo?.reason || 'Unknown reason';
       const status = disconnectInfo?.status || -1;
@@ -130,7 +122,6 @@ class BLEManagerNativeService {
       }
     });
     
-    // iOS: didFailToConnect(to:) - line 207
     bleEventEmitter.addListener('onConnectionFailed', (error) => {
       console.error('❌ Connection failed:', error);
       this.isConnecting = false;
@@ -140,7 +131,6 @@ class BLEManagerNativeService {
       }
     });
     
-    // iOS: didReceiveData(_:commandSent:) - line 335
     bleEventEmitter.addListener('onDataReceived', (data) => {
       const rawDataStr = data.data || '';
       const dataLength = data.dataLength || 0;
@@ -166,7 +156,7 @@ class BLEManagerNativeService {
         this.delegate.onRawDataReceived(rawDataStr);
       }
       
-      // Parse data if it's hex string (iOS sends hex string)
+      // Parse data if it's hex string
       if (this.delegate?.onDataReceived) {
         // Check if data is hex string or parsed object
         if (typeof rawDataStr === 'string' && rawDataStr.length > 0) {
@@ -184,8 +174,8 @@ class BLEManagerNativeService {
             }
             console.log('📥 Parsed buffer length:', buffer.length, 'bytes');
             
-            // iOS: Parse based on first byte (command) instead of currentCommand
-            // This is more reliable as data might arrive after currentCommand is cleared
+            // Parse based on first byte (command) instead of currentCommand. This is more
+            // reliable as data might arrive after currentCommand is cleared.
             if (buffer.length > 0) {
               const commandByte = buffer[0];
               const commandHex = '0x' + commandByte.toString(16).padStart(2, '0').toUpperCase();
@@ -216,8 +206,7 @@ class BLEManagerNativeService {
                 }
               } else if (commandByte === BLE_CONSTANTS.COMMAND_QUERY_CHARGER_CONFIG) {
                 console.log('✅ Detected Charger Config response (0x03)');
-                // Parse charger config - Protocol PDF: byte 5 (index 5) = EnPhCharger (0=off, 1=on)
-                // iOS: bytes[5] == 1 for enPhCharger
+                // Parse charger config - Protocol: byte 5 (index 5) = EnPhCharger (0=off, 1=on)
                 if (buffer.length >= 6) {
                   const enPhCharger = buffer[5] === 1;
                   console.log('📊 Charger Config - enPhCharger:', enPhCharger);
@@ -233,30 +222,23 @@ class BLEManagerNativeService {
                 if (this.delegate?.onDeviceResponse) {
                   this.delegate.onDeviceResponse('0x19 (PASSWORD_ACK)', rawDataStr, buffer.length);
                 }
-                // Password acknowledged - device is ready
-                // iOS doesn't wait for password ACK before sending 0x04, but we log it for debugging
-                // The actual data will come from queryPowerBankStatus (0x04) response
+                // Password acknowledged - device is ready. The actual data will come from
+                // queryPowerBankStatus (0x04) response.
                 this.hasReceivedData = true; // Mark that we've received some response
               } else if (commandByte === BLE_CONSTANTS.COMMAND_ENABLE_PHONE_CHARGING) {
-                // iOS: enablePhoneCharging response (0x21) - just debugPrint, no UI update
-                // iOS line 287-290: case .enablePhoneCharging: debugPrint(data)
                 console.log('✅ Device acknowledged ENABLE_PHONE_CHARGING (0x21 response)');
-                console.log('📝 iOS pattern: Ignoring 0x21 response - status will come from PowerBankStatus (0x04)');
+                console.log('📝 Ignoring 0x21 response - status will come from PowerBankStatus (0x04)');
                 if (this.delegate?.onDeviceResponse) {
                   this.delegate.onDeviceResponse('0x21 (ENABLE_CHARGING_ACK)', rawDataStr, buffer.length);
                 }
                 // Don't update UI from command response - wait for PowerBankStatus query
-                // iOS relies on periodic query to update charging status
               } else if (commandByte === BLE_CONSTANTS.COMMAND_STOP_CHARGING) {
-                // iOS: stopCharging response (0x18) - just debugPrint, no UI update
-                // iOS line 291-294: case .stopCharging: debugPrint(data)
                 console.log('✅ Device acknowledged STOP_CHARGING (0x18 response)');
-                console.log('📝 iOS pattern: Ignoring 0x18 response - status will come from PowerBankStatus (0x04)');
+                console.log('📝 Ignoring 0x18 response - status will come from PowerBankStatus (0x04)');
                 if (this.delegate?.onDeviceResponse) {
                   this.delegate.onDeviceResponse('0x18 (STOP_CHARGING_ACK)', rawDataStr, buffer.length);
                 }
                 // Don't update UI from command response - wait for PowerBankStatus query
-                // iOS relies on periodic query to update charging status
               } else {
                 // For other/unknown commands, log them
                 console.log('⚠️ Unknown/unexpected command byte:', commandHex);
@@ -292,7 +274,6 @@ class BLEManagerNativeService {
       }
     });
     
-    // iOS: didStartScanning() - line 69
     bleEventEmitter.addListener('onScanStarted', () => {
       console.log('🔍 Scan started');
       this.isScanning = true;
@@ -306,7 +287,6 @@ class BLEManagerNativeService {
       }
     });
     
-    // iOS: didStopScanning() - line 76
     bleEventEmitter.addListener('onScanStopped', () => {
       console.log('⏹️ Scan stopped');
       this.isScanning = false;
@@ -347,8 +327,7 @@ class BLEManagerNativeService {
       }
     });
     
-    // Update all discovered devices list (for UI)
-    // This is called whenever a device is discovered
+    // Update all discovered devices list (for UI). This is called whenever a device is discovered.
     bleEventEmitter.addListener('onDeviceDiscovered', (device) => {
       // Also trigger onAnyDeviceDiscovered with updated list
       if (this.delegate?.onAnyDeviceDiscovered) {
@@ -356,7 +335,7 @@ class BLEManagerNativeService {
       }
     });
     
-    // Notification enabled event (from Android native)
+    // Notification enabled event (from native)
     bleEventEmitter.addListener('onNotificationEnabled', (data) => {
       console.log('📡 Notification enabled status:', data.status);
       if (data.status === 'success') {
@@ -384,7 +363,6 @@ class BLEManagerNativeService {
     });
   }
   
-  // iOS: startScanning() - line 66
   async startScanning() {
     try {
       if (this.isScanning) {
@@ -396,7 +374,6 @@ class BLEManagerNativeService {
       this.discoveredDevices = [];
       this.allDiscoveredDevices = [];
       
-      // iOS: centralManager.scanForPeripherals(withServices: nil, options: nil) - line 68
       await BLEManagerNative.startScanning();
       this.isScanning = true;
     } catch (error) {
@@ -405,14 +382,12 @@ class BLEManagerNativeService {
     }
   }
   
-  // iOS: stopScanning() - line 73
   async stopScanning() {
     try {
       if (!this.isScanning) {
         return;
       }
       
-      // iOS: centralManager.stopScan() - line 75
       await BLEManagerNative.stopScanning();
       this.isScanning = false;
     } catch (error) {
@@ -421,7 +396,6 @@ class BLEManagerNativeService {
     }
   }
   
-  // iOS: connectToDevice(_:) - line 114
   async connectToDevice(device) {
     try {
       if (this.isConnecting || this.isConnected) {
@@ -435,12 +409,9 @@ class BLEManagerNativeService {
       
       this.isConnecting = true;
       
-      // iOS: centralManager.connect(peripheral, options: options) - line 128
-      // iOS line 118-125: Connection options for stability
       // Password timer is handled in native (1 second after connection initiated)
       await BLEManagerNative.connectToDevice(device.id);
       
-      // iOS doesn't wait for connection - it's async
       // Connection state will be updated via onConnected event
     } catch (error) {
       this.isConnecting = false;
@@ -449,7 +420,6 @@ class BLEManagerNativeService {
     }
   }
   
-  // iOS: connectToDevice(_:) - but by device ID
   async connectToDeviceById(deviceId) {
     try {
       const device = this.discoveredDevices.find(d => d.id === deviceId);
@@ -464,7 +434,6 @@ class BLEManagerNativeService {
     }
   }
   
-  // iOS: disconnectDevice() - line 80
   async disconnectDevice() {
     try {
       await BLEManagerNative.disconnectDevice();
@@ -477,14 +446,12 @@ class BLEManagerNativeService {
     }
   }
   
-  // iOS: sendCommand(_:value:) - line 91
   async sendCommand(commandType, value = 0) {
     try {
       if (!this.isConnected) {
         throw new Error('Not connected');
       }
       
-      // iOS: peripheral.writeValue(data, for: writeCharacters, type: .withoutResponse) - line 104
       await BLEManagerNative.sendCommand(commandType, value);
       this.currentCommand = commandType;
     } catch (error) {
@@ -493,12 +460,10 @@ class BLEManagerNativeService {
     }
   }
   
-  // iOS: sendCommand(.sendPassword) - line 131
   async sendPassword() {
     await this.sendCommand(BLE_CONSTANTS.COMMAND_SEND_PASSWORD);
   }
   
-  // iOS: sendCommand(.queryPowerBankStatus) - with phone battery
   async queryPowerBankStatus() {
     // Get phone battery level (handle both sync and async getters)
     let phoneBattery = 50; // Default fallback
@@ -519,42 +484,33 @@ class BLEManagerNativeService {
     await this.sendCommand(BLE_CONSTANTS.COMMAND_QUERY_POWER_BANK_STATUS, phoneBattery);
   }
   
-  // iOS: sendCommand(.enablePhoneCharging) - line 166
-  // iOS: Just sends command, no immediate query (periodic query will handle updates)
   async enablePhoneCharging() {
     console.log('⚡ Sending ENABLE_PHONE_CHARGING command (0x21)...');
     console.log('⚠️ IMPORTANT: Make sure phone is connected to case via USB cable for charging to work');
     await this.sendCommand(BLE_CONSTANTS.COMMAND_ENABLE_PHONE_CHARGING);
     console.log('✅ ENABLE_PHONE_CHARGING command sent successfully');
     
-    // iOS: No immediate query after command - periodic query (every 5 seconds) will update status
-    // iOS line 287-290: Just debugPrint, no query
+    // No immediate query after command - periodic query (every 5 seconds) will update status
   }
   
-  // iOS: sendCommand(.stopCharging) - line 163
-  // iOS: Just sends command, no immediate query (periodic query will handle updates)
   async stopCharging() {
     console.log('🛑 Sending STOP_CHARGING command (0x18)...');
     await this.sendCommand(BLE_CONSTANTS.COMMAND_STOP_CHARGING);
     console.log('✅ STOP_CHARGING command sent successfully');
     
-    // iOS: No immediate query after command - periodic query (every 5 seconds) will update status
-    // iOS line 291-294: Just debugPrint, no query
+    // No immediate query after command - periodic query (every 5 seconds) will update status
   }
   
-  // iOS: sendCommand(.queryChargerConfigStatus)
   async queryChargerConfigStatus() {
     console.log('📊 Sending QUERY_CHARGER_CONFIG_STATUS command (0x03)...');
     await this.sendCommand(BLE_CONSTANTS.COMMAND_QUERY_CHARGER_CONFIG);
     console.log('✅ QUERY_CHARGER_CONFIG_STATUS command sent successfully');
   }
   
-  // Get discovered devices (iOS: discoveredDevices - line 34)
   getDiscoveredDevices() {
     return this.allDiscoveredDevices;
   }
   
-  // iOS: getAllDiscoveredDevices() - alias for compatibility
   getAllDiscoveredDevices() {
     return this.allDiscoveredDevices;
   }
@@ -579,7 +535,6 @@ class BLEManagerNativeService {
       }
       
       // Check if device is REALLY connected (has received data)
-      // iOS: isConnected is set in didConnect, but real verification is when data is received
       isReallyConnected() {
         return this.isConnected && this.hasReceivedData;
       }
@@ -595,7 +550,6 @@ class BLEManagerNativeService {
         };
       }
   
-  // Set delegate (iOS: weak var delegate - line 21)
   setDelegate(delegate) {
     this.delegate = delegate;
   }
@@ -620,12 +574,12 @@ class BLEManagerNativeService {
     }
   }
   
-  // Start periodic query (iOS pattern) - alias for compatibility
+  // Start periodic query - alias for compatibility
   startPeriodicQueries() {
     this.startPeriodicQuery();
   }
   
-  // Start periodic query (iOS pattern)
+  // Start periodic query
   startPeriodicQuery() {
     // CRITICAL: Always clear existing interval first to prevent duplicates
     if (this.queryInterval) {
@@ -636,7 +590,7 @@ class BLEManagerNativeService {
     
     console.log('🔄 Starting periodic query (every', BLE_CONSTANTS.QUERY_INTERVAL / 1000, 'seconds)');
     
-    // Query every 5 seconds (iOS pattern)
+    // Query every 5 seconds
     // Add error handling to prevent silent failures
     this.queryInterval = setInterval(() => {
       if (this.isConnected) {

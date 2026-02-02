@@ -4,6 +4,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 
 import en from './locales/en.json';
 import es from './locales/es.json';
+import de from './locales/de.json';
 
 const LANGUAGE_KEY = '@ipowerup:language';
 
@@ -29,6 +30,9 @@ i18n
       },
       es: {
         translation: es,
+      },
+      de: {
+        translation: de,
       },
     },
     lng: 'en', // Default language

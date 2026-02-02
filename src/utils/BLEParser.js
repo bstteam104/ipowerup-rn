@@ -1,36 +1,25 @@
 // BLE Response Parser
-// Protocol matches iOS PowerBankStatus.swift exactly
 
 /**
  * Parse 0x04 response (Power Bank Status)
- * 
- * Protocol (iOS PowerBankStatus.swift line 31-61):
+ *
+ * Protocol:
  * Byte 0: Command (0x04) - verified but not used in parsing
  * Byte 1-2: Case Battery Voltage (little-endian, LSB = 1mV)
  * Byte 3: Case Battery Percentage (0-100)
  * Byte 4: Status flags (bits for charging states)
  * Byte 5: Case Temperature (°C)
- * Byte 6: (unused in iOS)
+ * Byte 6: (unused)
  * Byte 7: Phone Battery % (confirmation, ignore)
  * Byte 8-9: Solar Current (little-endian, in mA)
- * 
- * iOS parsing (PowerBankStatus.swift):
- * - caseBatV = Int(data[1]) | (Int(data[2]) << 8)
- * - caseBatPct = Int(data[3])
- * - flags = data[4]
- * - caseTemp = Double(data[5])
- * - phBatPct = Int(data[7])
- * - solarCurr = Int(data[8]) | (Int(data[9]) << 8)
  */
 export const parsePowerBankStatus = (data) => {
-  // iOS: guard data.count >= 10 else { return } - line 32
   if (!data || data.length < 10) {
     console.error('❌ BLEParser: Invalid data length:', data?.length, 'Expected: >= 10');
     return null;
   }
   
-  // iOS doesn't check command byte in parse(), but we do for safety
-  // iOS: command is verified in didReceiveData before calling PowerBankStatus(hexString:)
+  // Command byte safety check
   if (data[0] !== 0x04) {
     console.error('❌ BLEParser: Invalid command byte:', data[0]?.toString(16), 'Expected: 0x04');
     return null;
@@ -39,18 +28,14 @@ export const parsePowerBankStatus = (data) => {
   console.log('✅ BLEParser: Valid Power Bank Status data, length:', data.length);
   console.log('📥 BLEParser: Raw hex:', Array.from(data).map(b => b.toString(16).padStart(2, '0')).join(' '));
   
-  // iOS line 35: caseBatV = Int(data[1]) | (Int(data[2]) << 8)
   const caseBatV = data[1] | (data[2] << 8);
   
-  // iOS line 38: caseBatPct = Int(data[3])
   const caseBatPct = data[3];
   console.log('📊 BLEParser: caseBatPct =', caseBatPct, '%');
   
-  // iOS line 41: let flags = data[4]
   const flags = data[4];
   console.log('📊 BLEParser: Flags byte (data[4]) =', '0x' + flags.toString(16).padStart(2, '0'), '=', flags.toString(2).padStart(8, '0'), '(binary)');
   
-  // iOS line 42-48: flag parsing
   const solarCharging = (flags & 0x01) !== 0;
   const usbCharging = (flags & 0x02) !== 0;
   const phoneCharging = (flags & 0x04) !== 0;
@@ -59,20 +44,16 @@ export const parsePowerBankStatus = (data) => {
   const tcBelowMin = (flags & 0x20) !== 0;
   const tcAboveMax = (flags & 0x40) !== 0;
   
-  // CRITICAL: Log USB status parsing for debugging
   console.log('🔌 BLEParser: USB Charging Status =', usbCharging, '(flags & 0x02 =', (flags & 0x02), ')');
   console.log('🔌 BLEParser: Phone Charging Status =', phoneCharging, '(flags & 0x04 =', (flags & 0x04), ')');
   console.log('🔌 BLEParser: Solar Charging Status =', solarCharging, '(flags & 0x01 =', (flags & 0x01), ')');
   
-  // iOS line 51: caseTemp = Double(data[5])
-  // Always return in Celsius - conversion happens at display time (iOS line 319-328)
+  // Always return in Celsius - conversion happens at display time
   const caseTemp = data[5];
   console.log('📊 BLEParser: caseTemp (raw) =', caseTemp, '°C');
   
-  // iOS line 57: phBatPct = Int(data[7])
   const phBatPct = data[7];
   
-  // iOS line 60: solarCurr = Int(data[8]) | (Int(data[9]) << 8)
   const solarCurr = data[8] | (data[9] << 8);
   
   const result = {

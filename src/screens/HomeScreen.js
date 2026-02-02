@@ -18,7 +18,6 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import DeviceInfo from 'react-native-device-info';
 import {useIsFocused} from '@react-navigation/native';
 import {useTranslation} from 'react-i18next';
-// Use Native Kotlin BLE Manager (exact iOS match)
 import BLEManager from '../services/BLEManagerNative';
 import {BLE_CONSTANTS} from '../constants/BLEConstants';
 import {saveHistoryEntry} from '../storage/HistoryStorage';
@@ -41,12 +40,7 @@ const getBatteryImage = (level) => {
 };
 
 const getTemperatureImage = (tempCelsius, unit = 'celsius') => {
-  // Always use Celsius for color determination (iOS BLETemperatureUnit.swift)
-  // The image color is based on Celsius value regardless of display unit
   const celsius = tempCelsius;
-  
-  // iOS BLETemperatureUnit.swift color logic (always use Celsius ranges)
-  // Color thresholds are based on Celsius, even when displaying Fahrenheit
   if (celsius < -10) {
     // Purple not available, use blue as fallback
     return require('../../assets/temperature/temp-blue.png');
@@ -275,8 +269,17 @@ const HomeScreen = ({navigation, route}) => {
     // Get initial phone battery
     getPhoneBatteryLevel();
     
-    // Sync connection state on mount
-    setIsConnected(!!BLEManager.isConnected);
+    // Sync connection state on mount (prefer "real" connection with data)
+    try {
+      if (BLEManager.isReallyConnected) {
+        setIsConnected(BLEManager.isReallyConnected());
+      } else {
+        setIsConnected(!!BLEManager.isConnected);
+      }
+    } catch (e) {
+      console.warn('⚠️ Failed to read initial real connection state:', e);
+      setIsConnected(!!BLEManager.isConnected);
+    }
     
     // Check permissions and request if needed
     checkBluetoothPermissions().then((hasPermission) => {
@@ -297,8 +300,17 @@ const HomeScreen = ({navigation, route}) => {
     }, 5000);
     
     // Sync connection state periodically (in case it changes externally)
-    const connectionSyncInterval = setInterval(() => {
-      const currentConnected = !!BLEManager.isConnected;
+      const connectionSyncInterval = setInterval(() => {
+      // Prefer "real" connection (BLE + at least one data packet) to avoid
+      // showing Connected state when no values are coming from the device
+      let currentConnected = !!BLEManager.isConnected;
+      try {
+        if (BLEManager.isReallyConnected) {
+          currentConnected = BLEManager.isReallyConnected();
+        }
+      } catch (e) {
+        console.warn('⚠️ Failed to read real connection state in sync interval:', e);
+      }
       if (currentConnected !== isConnected) {
         setIsConnected(currentConnected);
         
@@ -378,7 +390,7 @@ const HomeScreen = ({navigation, route}) => {
     }
   }, [route?.params?.openScanModal]);
 
-  // Reload temperature unit when screen is focused (iOS: NotificationCenter for temperatureDidChange)
+  // Reload temperature unit when screen is focused
   // Also check if connected but no data received - retry query
   useEffect(() => {
     if (isFocused) {
@@ -471,7 +483,6 @@ const HomeScreen = ({navigation, route}) => {
             'Please enable Bluetooth to connect to your device'
           );
         } else if (state === 'PoweredOn') {
-          // iOS: bluetoothDidUpdateState - if poweredOn, start scanning (line 592-595)
           // As soon as Bluetooth turns ON, restart scanning if not connected
           if (!BLEManager.isConnected) {
             console.log('🔄 Bluetooth turned on, restarting scan...');
@@ -504,7 +515,6 @@ const HomeScreen = ({navigation, route}) => {
       
       onDeviceDiscovered: (device) => {
         console.log('✅ iPowerUp device discovered:', device.name);
-        // iOS line 598-607: Auto-connect if isAutoScanEnabled == true
         // Auto-connect is handled in BLEManagerNative when isAutoScanEnabled is true
         // If auto-connect is disabled, just show in modal
       },
@@ -517,23 +527,17 @@ const HomeScreen = ({navigation, route}) => {
       
       onConnected: (device) => {
         console.log('✅ Connected to:', device?.name || 'Unknown Device');
-        
-        // iOS line 195-203: didConnect sets isConnected and discovers services
-        // iOS line 262-263: didConnectPeripheral() immediately calls queryPowerBankStatus
         setIsConnected(true);
         // Reset charging states when connecting
         setUsbCharging(false);
         setPhoneCharging(false);
         setIsCharging(false);
         // Enable button by default when connected (will be updated when charger config is received)
-        // iOS: Button is enabled when enPhCharger == true, but we enable it initially
-        // and update based on actual config response
         setChargeConfigEnabled(true); // Default to enabled, will be updated by config
-        // Close scanning modal when connected (iOS: modal closes on connect)
+        // Close scanning modal when connected
         setShowScanningModal(false);
-        // iOS: Start periodic queries immediately
-        // CRITICAL: Stop any existing periodic query first, then start fresh
-        // This ensures periodic query is active on reconnect
+        // Start periodic queries immediately. Stop any existing periodic query first,
+        // then start fresh to ensure periodic query is active on reconnect.
         if (BLEManager.stopPeriodicQueries) {
           BLEManager.stopPeriodicQueries();
         }
@@ -562,24 +566,16 @@ const HomeScreen = ({navigation, route}) => {
         // Reset data received count on reconnect
         dataReceivedCountRef.current = 0;
         
-        // iOS: didConnectPeripheral() immediately calls queryPowerBankStatus (line 64)
-        // iOS: After 2 seconds, if connected, sends query (line 60-66)
-        // iOS: Periodic query runs every interval (line 75-95)
-        // CRITICAL: iOS ensures values always show by:
-        // 1. Immediate query after connection (2 seconds delay)
-        // 2. Periodic query every interval
-        // 3. Direct update from PowerBankStatus (no verification delays)
-        
-        // iOS pattern: Query immediately after connection (with small delay for Android)
-        // Then periodic query handles continuous updates
-        // CRITICAL: Multiple retry attempts to ensure data is received
+        // Query immediately after connection (with small delay for Android) and then let
+        // periodic queries handle continuous updates, with multiple retry attempts to
+        // ensure data is received.
         const sendInitialQuery = (attempt = 1, maxAttempts = 5) => {
           const delays = [2000, 3000, 4000, 5000, 6000]; // Increasing delays
           const delay = delays[attempt - 1] || 6000;
           
           setTimeout(() => {
             if (BLEManager.isConnected) {
-              console.log(`🔍 iOS pattern: Sending initial queryPowerBankStatus (attempt ${attempt}/${maxAttempts})...`);
+              console.log(`🔍 Sending initial queryPowerBankStatus (attempt ${attempt}/${maxAttempts})...`);
               
               // Update query attempts in debug
               setDebugInfo(prev => ({
@@ -607,7 +603,6 @@ const HomeScreen = ({navigation, route}) => {
                 }
               });
               
-              // iOS: Query charger config after 1.4 seconds (line 348)
               // Only query config if we're on a later attempt (give time for first query)
               if (attempt >= 2) {
                 setTimeout(() => {
@@ -623,11 +618,11 @@ const HomeScreen = ({navigation, route}) => {
           }, delay);
         };
         
-        // Start initial query with multiple retries (iOS pattern + Android reliability)
+        // Start initial query with multiple retries for reliability
         sendInitialQuery(1, 5);
         
-        // CRITICAL: Check if data received after 10 seconds
-        // If no data received, it's likely a case issue
+        // CRITICAL: Check if data received after 10 seconds. If no data received,
+        // it's likely a case issue.
         setTimeout(() => {
           if (BLEManager.isConnected && debugInfo.dataReceivedCount === 0) {
             console.error('❌ No data received after 10 seconds - possible case issue');
@@ -746,7 +741,7 @@ const HomeScreen = ({navigation, route}) => {
       onDataReceived: async (data) => {
         console.log('📥 HomeScreen: onDataReceived called with:', data);
         
-        // Increment data received count FIRST
+        // Increment data received count FIRST for this packet
         dataReceivedCountRef.current += 1;
         const currentCount = dataReceivedCountRef.current;
         
@@ -762,14 +757,12 @@ const HomeScreen = ({navigation, route}) => {
           dataReceivedCount: currentCount,
         }));
         
-        // iOS: After queryPowerBankStatus response, query charger config after 1.4 seconds (line 348-355)
-        // iOS uses 1.4 seconds delay, not 0.4 seconds
         if (data && typeof data.caseBatPct === 'number') {
           setTimeout(() => {
             if (BLEManager.isConnected && BLEManager.queryChargerConfigStatus) {
               BLEManager.queryChargerConfigStatus();
             }
-          }, 1400); // 1.4 seconds like iOS (line 348)
+          }, 1400);
         }
         
         // Update UI with received data - ensure we have valid data before updating
@@ -815,18 +808,12 @@ const HomeScreen = ({navigation, route}) => {
           }
         }
         
-        // Increment data received count
-        dataReceivedCountRef.current += 1;
         // Update charging states from PowerBankStatus (actual status, not config)
-        // iOS: Directly updates from PowerBankStatus response (line 300, 308-312)
-        // iOS doesn't do any verification - it trusts the device response
         const phoneChargingStatus = data?.phoneCharging === true;
         const usbChargingStatus = data?.usbCharging === true;
         console.log('🔌 USB Charging Status:', usbChargingStatus, '| Phone Charging Status:', phoneChargingStatus);
         
-        // iOS: Directly update from PowerBankStatus (line 300: swipeImageState based on phoneCharging)
-        // iOS: No special handling for USB status - just update directly
-        // CRITICAL: Only update charging status from PowerBankStatus (0x04), not from command responses (0x21, 0x18)
+        // Only update charging status from PowerBankStatus (0x04), not from command responses (0x21, 0x18)
         if (data && typeof data.phoneCharging === 'boolean') {
           const previousCharging = phoneCharging;
           setPhoneCharging(phoneChargingStatus);
@@ -846,10 +833,8 @@ const HomeScreen = ({navigation, route}) => {
           console.warn('⚠️ Phone charging status not in data or invalid:', data?.phoneCharging);
         }
         
-        // iOS: USB status is part of PowerBankStatus but not explicitly tracked separately
-        // We track it for button enable/disable logic, but update directly like iOS
-        // CRITICAL: Always update USB status from data, even if false
-        // This ensures USB status is accurate
+        // USB status is part of PowerBankStatus; we track it for button enable/disable logic
+        // and always update from data, even if false, to keep it accurate.
         if (data && typeof data.usbCharging === 'boolean') {
           const previousUsbStatus = usbCharging;
           setUsbCharging(usbChargingStatus);
@@ -948,10 +933,8 @@ const HomeScreen = ({navigation, route}) => {
       },
       
       // Charger config received - enable/disable button based on enPhCharger
-      // iOS: Button is enabled when enPhCharger == true (regardless of USB connection)
       onChargerConfigReceived: (config) => {
         console.log('📊 Charger Config received:', config);
-        // iOS: Enable button if enPhCharger == true
         const isEnabled = config.enPhCharger === true;
         setChargeConfigEnabled(isEnabled);
         console.log('🔘 Transfer Power Button enabled:', isEnabled, '(enPhCharger:', config.enPhCharger, ')');
@@ -1025,11 +1008,9 @@ const HomeScreen = ({navigation, route}) => {
       },
     });
     
-    // iOS line 592-595: bluetoothDidUpdateState - if poweredOn, start scanning
-    // iOS line 598-607: didDiscoverPeripheral - auto-connect if isAutoScanEnabled == true
-    // Start scanning immediately (iOS behavior - auto-connect enabled by default)
+    // Start scanning immediately (auto-connect enabled by default)
     if (!BLEManager.isConnected) {
-      // Enable auto-connect for HomeScreen (iOS default behavior)
+      // Enable auto-connect for HomeScreen
       BLEManager.isAutoScanEnabled = true;
       BLEManager.startScanning();
     } else {
@@ -1039,7 +1020,7 @@ const HomeScreen = ({navigation, route}) => {
   };
 
   const formatTemperature = (tempCelsius) => {
-    // Convert to Fahrenheit if needed (iOS line 319-328)
+    // Convert to Fahrenheit if needed
     let displayTemp = tempCelsius;
     if (temperatureUnit === 'fahrenheit') {
       if (tempCelsius === 0) {
@@ -1071,10 +1052,7 @@ const HomeScreen = ({navigation, route}) => {
       return;
     }
     
-    // iOS logic (line 158-164, 308-312): Toggle based on ACTUAL phoneCharging status
-    // iOS: If phoneCharging == true, send stop command (0x18)
-    // iOS: If phoneCharging == false, send enable command (0x21)
-    // Use actual charging status, not config setting
+    // Toggle based on ACTUAL phoneCharging status (use actual charging status, not config setting)
     if (phoneCharging) {
       // Phone is actually charging - send stop command (0x18)
       console.log('🛑 Stopping phone charging (0x18)...');
@@ -1107,11 +1085,8 @@ const HomeScreen = ({navigation, route}) => {
       });
     }
     
-    // iOS: No immediate query after command - periodic query (every 5 seconds) will update status
-    // iOS line 287-294: Just debugPrint after command, no query
-    // The periodic query (started in onConnected) will automatically update the status
-    // However, we can send a query after a short delay to get faster feedback (optional)
-    // iOS doesn't do this, but it helps with UX
+    // The periodic query (started in onConnected) will automatically update the status.
+    // Additionally, we send a query after a short delay to get faster feedback.
     setTimeout(() => {
       if (BLEManager.isConnected && BLEManager.queryPowerBankStatus) {
         console.log('🔍 Querying PowerBankStatus after charging command to get updated status...');
@@ -1119,7 +1094,7 @@ const HomeScreen = ({navigation, route}) => {
           console.error('❌ Query after command failed:', error);
         });
       }
-    }, 1500); // 1.5 seconds delay - gives device time to process command
+    }, 500); // 0.5 seconds delay - enough for device, but feels instant in UI
   };
 
   return (
@@ -1222,9 +1197,8 @@ const HomeScreen = ({navigation, route}) => {
           </View>
 
           {/* Transfer Power Button */}
-          {/* iOS behavior: Button enabled when device connected AND enPhCharger == true */}
           {/* 
-            Button Logic (iOS reference):
+            Button Logic:
             - Button is ENABLED when: BLE connected AND enPhCharger config == true
             - Button is DISABLED when: BLE not connected OR enPhCharger == false
             - Button shows YELLOW (Stop Charging) when phoneCharging == true
@@ -1252,7 +1226,8 @@ const HomeScreen = ({navigation, route}) => {
             />
           </TouchableOpacity>
 
-          {/* Debug Panel */}
+          {/* Debug Panel - Commented out for now */}
+          {/* 
           <TouchableOpacity 
             style={styles.debugToggle}
             onPress={() => setShowDebug(!showDebug)}
@@ -1267,7 +1242,6 @@ const HomeScreen = ({navigation, route}) => {
             <View style={styles.debugPanel}>
               <Text style={styles.debugTitle}>🔍 Debug Information</Text>
               
-              {/* Connection Status */}
               <View style={styles.debugRow}>
                 <Text style={styles.debugLabel}>Connection:</Text>
                 <Text style={[styles.debugValue, isConnected ? styles.debugSuccess : styles.debugError]}>
@@ -1275,7 +1249,6 @@ const HomeScreen = ({navigation, route}) => {
                 </Text>
               </View>
 
-              {/* Button State */}
               <View style={styles.debugRow}>
                 <Text style={styles.debugLabel}>Button State:</Text>
                 <Text style={[styles.debugValue, (!isConnected || !chargeConfigEnabled) ? styles.debugError : styles.debugSuccess]}>
@@ -1283,7 +1256,6 @@ const HomeScreen = ({navigation, route}) => {
                 </Text>
               </View>
 
-              {/* Charge Config */}
               <View style={styles.debugRow}>
                 <Text style={styles.debugLabel}>enPhCharger Config:</Text>
                 <Text style={[styles.debugValue, chargeConfigEnabled ? styles.debugSuccess : styles.debugError]}>
@@ -1291,7 +1263,6 @@ const HomeScreen = ({navigation, route}) => {
                 </Text>
               </View>
 
-              {/* USB Charging */}
               <View style={styles.debugRow}>
                 <Text style={styles.debugLabel}>USB Connected:</Text>
                 <Text style={[styles.debugValue, usbCharging ? styles.debugSuccess : styles.debugWarning]}>
@@ -1299,7 +1270,6 @@ const HomeScreen = ({navigation, route}) => {
                 </Text>
               </View>
 
-              {/* USB Status from Last Data */}
               {debugInfo.rawData && typeof debugInfo.rawData.usbCharging === 'boolean' && (
                 <View style={styles.debugRow}>
                   <Text style={styles.debugLabel}>USB (from device):</Text>
@@ -1309,7 +1279,6 @@ const HomeScreen = ({navigation, route}) => {
                 </View>
               )}
 
-              {/* USB Status History */}
               {debugInfo.usbStatusHistory && debugInfo.usbStatusHistory.length > 0 && (
                 <View style={styles.debugRow}>
                   <Text style={styles.debugLabel}>USB History:</Text>
@@ -1321,7 +1290,6 @@ const HomeScreen = ({navigation, route}) => {
                 </View>
               )}
 
-              {/* USB Status Help */}
               <View style={styles.debugRow}>
                 <Text style={styles.debugLabel}>USB Info:</Text>
                 <Text style={[styles.debugValue, styles.debugValueSmall]} numberOfLines={3}>
@@ -1337,7 +1305,6 @@ const HomeScreen = ({navigation, route}) => {
                 </Text>
               </View>
 
-              {/* Phone Charging */}
               <View style={styles.debugRow}>
                 <Text style={styles.debugLabel}>Phone Charging:</Text>
                 <Text style={[styles.debugValue, phoneCharging ? styles.debugSuccess : styles.debugWarning]}>
@@ -1345,7 +1312,6 @@ const HomeScreen = ({navigation, route}) => {
                 </Text>
               </View>
 
-              {/* Case Battery */}
               <View style={styles.debugRow}>
                 <Text style={styles.debugLabel}>Case Battery:</Text>
                 <Text style={styles.debugValue}>
@@ -1353,7 +1319,6 @@ const HomeScreen = ({navigation, route}) => {
                 </Text>
               </View>
 
-              {/* Case Temperature */}
               <View style={styles.debugRow}>
                 <Text style={styles.debugLabel}>Case Temperature:</Text>
                 <Text style={styles.debugValue}>
@@ -1363,7 +1328,6 @@ const HomeScreen = ({navigation, route}) => {
                 </Text>
               </View>
 
-              {/* Last Data Time */}
               <View style={styles.debugRow}>
                 <Text style={styles.debugLabel}>Last Data:</Text>
                 <Text style={styles.debugValue}>
@@ -1373,13 +1337,11 @@ const HomeScreen = ({navigation, route}) => {
                 </Text>
               </View>
 
-              {/* Query Attempts */}
               <View style={styles.debugRow}>
                 <Text style={styles.debugLabel}>Query Attempts:</Text>
                 <Text style={styles.debugValue}>{debugInfo.queryAttempts}</Text>
               </View>
 
-              {/* Data Received Count */}
               <View style={styles.debugRow}>
                 <Text style={styles.debugLabel}>Data Received:</Text>
                 <Text style={[styles.debugValue, debugInfo.dataReceivedCount > 0 ? styles.debugSuccess : styles.debugWarning]}>
@@ -1387,7 +1349,6 @@ const HomeScreen = ({navigation, route}) => {
                 </Text>
               </View>
 
-              {/* Periodic Query Status */}
               <View style={styles.debugRow}>
                 <Text style={styles.debugLabel}>Periodic Query:</Text>
                 <Text style={[styles.debugValue, debugInfo.periodicQueryActive ? styles.debugSuccess : styles.debugError]}>
@@ -1395,7 +1356,6 @@ const HomeScreen = ({navigation, route}) => {
                 </Text>
               </View>
 
-              {/* Last Valid Battery */}
               {debugInfo.lastValidBattery !== null && (
                 <View style={styles.debugRow}>
                   <Text style={styles.debugLabel}>Last Valid Battery:</Text>
@@ -1405,7 +1365,6 @@ const HomeScreen = ({navigation, route}) => {
                 </View>
               )}
 
-              {/* Last Valid Temperature */}
               {debugInfo.lastValidTemp !== null && (
                 <View style={styles.debugRow}>
                   <Text style={styles.debugLabel}>Last Valid Temp:</Text>
@@ -1415,7 +1374,6 @@ const HomeScreen = ({navigation, route}) => {
                 </View>
               )}
 
-              {/* Current Values Status */}
               <View style={styles.debugRow}>
                 <Text style={styles.debugLabel}>Values Status:</Text>
                 <Text style={[styles.debugValue, (caseBatteryLevel > 0 || caseTemperature > 0) ? styles.debugSuccess : styles.debugWarning]}>
@@ -1423,7 +1381,6 @@ const HomeScreen = ({navigation, route}) => {
                 </Text>
               </View>
 
-              {/* Issue Diagnosis */}
               <View style={styles.debugRow}>
                 <Text style={styles.debugLabel}>Issue Diagnosis:</Text>
                 <Text style={[styles.debugValue, styles.debugValueSmall]} numberOfLines={3}>
@@ -1443,7 +1400,6 @@ const HomeScreen = ({navigation, route}) => {
                 </Text>
               </View>
 
-              {/* Connection State Details */}
               <View style={styles.debugRow}>
                 <Text style={styles.debugLabel}>BLE State:</Text>
                 <Text style={styles.debugValueSmall}>
@@ -1453,7 +1409,6 @@ const HomeScreen = ({navigation, route}) => {
                 </Text>
               </View>
 
-              {/* Notification Status */}
               <View style={styles.debugRow}>
                 <Text style={styles.debugLabel}>Notifications:</Text>
                 <Text style={[styles.debugValue, (debugInfo.dataReceivedCount > 0) ? styles.debugSuccess : styles.debugError]}>
@@ -1461,7 +1416,6 @@ const HomeScreen = ({navigation, route}) => {
                 </Text>
               </View>
 
-              {/* Troubleshooting Steps */}
               {isConnected && debugInfo.dataReceivedCount === 0 && (
                 <View style={styles.debugRow}>
                   <Text style={styles.debugLabel}>Troubleshooting:</Text>
@@ -1474,7 +1428,6 @@ const HomeScreen = ({navigation, route}) => {
                 </View>
               )}
 
-              {/* Last Error */}
               {debugInfo.lastError && (
                 <View style={styles.debugRow}>
                   <Text style={styles.debugLabel}>Last Error:</Text>
@@ -1484,13 +1437,11 @@ const HomeScreen = ({navigation, route}) => {
                 </View>
               )}
 
-              {/* Raw Data Preview */}
               {debugInfo.rawData && (
                 <View style={styles.debugRow}>
                   <Text style={styles.debugLabel}>Last Raw Data:</Text>
                   <Text style={styles.debugValueSmall} numberOfLines={3}>
                     {(() => {
-                      // Check if rawData has hex string
                       if (debugInfo.rawDataHex) {
                         const cmd = debugInfo.rawDataHex.substring(0, 2);
                         const cmdMap = {
@@ -1503,7 +1454,6 @@ const HomeScreen = ({navigation, route}) => {
                         const cmdName = cmdMap[cmd] || `Unknown (0x${cmd})`;
                         return `[${cmdName}] ${debugInfo.rawDataHex.substring(0, 60)}${debugInfo.rawDataHex.length > 60 ? '...' : ''}`;
                       }
-                      // Fallback to parsed data
                       return typeof debugInfo.rawData === 'string' 
                         ? debugInfo.rawData.substring(0, 80) + '...' 
                         : JSON.stringify(debugInfo.rawData).substring(0, 80) + '...';
@@ -1512,7 +1462,6 @@ const HomeScreen = ({navigation, route}) => {
                 </View>
               )}
 
-              {/* Last Device Response */}
               {debugInfo.lastDeviceResponse && (
                 <View style={styles.debugRow}>
                   <Text style={styles.debugLabel}>Last Response:</Text>
@@ -1523,6 +1472,7 @@ const HomeScreen = ({navigation, route}) => {
               )}
             </View>
           )}
+          */}
 
         </ScrollView>
       </SafeAreaView>

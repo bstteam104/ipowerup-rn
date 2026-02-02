@@ -157,7 +157,10 @@
     "caseConnected": "Caso conectado",
     "searchingForCase": "¿Estás buscando la funda Uno o la funda Duo?",
     "connectNewDevice": "Conectar nuevo dispositivo",
-    "manageDevice": "Administrar dispositivo"
+    "manageDevice": "Administrar dispositivo",
+    "disconnectDevice": "Desconectar dispositivo",
+    "caseConnectedMessage": "Su funda {{deviceName}} está conectada.",
+    "caseConnectedDefault": "Su funda iPowerUp Uno está conectada."
   },
   "appSettings": {
     "title": "Configuración de la aplicación",
@@ -169,6 +172,7 @@
     "language": "Idioma",
     "english": "Inglés",
     "spanish": "Español",
+    "german": "Alemán",
     "chooseLanguage": "Elegir idioma",
     "languageUpdated": "Idioma actualizado correctamente"
   },

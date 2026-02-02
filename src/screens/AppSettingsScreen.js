@@ -114,8 +114,6 @@ const AppSettingsScreen = ({navigation}) => {
     setBluetoothEnabled(value);
     
     try {
-      // iOS: mehodeUpdateBlueToothSetting() - calls API to update backend
-      // iOS API: user/update-bluetooth-status
       const userData = await AsyncStorage.getItem('loggedInUser');
       if (!userData) {
         throw new Error('User not logged in');
@@ -142,7 +140,7 @@ const AppSettingsScreen = ({navigation}) => {
       }
       
       if (data && data.success) {
-        // Update user data in AsyncStorage (iOS: UserDefaults.standard.loggedInUser = userObj)
+        // Update user data in AsyncStorage
         const updatedUser = {
           ...user,
           bluetooth: value ? 1 : 0,
@@ -300,7 +298,7 @@ const AppSettingsScreen = ({navigation}) => {
 
           <MenuItem
             icon={require('../../assets/icons/setting-account.png')}
-            title={`${t('appSettings.language')}: ${currentLanguage === 'en' ? t('appSettings.english') : t('appSettings.spanish')}`}
+            title={`${t('appSettings.language')}: ${currentLanguage === 'en' ? t('appSettings.english') : currentLanguage === 'es' ? t('appSettings.spanish') : t('appSettings.german')}`}
             onPress={handleLanguagePress}
           />
 

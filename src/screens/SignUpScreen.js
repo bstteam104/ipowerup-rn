@@ -96,7 +96,7 @@ const SignUpScreen = ({navigation}) => {
       });
 
       if (result.success && result.user) {
-        // Successfully registered and logged in, navigate to TabBar (like iOS nextViewController)
+        // Successfully registered and logged in, navigate to TabBar
         navigation.reset({
           index: 0,
           routes: [{name: 'TabBar'}],

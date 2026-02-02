@@ -18,7 +18,7 @@ const {width, height} = Dimensions.get('window');
 const SolarScreen = ({navigation}) => {
   const {t, i18n} = useTranslation();
   const [solarMilliAmps, setSolarMilliAmps] = useState(0);
-  const [selectedPanel, setSelectedPanel] = useState(1); // 1 or 2, matches iOS radio buttons
+  const [selectedPanel, setSelectedPanel] = useState(1); // 1 or 2, matches radio buttons
 
   return (
     <View style={styles.container}>
@@ -46,7 +46,6 @@ const SolarScreen = ({navigation}) => {
           {/* Gauge Card */}
           <View style={styles.card}>
 
-            {/* iOS-style gauge image inside its own shadow box (first white box in PDF) */}
             <View style={styles.gaugeImageShadowBox}>
               <Image
                 source={
@@ -158,7 +157,6 @@ const styles = StyleSheet.create({
     paddingBottom: 120,
   },
   header: {
-    // Header matches iOS: full-width, centered main title
     paddingHorizontal: 20,
     paddingTop: Platform.OS === 'android' ? 50 : 10,
     // Extra space between heading/subheading and first card
@@ -166,7 +164,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   headerTitle: {
-    // Match app/global heading style (same as Home section titles)
     fontSize: 20,
     fontWeight: 'bold',
     color: '#1D2733',
@@ -176,7 +173,6 @@ const styles = StyleSheet.create({
     alignSelf: 'center',
   },
   headerSubtitle: {
-    // Subheading style – match heading weight (bold) like design
     fontSize: 17,
     fontWeight: 'bold',
     color: '#1D2733',
@@ -186,7 +182,6 @@ const styles = StyleSheet.create({
     alignSelf: 'stretch',
   },
   card: {
-    // iOS-style centered card, inset from screen edges (slimmer like PDF)
     alignSelf: 'center',
     width: width * 0.72,
     backgroundColor: '#FFFFFF',
@@ -206,7 +201,6 @@ const styles = StyleSheet.create({
     marginBottom: 10,
   },
   smallHeaderText: {
-    // Card subheading style – lighter than main title
     fontSize: 13,
     fontWeight: '500',
     color: '#888888',
@@ -351,7 +345,6 @@ const styles = StyleSheet.create({
     marginBottom: 16,
   },
   imageCard: {
-    // Match the first card styling exactly
     alignSelf: 'center',
     width: width * 0.72,
     backgroundColor: '#FFFFFF',
@@ -376,7 +369,6 @@ const styles = StyleSheet.create({
     alignSelf: 'center',
   },
   tipTitle: {
-    // Subheading style under Improve Solar Collection
     fontSize: 15,
     fontWeight: 'bold',
     color: '#1D2733',

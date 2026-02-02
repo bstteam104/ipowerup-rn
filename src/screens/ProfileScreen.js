@@ -18,7 +18,6 @@ import {useTranslation} from 'react-i18next';
 import {Colors} from '../constants/Constants';
 import {BLE_CONSTANTS} from '../constants/BLEConstants';
 import {useIsFocused} from '@react-navigation/native';
-// Use Native Kotlin BLE Manager (exact iOS match)
 import BLEManager from '../services/BLEManagerNative';
 import PermissionModal from '../components/PermissionModal';
 import {showSuccessToast} from '../utils/toastHelper';
@@ -188,15 +187,10 @@ const ProfileScreen = ({navigation}) => {
           });
         }
         
-        // iOS line 130-133: Password is sent 1 second after connection (handled in native)
-        // iOS line 195-203: didConnect sets isConnected=true and discovers services
-        // iOS line 262-263: didConnectPeripheral() immediately calls queryPowerBankStatus
-        // iOS doesn't verify - connection is async, services discovered automatically
-        // Start periodic queries and query status immediately (like iOS)
+        // Start periodic queries and query status immediately
         if (BLEManager && BLEManager.startPeriodicQueries) {
           BLEManager.startPeriodicQueries();
         }
-        // iOS: didConnectPeripheral() immediately queries (line 263)
         // Small delay to allow service/characteristic discovery
         setTimeout(() => {
           if (BLEManager && BLEManager.isConnected && BLEManager.queryPowerBankStatus) {
@@ -294,7 +288,7 @@ const ProfileScreen = ({navigation}) => {
         serviceUUID: '000056ff-0000-1000-8000-00805f9b34fb',
         txUUID: '000033f3-0000-1000-8000-00805f9b34fb',
         rxUUID: '000033F4-0000-1000-8000-00805f9b34fb',
-        writeType: 'writeWithoutResponse (iOS protocol)',
+        writeType: 'writeWithoutResponse',
         deviceId: deviceMeta?.id || connectedInfo?.id || 'N/A',
         deviceName: deviceMeta?.name || connectedInfo?.name || 'N/A',
         isScanning: (BLEManager && BLEManager.isScanning) || false,
@@ -311,7 +305,7 @@ const ProfileScreen = ({navigation}) => {
         serviceUUID: '000056ff-0000-1000-8000-00805f9b34fb',
         txUUID: '000033f3-0000-1000-8000-00805f9b34fb',
         rxUUID: '000033F4-0000-1000-8000-00805f9b34fb',
-        writeType: 'writeWithoutResponse (iOS protocol)',
+        writeType: 'writeWithoutResponse',
         deviceId: 'Error getting info',
         deviceName: 'Error getting info',
         isScanning: false,
@@ -442,16 +436,12 @@ const ProfileScreen = ({navigation}) => {
   );
 
   const startScanOnProfile = () => {
-    // iOS: mainViewScanning.isHidden = false, manager.startScanning() - line 212-217
-    // iOS line 215: manager.isAutoScanEnabled = false (for ProfileScreen - manual connect)
     // Open modal on same screen and start BLE scan (no navigation)
     setShowScanningModal(true);
     setAllDiscoveredDevices([]);
     
-    // iOS: manager.isAutoScanEnabled = false (ProfileScreen uses manual connect)
     BLEManager.isAutoScanEnabled = false;
     
-    // iOS: manager.startScanning() - line 217
     if (BLEManager && BLEManager.startScanning) {
       try {
     BLEManager.startScanning();
@@ -461,7 +451,6 @@ const ProfileScreen = ({navigation}) => {
     }
 
     // Poll BLEManager for newly discovered devices & connection state
-    // iOS: tableView.reloadData() - line 224 (updates when devices discovered)
     if (scanIntervalRef.current) {
       clearInterval(scanIntervalRef.current);
     }
@@ -472,7 +461,6 @@ const ProfileScreen = ({navigation}) => {
           return;
         }
         
-        // iOS: manager.discoveredDevices - line 34
         const devices = (BLEManager.getDiscoveredDevices) ? BLEManager.getDiscoveredDevices() : [];
         // Safe array copy
         if (Array.isArray(devices)) {
@@ -482,7 +470,6 @@ const ProfileScreen = ({navigation}) => {
         }
 
         // If connected, update UI and close modal
-        // iOS: updateDeviceLable() - line 199-203
         if (BLEManager.isConnected) {
           try {
             const deviceInfo = (BLEManager.getConnectedDeviceInfo) ? BLEManager.getConnectedDeviceInfo() : null;
@@ -719,8 +706,8 @@ const ProfileScreen = ({navigation}) => {
             <Text style={styles.deviceSubtitle}>
               {isCaseConnected
                 ? connectedDeviceName 
-                  ? `Your ${connectedDeviceName} case is connected.`
-                  : 'Your iPowerUp Uno case is connected.'
+                  ? t('profile.caseConnectedMessage', {deviceName: connectedDeviceName})
+                  : t('profile.caseConnectedDefault')
                 : t('profile.searchingForCase')}
             </Text>
             
