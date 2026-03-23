@@ -1,0 +1,308 @@
+{
+  "login": {
+    "title": "Connectez-vous à votre compte",
+    "subtitle": "Ou créez un nouveau compte d'application. Il s'agit du même compte que celui utilisé pour iPowerUp.com.",
+    "emailPlaceholder": "Saisissez votre adresse e-mail",
+    "passwordPlaceholder": "Saisissez le mot de passe",
+    "forgotPassword": "Mot de passe oublié ?",
+    "signIn": "Se connecter",
+    "createAccount": "Créer un compte ?",
+    "connectNewDevice": "Connecter un nouvel appareil"
+  },
+  "signup": {
+    "title": "Créer un compte",
+    "subtitle": "Veuillez saisir vos informations ci-dessous pour créer votre compte.",
+    "firstNamePlaceholder": "Saisissez le prénom ou le surnom",
+    "lastNamePlaceholder": "Saisissez votre nom de famille (facultatif)",
+    "emailPlaceholder": "Saisissez votre adresse e-mail",
+    "passwordPlaceholder": "Saisissez le mot de passe",
+    "countryPlaceholder": "Pays/Région",
+    "createAccount": "Créer un compte",
+    "agreeTerms": "J'accepte les conditions générales d'iPowerUp",
+    "agreePrivacy": "Je consens à l'utilisation de mes renseignements personnels conformément à la politique de confidentialité d'iPowerUp",
+    "backToSignIn": "Retour à la page de connexion"
+  },
+  "forgotPassword": {
+    "title": "Mot de passe oublié",
+    "subtitle": "Veuillez saisir votre adresse e-mail pour recevoir le code de vérification.",
+    "emailLabel": "Adresse e-mail",
+    "resendCode": "Renvoyer le code",
+    "backToSignIn": "Retour à la page de connexion",
+    "continue": "Continuer",
+    "otpSent": "Code envoyé à votre e-mail."
+  },
+  "resetPassword": {
+    "title": "Réinitialiser le mot de passe",
+    "subtitle": "Veuillez réinitialiser votre mot de passe",
+    "passwordLabel": "Mot de passe",
+    "reenterPassword": "Entrez à nouveau le mot de passe",
+    "update": "Mise à jour",
+    "confirmPassword": "Confirmez le mot de passe",
+    "backToSignIn": "Retour à la page de connexion",
+    "currentPassword": "Mot de passe actuel",
+    "newPassword": "Nouveau mot de passe",
+    "passwordRequirements": "Votre nouveau mot de passe doit comporter au moins 8 caractères, et contenir au moins une lettre majuscule, une lettre minuscule, un chiffre et un caractère spécial (par exemple, @, #, $, %).",
+    "currentPasswordRequired": "Veuillez saisir votre mot de passe actuel",
+    "newPasswordRequired": "Veuillez saisir un nouveau mot de passe.",
+    "confirmPasswordRequired": "Veuillez confirmer votre nouveau mot de passe.",
+    "passwordMismatch": "Le nouveau mot de passe et la confirmation du mot de passe ne correspondent pas."
+  },
+  "recreatePassword": {
+    "title": "Réinitialiser le mot de passe",
+    "subtitle": "Saisissez votre nouveau mot de passe ci-dessous",
+    "newPassword": "Nouveau mot de passe",
+    "confirmPassword": "Confirmez le mot de passe",
+    "updatePassword": "Mettre à jour le mot de passe",
+    "fillBoth": "Veuillez remplir les deux champs de mot de passe.",
+    "passwordMismatch": "Les mots de passe ne correspondent pas.",
+    "passwordRequirements": "Le mot de passe doit comporter au moins 8 caractères et contenir un mélange de lettres, de chiffres et de caractères spéciaux.",
+    "success": "Mot de passe réinitialisé avec succès"
+  },
+  "splash": {
+    "welcome": "Bienvenue sur l'application intelligente iPowerUp",
+    "appBenefits": "Avantages de l'application",
+    "realTimePower": "Données de puissance en temps réel",
+    "autoAlerts": "Alertes et rappels automatiques",
+    "warranty": "Garantie de 2 ans*",
+    "realTimeSolar": "Données de collecte solaire en temps réel",
+    "connectNewDevice": "Connecter un nouvel appareil",
+    "backToPrevious": "Retour à l'écran précédent"
+  },
+  "subscription": {
+    "title": "L'abonnement à l'application doit être actif.",
+    "pairPhone": "Associez votre téléphone",
+    "waitingToPair": "En attente de connexion Bluetooth",
+    "step1": "1. Restez près de votre téléphone",
+    "step1Desc": "Gardez votre téléphone près de votre étui iPowerUp",
+    "step2": "2. Activez le Bluetooth du téléphone.",
+    "step2Desc": "Activez le Bluetooth et autorisez l'accès Bluetooth sur votre téléphone.",
+    "step3": "3. Activez le Bluetooth du boîtier.",
+    "step3Desc": "Pour activer le mode de jumelage de votre boîtier iPowerUp, maintenez le bouton Mode enfoncé pendant 5 secondes.",
+    "scanForPhone": "Scannez pour votre téléphone",
+    "backToPrevious": "Retour à l'écran précédent",
+    "success": "Abonnement réussi."
+  },
+  "notifications": {
+    "title": "Notifications",
+    "notAvailable": "Notification non disponible.",
+    "alert": "Alerte",
+    "phoneBatteryLow": "Batterie du téléphone : faible",
+    "phoneBatteryLowDesc": "Niveau de charge approximatif : 20 % Action : Transférer l’énergie de la batterie du boîtier vers la batterie du téléphone",
+    "caseBatteryHigh": "Batterie du boîtier : Haute",
+    "caseBatteryHighDesc": "Niveau de charge approximatif : 80 %",
+    "statusUpdated": "Statut de la notification mis à jour avec succès"
+  },
+  "home": {
+    "greetings": "Salutations",
+    "yourPhone": "Votre téléphone",
+    "yourCase": "Votre cas",
+    "phoneBattery": "Batterie de téléphone",
+    "batteryLevel": "Niveau de batterie",
+    "caseBattery": "Boîtier de batterie",
+    "caseTemperature": "Température du boîtier",
+    "temperatureLevel": "Niveau de température",
+    "transferPowerToPhone": "Transférer l'alimentation au téléphone",
+    "stopCharging": "Arrêter la charge"
+  },
+  "help": {
+    "title": "Aide et assistance",
+    "contact": "Contactez iPowerUp",
+    "tips": "Conseils iPowerUp"
+  },
+  "accountSettings": {
+    "title": "Paramètres du compte",
+    "firstName": "Entrez le prénom",
+    "lastName": "Entrez le nom de famille",
+    "alternateEmail": "E-mail secondaire",
+    "phoneNumber": "Numéro de téléphone",
+    "emergencyNumber": "Numéro d'urgence",
+    "update": "Mise à jour",
+    "submit": "Soumettre",
+    "updated": "Profil mis à jour avec succès"
+  },
+  "temperature": {
+    "title": "Température du boîtier",
+    "fahrenheit": "Fahrenheit",
+    "celsius": "Celsius",
+    "updated": "Paramètre de température mis à jour"
+  },
+  "peaceOfMind": {
+    "title": "Abonnement Tranquillité d'esprit",
+    "subtitle": "Abonnez-vous et découvrez ce que votre cas sait",
+    "description": "Ayez l'esprit tranquille grâce à une coque et une application qui surveillent votre coque et votre téléphone pour que vous n'ayez plus à vous en soucier.",
+    "batteryAlerts": "Recevez des alertes aux niveaux de batterie de 5 %, 20 %, 80 % et 100 %, ainsi que des niveaux supplémentaires optionnels.",
+    "bluetoothRange": "Activez la communication entre l'étui et le téléphone même lorsque l'étui est détaché, dans une portée Bluetooth allant jusqu'à 10 mètres (33 pieds).",
+    "temperatureAlerts": "Recevez des alertes de température pour protéger votre coque et votre téléphone des dommages causés par les températures extrêmes. Au-dessus de 40 °C (104 °F) et en dessous de 0 °C (32 °F).",
+    "history": "Consultez l'historique d'utilisation de votre batterie pour identifier les possibilités d'amélioration de ses performances. <link to History screen>",
+    "enhancements": "Profitez d'améliorations de l'application tout au long de l'année, pour une tranquillité d'esprit continue.",
+    "select": "Sélectionner"
+  },
+  "terms": {
+    "title": "Veuillez prendre connaissance des conditions générales d'utilisation de ce site web. En utilisant ce site, vous acceptez ces conditions. Ce site web et tous les produits ou services qui y sont proposés sont destinés aux adultes. En effectuant un achat ou en soumettant des informations, vous déclarez être majeur. L'achat de produits ou services IPOWERUP via ce site est soumis à des conditions générales de vente distinctes, consultables sur les pages produits et de paiement correspondantes. Le terme « IPOWERUP » désigne la société IPOWERUP CORPORATION."
+  },
+  "privacy": {
+    "title": "Veuillez prendre connaissance des conditions générales d'utilisation de ce site web. En utilisant ce site, vous acceptez ces conditions. Ce site web et tous les produits ou services qui y sont proposés sont destinés aux adultes. En effectuant un achat ou en soumettant des informations, vous déclarez être majeur. L'achat de produits ou services IPOWERUP via ce site est soumis à des conditions générales de vente distinctes, consultables sur les pages produits et de paiement correspondantes. Le terme « IPOWERUP » désigne la société IPOWERUP CORPORATION."
+  },
+  "saleDisclaimer": {
+    "title": "Bienvenue, 10 % de réduction :",
+    "description": "Bienvenue ! Bénéficiez d’une réduction de 10 %, valable uniquement pour les nouveaux clients s’abonnant aux communications par e-mail et SMS. Cette offre ne s’applique pas aux produits non annoncés ni aux articles déballés, et est réservée aux clients résidant aux États-Unis. Elle n’est pas cumulable avec d’autres offres et ne s’applique pas aux articles en promotion."
+  },
+  "profile": {
+    "myAccount": "Mon compte",
+    "accountSettings": "Paramètres du compte",
+    "notifications": "Notifications",
+    "appSettings": "Paramètres de l'application",
+    "history": "Historique",
+    "peaceOfMind": "Abonnement Tranquillité d'esprit",
+    "logOut": "Déconnexion",
+    "noCaseConnected": "Aucun dossier connecté",
+    "caseConnected": "Boîtier connecté",
+    "searchingForCase": "Vous recherchez une coque pour Uno ou pour Duo ?",
+    "connectNewDevice": "Connecter un nouvel appareil",
+    "manageDevice": "Gérer l'appareil",
+    "disconnectDevice": "Déconnecter l'appareil",
+    "caseConnectedMessage": "Votre coque {{deviceName}} est connectée.",
+    "caseConnectedDefault": "Votre coque iPowerUp Uno est connectée."
+  },
+  "appSettings": {
+    "title": "Paramètres de l'application",
+    "resetPassword": "Réinitialiser le mot de passe",
+    "deleteAccount": "Supprimer le compte",
+    "caseTemperature": "Température du boîtier",
+    "bluetooth": "Bluetooth",
+    "subscribeToMessages": "S'abonner aux messages",
+    "language": "Langue",
+    "english": "Anglais",
+    "spanish": "Espagnol",
+    "german": "Allemand",
+    "french": "Français",
+    "chooseLanguage": "Sélectionner la langue",
+    "languageUpdated": "Langue mise à jour avec succès",
+    "passwordForApp": "Mot de passe pour cette application",
+    "bluetoothStatusUpdated": "Statut Bluetooth mis à jour avec succès"
+  },
+  "solar": {
+    "title": "Solaire",
+    "solarEnergyReceiving": "Réception de l'énergie solaire",
+    "solarCollectionNow": "Collecte solaire maintenant",
+    "solarPanels": "Panneaux solaires #",
+    "milliamps": "mA = Milliampères de courant*",
+    "milliampNote": "*Un milliampère est un millième d'ampère, une unité de courant électrique.",
+    "improveSolar": "Améliorer la collecte solaire",
+    "improveSolarDesc": "Pour une captation solaire plus rapide :",
+    "adjustCase": "Ajustez la direction et l'angle du boîtier"
+  },
+  "contactUs": {
+    "title": "Contactez iPowerUp",
+    "name": "Nom",
+    "email": "E-mail",
+    "messagePlaceholder": "Votre message ici",
+    "submit": "Envoyer",
+    "nameRequired": "Veuillez saisir votre nom.",
+    "emailRequired": "Veuillez saisir votre adresse e-mail.",
+    "messageRequired": "Veuillez saisir votre message",
+    "thankYou": "Merci de nous avoir contactés."
+  },
+  "tips": {
+    "title": "Conseils iPowerUp",
+    "tip1Question": "Comment maximiser la charge solaire ?",
+    "tip1Answer": "Placez votre appareil en plein soleil et assurez-vous que les panneaux solaires sont propres et sans obstruction. La meilleure charge se produit entre 10 h et 16 h lorsque le soleil est le plus fort.",
+    "tip2Question": "Quelle est la température optimale pour la charge ?",
+    "tip2Answer": "L'étui fonctionne mieux entre 0°C et 45°C. Évitez de charger à des températures extrêmes car cela peut affecter la durée de vie de la batterie et l'efficacité de la charge.",
+    "tip3Question": "Combien de temps faut-il pour charger complètement l'étui ?",
+    "tip3Answer": "En utilisant l'énergie solaire, il faut généralement 4 à 6 heures de soleil direct pour charger complètement l'étui. La charge USB prend environ 2 à 3 heures.",
+    "tip4Question": "Puis-je charger mon téléphone pendant que l'étui se charge ?",
+    "tip4Answer": "Oui ! L'étui prend en charge la charge de passage, vous permettant de charger votre téléphone pendant que l'étui lui-même est chargé via l'énergie solaire ou USB.",
+    "tip5Question": "Comment transférer l'énergie de l'étui au téléphone ?",
+    "tip5Answer": "Appuyez simplement sur le bouton \"Transférer l'alimentation au téléphone\" sur l'écran d'accueil. Assurez-vous que votre téléphone est connecté à l'étui via le port de charge."
+  },
+  "troubleshooting": {
+    "title": "Aide",
+    "faq1Question": "Problèmes de jumelage Bluetooth",
+    "faq1Answer": "Appareil introuvable : Fermez l'application iPowerUp. Ouvrez Réglages sur votre iPhone pour vous assurer que le Bluetooth est activé. Rouvrez l'application PowerUp, cliquez sur le bouton Connecter un nouvel appareil, cliquez sur Autoriser lorsque vous y êtes invité, puis cliquez sur le nom de votre appareil.",
+    "faq2Question": "Chargement avec le panneau solaire de l'étui",
+    "faq2Answer": "Placez votre étui Uno dans un endroit ensoleillé, puis orientez le panneau solaire dans une direction et un angle qui reçoivent une bonne lumière du soleil. Consultez l'écran au-dessus du panneau solaire pour les niveaux de mA pour obtenir les meilleurs résultats.",
+    "faq3Question": "Transférer manuellement l'énergie de l'étui à mon téléphone",
+    "faq3Answer": "Appuyez deux fois rapidement sur le bouton Mode en bas de l'étui.",
+    "faq4Question": "Chargement des téléphones Android",
+    "faq4Answer": "Connectez un câble USB-C de l'étui à l'appareil Android. Remarque : cette application n'est pas encore disponible pour les appareils Android.",
+    "faq5Question": "Obtenir la garantie étendue gratuite",
+    "faq5Answer": "C'est facile ! Configurez votre compte d'application iPowerUp. Vous recevrez un e-mail confirmant votre compte et les détails de la garantie étendue."
+  },
+  "otp": {
+    "title": "Saisissez le code",
+    "subtitle": "Nous avons envoyé un code de vérification à",
+    "yourEmail": "votre e-mail",
+    "resend": "Renvoyer le code",
+    "invalid": "Code invalide"
+  },
+  "history": {
+    "title": "Historique",
+    "noDeviceConnected": "Aucun appareil connecté. Connectez un appareil pour continuer à consulter l'historique.",
+    "activityHistory": "Historique d'activité",
+    "caseToDeviceCharging": "Charge boîtier vers appareil",
+    "last10Days": "10 derniers jours",
+    "solarUsbToCaseCharging": "Charge solaire/USB vers boîtier"
+  },
+  "common": {
+    "home": "Accueil",
+    "solar": "Solaire",
+    "help": "Aide",
+    "profile": "Profil",
+    "cancel": "Annuler",
+    "logout": "Déconnexion",
+    "delete": "Supprimer",
+    "continue": "Continuer",
+    "back": "Retour",
+    "update": "Mise à jour",
+    "submit": "Soumettre",
+    "somethingWentWrong": "Quelque chose s'est mal passé",
+    "information": "Information",
+    "warning": "⚠️ Avertissement",
+    "success": "Succès",
+    "error": "Erreur",
+    "updating": "Mise à jour...",
+    "close": "Fermer",
+    "signingIn": "Connexion...",
+    "creatingAccount": "Création du compte...",
+    "sending": "Envoi...",
+    "verifying": "Vérification...",
+    "resetting": "Réinitialisation...",
+    "terms": "Conditions générales",
+    "privacy": "Politique de confidentialité",
+    "ok": "D'accord",
+    "selectAll": "Tout sélectionner",
+    "autoFill": "Remplissage automatique"
+  },
+  "validation": {
+    "enterFirstName": "Veuillez saisir votre prénom.",
+    "enterEmail": "Veuillez saisir votre adresse e-mail.",
+    "enterPassword": "Veuillez saisir votre mot de passe.",
+    "enterCountry": "Veuillez saisir votre pays.",
+    "validEmail": "S'il vous plaît, mettez une adresse email valide.",
+    "invalidPassword": "Mot de passe invalide",
+    "passwordRequirements": "Le mot de passe doit comporter au moins 8 caractères et contenir au moins une lettre, un chiffre et un caractère spécial.",
+    "agreeTerms": "Vous devez accepter les conditions générales et la politique de confidentialité.",
+    "passwordMinLength": "Le mot de passe doit comporter au moins 6 caractères."
+  },
+  "alerts": {
+    "caseBatteryLow": "⚠️ Avertissement\nLe niveau de charge de la batterie du boîtier est inférieur au minimum. Veuillez la recharger.",
+    "caseBatteryHigh": "Batterie du boîtier supérieure à la capacité maximale. Arrêtez la charge.",
+    "caseTempLow": "Température du boîtier approchant la coupure basse température.",
+    "caseTempHigh": "Température du boîtier approchant la température d'arrêt élevée.",
+    "logoutConfirm": "Êtes-vous sûr de vouloir vous déconnecter ?",
+    "deleteAccountConfirm": "Êtes-vous sûr de vouloir supprimer votre compte ?"
+  },
+  "permissions": {
+    "bluetoothTitle": "Autoriser l'application « iPowerUp » à rechercher des appareils Bluetooth ?",
+    "permissionRequired": "Autorisation requise",
+    "bluetoothDescription": "Cette application nécessite le Bluetooth pour se connecter aux appareils BLE.",
+    "permissionDescription": "Cette autorisation est nécessaire pour que l'application fonctionne correctement.",
+    "deviceFound": "appareil trouvé",
+    "devicesFound": "Plus de ____ appareils trouvés",
+    "bluetoothPrivacyInfo": "Les informations provenant des appareils Bluetooth peuvent être utilisées pour déterminer votre position et créer un profil vous concernant.",
+    "dontAllow": "Ne pas autoriser",
+    "allow": "Autoriser"
+  }
+}
+

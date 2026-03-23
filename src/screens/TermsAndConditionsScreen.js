@@ -10,11 +10,14 @@ import {
   Platform,
   Dimensions,
 } from 'react-native';
+import {useTranslation} from 'react-i18next';
 import {Colors, FontSizes} from '../constants/Constants';
 
 const {width, height} = Dimensions.get('window');
 
 const TermsAndConditionsScreen = ({navigation}) => {
+  const {t} = useTranslation();
+  
   return (
     <View style={styles.container}>
       <StatusBar barStyle="dark-content" backgroundColor="transparent" translucent />
@@ -43,14 +46,14 @@ const TermsAndConditionsScreen = ({navigation}) => {
               resizeMode="contain"
             />
           </TouchableOpacity>
-          <Text style={styles.headerTitle}>Terms & Conditions</Text>
+          <Text style={styles.headerTitle}>{t('common.terms', 'Terms & Conditions')}</Text>
           <View style={styles.placeholder} />
         </View>
 
         {/* Content */}
         <View style={styles.content}>
           <Text style={styles.contentText}>
-            Terms and Conditions content will be displayed here.
+            {t('terms.title')}
           </Text>
         </View>
       </ScrollView>

@@ -111,6 +111,58 @@ export const bufferToHexString = (buffer) => {
     .join('');
 };
 
+/**
+ * Parse 0x03 response (Charger Config)
+ *
+ * Protocol (from Command 0x02 format):
+ * Byte 0: Command (0x03) - verified but not used in parsing
+ * Byte 1-2: MaxChgV, unit % (little-endian, default 80%)
+ * Byte 3-4: MinChgV, unit % (little-endian, default 20%)
+ * Byte 5: EnPhCharger (0=off, 1=on, 2=auto)
+ * Byte 6: EnSolar (0=off, 1=on, 2=auto)
+ * Byte 7: EnUSBCharging (0=off, 1=on, 2=auto)
+ * Byte 8: Update period (NN - display rate in seconds, 0=default 5 seconds)
+ * Byte 17-18: Charge Data Update Times (RR SS - little-endian, default 3600 seconds)
+ */
+export const parseChargerConfig = (data) => {
+  if (!data || data.length < 19) {
+    console.error('❌ BLEParser: Invalid ChargerConfig data length:', data?.length, 'Expected: >= 19');
+    return null;
+  }
+  
+  // Command byte safety check
+  if (data[0] !== 0x03) {
+    console.error('❌ BLEParser: Invalid command byte:', data[0]?.toString(16), 'Expected: 0x03');
+    return null;
+  }
+  
+  console.log('✅ BLEParser: Valid ChargerConfig data, length:', data.length);
+  console.log('📥 BLEParser: Raw hex:', Array.from(data).map(b => b.toString(16).padStart(2, '0')).join(' '));
+  
+  // Parse according to Command 0x02 format
+  const maxChgV = data[1] | (data[2] << 8); // AA BB - little-endian
+  const minChgV = data[3] | (data[4] << 8); // CC DD - little-endian
+  const enPhCharger = data[5]; // EE - 0=off, 1=on, 2=auto
+  const enSolar = data[6]; // FF - 0=off, 1=on, 2=auto
+  const enUSBCharging = data[7]; // GG - 0=off, 1=on, 2=auto
+  const period = data[13]; // NN - update period in seconds (0=default 5 seconds)
+  const chargeUpdate = data[17] | (data[18] << 8); // RR SS - little-endian, in seconds (default 3600)
+  
+  const result = {
+    maxChgV,           // Max charge voltage (%)
+    minChgV,           // Min charge voltage (%)
+    enPhCharger,       // Enable phone charging (0=off, 1=on, 2=auto)
+    enSolar,           // Enable solar (0=off, 1=on, 2=auto)
+    enUSBCharging,     // Enable USB charging (0=off, 1=on, 2=auto)
+    period,            // Update period (seconds, 0=default 5)
+    chargeUpdate,      // Charge data update times (seconds, default 3600)
+  };
+  
+  console.log('✅ BLEParser: Parsed ChargerConfig:', JSON.stringify(result, null, 2));
+  
+  return result;
+};
+
 
 
 

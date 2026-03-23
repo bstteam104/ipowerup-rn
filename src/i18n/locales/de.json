@@ -1,9 +1,102 @@
 {
+  "login": {
+    "title": "Melden Sie sich in Ihrem Konto an",
+    "subtitle": "Oder erstellen Sie ein neues App-Konto. Dies ist dasselbe Konto, das Sie für iPowerUp.com verwenden.",
+    "emailPlaceholder": "E-Mail-Adresse eingeben",
+    "passwordPlaceholder": "Passwort eingeben",
+    "forgotPassword": "Passwort vergessen?",
+    "signIn": "Anmelden",
+    "createAccount": "Ein Konto erstellen?",
+    "connectNewDevice": "Neues Gerät anschließen"
+  },
+  "signup": {
+    "title": "Benutzerkonto erstellen",
+    "subtitle": "Bitte geben Sie unten Ihre Daten ein, um Ihr Konto zu erstellen.",
+    "firstNamePlaceholder": "Vorname oder Spitzname eingeben",
+    "lastNamePlaceholder": "Nachname eingeben (optional)",
+    "emailPlaceholder": "E-Mail-Adresse eingeben",
+    "passwordPlaceholder": "Passwort eingeben",
+    "countryPlaceholder": "Land/Region",
+    "createAccount": "Benutzerkonto erstellen",
+    "agreeTerms": "Ich stimme den Nutzungsbedingungen von iPowerUp zu.",
+    "agreePrivacy": "Ich stimme der Verwendung meiner personenbezogenen Daten gemäß der iPowerUp-Datenschutzrichtlinie zu.",
+    "backToSignIn": "Zurück zur Anmeldeseite"
+  },
+  "forgotPassword": {
+    "title": "Passwort vergessen?",
+    "subtitle": "Bitte geben Sie Ihre E-Mail-Adresse ein, um den Bestätigungscode zu erhalten.",
+    "emailLabel": "E-Mail-Adresse",
+    "resendCode": "Code erneut senden",
+    "backToSignIn": "Zurück zur Anmeldeseite",
+    "continue": "Weitermachen",
+    "otpSent": "OTP wurde an Ihre E-Mail gesendet."
+  },
+  "resetPassword": {
+    "title": "Passwort zurücksetzen",
+    "subtitle": "Bitte setzen Sie Ihr Passwort zurück.",
+    "passwordLabel": "Passwort",
+    "reenterPassword": "Kennwort erneut eingeben",
+    "update": "Aktualisieren",
+    "confirmPassword": "Passwort bestätigen",
+    "backToSignIn": "Zurück zur Anmeldeseite",
+    "currentPassword": "Aktuelles Passwort",
+    "newPassword": "Neues Passwort",
+    "passwordRequirements": "Ihr neues Passwort muss mindestens 8 Zeichen lang sein und mindestens einen Großbuchstaben, einen Kleinbuchstaben, eine Zahl und ein Sonderzeichen (z. B. @, #, $, %) enthalten.",
+    "currentPasswordRequired": "Bitte geben Sie Ihr aktuelles Passwort ein",
+    "newPasswordRequired": "Bitte geben Sie ein neues Passwort ein.",
+    "confirmPasswordRequired": "Bitte bestätigen Sie Ihr neues Passwort.",
+    "passwordMismatch": "Neues Passwort und Bestätigungspasswort stimmen nicht überein."
+  },
+  "recreatePassword": {
+    "title": "Passwort zurücksetzen",
+    "subtitle": "Bitte setzen Sie Ihr Passwort zurück.",
+    "newPassword": "Neues Passwort",
+    "confirmPassword": "Passwort bestätigen",
+    "updatePassword": "Aktualisieren",
+    "fillBoth": "Bitte füllen Sie beide Passwortfelder aus.",
+    "passwordMismatch": "Die Passwörter stimmen nicht überein.",
+    "passwordRequirements": "Das Passwort muss mindestens 8 Zeichen lang sein und mindestens einen Großbuchstaben, einen Kleinbuchstaben, eine Zahl und ein Sonderzeichen enthalten.",
+    "success": "Passwort erfolgreich zurückgesetzt"
+  },
+  "splash": {
+    "welcome": "Willkommen bei der iPowerUp Smart App",
+    "appBenefits": "Vorteile der App",
+    "realTimePower": "Echtzeit-Leistungsdaten",
+    "autoAlerts": "Automatische Benachrichtigungen und Erinnerungen",
+    "warranty": "2 Jahre Garantie*",
+    "realTimeSolar": "Echtzeit-Solarstrom-Erfassungsdaten",
+    "connectNewDevice": "Neues Gerät anschließen",
+    "backToPrevious": "Zurück zum vorherigen Bildschirm"
+  },
+  "subscription": {
+    "title": "Das App-Abonnement muss aktiv sein.",
+    "pairPhone": "Koppeln Sie Ihr Telefon",
+    "waitingToPair": "Warte auf Bluetooth-Kopplung",
+    "step1": "1. Bleiben Sie in der Nähe Ihres Telefons.",
+    "step1Desc": "Bewahren Sie Ihr Telefon in der Nähe Ihrer iPowerUp-Hülle auf.",
+    "step2": "2. Schalten Sie Bluetooth auf Ihrem Telefon ein.",
+    "step2Desc": "Aktivieren Sie Bluetooth und erlauben Sie den Bluetooth-Zugriff auf Ihrem Telefon.",
+    "step3": "3. Schalten Sie Bluetooth im Gehäuse ein.",
+    "step3Desc": "Stellen Sie den Kopplungsmodus Ihres iPowerUp-Gehäuses ein, indem Sie die Modus-Taste 5 Sekunden lang gedrückt halten.",
+    "scanForPhone": "Scannen Sie nach Ihrem Telefon",
+    "backToPrevious": "Zurück zum vorherigen Bildschirm",
+    "success": "Abonnement erfolgreich."
+  },
+  "notifications": {
+    "title": "Benachrichtigungen",
+    "notAvailable": "Benachrichtigung nicht verfügbar.",
+    "alert": "Alarm",
+    "phoneBatteryLow": "Akku des Telefons: Niedrig",
+    "phoneBatteryLowDesc": "Ungefährer Ladestand: 20 % Aktion: Energie vom Akku des Gehäuses auf den Akku des Telefons übertragen",
+    "caseBatteryHigh": "Gehäusebatterie: Hoch",
+    "caseBatteryHighDesc": "Ungefährer Ladezustand: 80 %",
+    "statusUpdated": "Benachrichtigungsstatus erfolgreich aktualisiert"
+  },
   "home": {
     "greetings": "Grüße",
     "yourPhone": "Ihr Telefon",
     "yourCase": "Ihr Fall",
-    "phoneBattery": "Akku des Telefons",
+    "phoneBattery": "Akku",
     "batteryLevel": "Batteriestand",
     "caseBattery": "Gehäusebatterie",
     "caseTemperature": "Gehäusetemperatur",
@@ -11,24 +104,148 @@
     "transferPowerToPhone": "Stromzufuhr zum Telefon",
     "stopCharging": "Ladevorgang abbrechen"
   },
+  "help": {
+    "title": "Hilfe & Unterstützung",
+    "contact": "Kontaktieren Sie iPowerUp",
+    "tips": "iPowerUp-Tipps"
+  },
+  "accountSettings": {
+    "title": "Kontoeinstellungen",
+    "firstName": "Vornamen eingeben",
+    "lastName": "Nachname eingeben",
+    "alternateEmail": "Alternative E-Mail",
+    "phoneNumber": "Telefonnummer",
+    "emergencyNumber": "Notrufnummer",
+    "update": "Aktualisieren",
+    "submit": "Einreichen",
+    "updated": "Profil erfolgreich aktualisiert"
+  },
+  "temperature": {
+    "title": "Gehäusetemperatur",
+    "fahrenheit": "Fahrenheit",
+    "celsius": "Celsius",
+    "updated": "Temperatureinstellung aktualisiert"
+  },
+  "peaceOfMind": {
+    "title": "Sorglos-Abonnement",
+    "subtitle": "Abonnieren Sie unseren Newsletter und erfahren Sie, was Ihr Fall zu bieten hat.",
+    "description": "Genießen Sie die Sicherheit einer Hülle und einer App, die Ihre Hülle und Ihr Telefon überwachen, sodass Sie es nicht tun müssen.",
+    "batteryAlerts": "Sie erhalten Benachrichtigungen bei einem Akkustand von 5 %, 20 %, 80 % und 100 % sowie bei zusätzlichen optionalen Stufen.",
+    "bluetoothRange": "Ermöglicht die Kommunikation zwischen Hülle und Telefon auch dann, wenn die Hülle abgenommen ist, innerhalb einer Bluetooth-Reichweite von bis zu 10 Metern.",
+    "temperatureAlerts": "Lassen Sie sich bei zu hohen Temperaturen über die Hülle benachrichtigen, um Schäden an Ihrer Hülle und Ihrem Smartphone durch extreme Temperaturen zu vermeiden. Warnung bei Temperaturen über 40 °C (104 °F) und unter 0 °C (32 °F).",
+    "history": "Überprüfen Sie Ihren Akkuverbrauchsverlauf, um Möglichkeiten zur Leistungsverbesserung zu erkennen. <Link zum Verlauf Bildschirm>",
+    "enhancements": "Profitieren Sie das ganze Jahr über von App-Verbesserungen, die Ihnen kontinuierliche Sicherheit und Komfort bieten.",
+    "select": "Wählen"
+  },
+  "terms": {
+    "title": "Bitte lesen Sie die folgenden Nutzungsbedingungen für diese Website sorgfältig durch. Mit der Nutzung der Website erklären Sie sich mit diesen Nutzungsbedingungen einverstanden. Diese Website und alle darauf angebotenen Produkte und Dienstleistungen sind ausschließlich für Erwachsene bestimmt. Mit jedem Kauf oder der Übermittlung von Informationen bestätigen Sie, dass Sie volljährig sind. Für den Kauf von Produkten oder Dienstleistungen von IPOWERUP über diese Website gelten separate Verkaufsbedingungen, die Sie auf den jeweiligen Produkt- und Zahlungsseiten einsehen können. Der Begriff \"IPOWERUP\" bezieht sich auf die IPOWERUP CORPORATION."
+  },
+  "privacy": {
+    "title": "Bitte lesen Sie die folgenden Nutzungsbedingungen für diese Website sorgfältig durch. Mit der Nutzung der Website erklären Sie sich mit diesen Nutzungsbedingungen einverstanden. Diese Website und alle darauf angebotenen Produkte und Dienstleistungen sind ausschließlich für Erwachsene bestimmt. Mit jedem Kauf oder der Übermittlung von Informationen bestätigen Sie, dass Sie volljährig sind. Für den Kauf von Produkten oder Dienstleistungen von IPOWERUP über diese Website gelten separate Verkaufsbedingungen, die Sie auf den jeweiligen Produkt- und Zahlungsseiten einsehen können. Der Begriff \"IPOWERUP\" bezieht sich auf die IPOWERUP CORPORATION."
+  },
+  "saleDisclaimer": {
+    "title": "Willkommen, 10 % Rabatt:",
+    "description": "Willkommen! Profitieren Sie von einem Rabatt von 10 % – gültig nur für Neukunden, die sich für E-Mail- und SMS-Benachrichtigungen anmelden. Dieses Angebot gilt nicht für nicht angekündigte Produkte oder Artikel in geöffneter Verpackung und ist nur für Kunden in den USA gültig. Es ist nicht mit anderen Angeboten kombinierbar und gilt nicht für reduzierte Artikel."
+  },
+  "profile": {
+    "myAccount": "Mein Konto",
+    "accountSettings": "Kontoeinstellungen",
+    "notifications": "Benachrichtigungen",
+    "appSettings": "App-Einstellungen",
+    "history": "Geschichte",
+    "peaceOfMind": "Sorglos-Abonnement",
+    "logOut": "Abmelden",
+    "noCaseConnected": "Kein Fall verbunden",
+    "caseConnected": "Fall verbunden",
+    "searchingForCase": "Suchen Sie die Uno- oder Duo-Hülle?",
+    "connectNewDevice": "Neues Gerät anschließen",
+    "manageDevice": "Gerät verwalten",
+    "disconnectDevice": "Gerät trennen",
+    "caseConnectedMessage": "Ihr {{deviceName}} Gehäuse ist verbunden.",
+    "caseConnectedDefault": "Ihr iPowerUp Uno Gehäuse ist verbunden."
+  },
+  "appSettings": {
+    "title": "App-Einstellungen",
+    "resetPassword": "Passwort zurücksetzen",
+    "deleteAccount": "Konto löschen",
+    "caseTemperature": "Gehäusetemperatur",
+    "bluetooth": "Bluetooth",
+    "subscribeToMessages": "Nachrichten abonnieren",
+    "language": "Sprache",
+    "english": "Englisch",
+    "spanish": "Spanisch",
+    "german": "Deutsch",
+    "french": "Französisch",
+    "chooseLanguage": "Sprache auswählen",
+    "languageUpdated": "Sprache erfolgreich aktualisiert",
+    "passwordForApp": "Passwort für diese App",
+    "bluetoothStatusUpdated": "Bluetooth-Status erfolgreich aktualisiert"
+  },
   "solar": {
     "title": "Solar",
-    "solarEnergyReceiving": "Solarenergie",
+    "solarEnergyReceiving": "Solarenergieempfang",
     "solarCollectionNow": "Solarstrom jetzt",
     "solarPanels": "Solarpaneele #",
     "milliamps": "mA = Milliampere Stromstärke*",
     "milliampNote": "*Ein Milliampere ist ein Tausendstel eines Ampere, einer Einheit des elektrischen Stroms.",
-    "improveSolar": "Mehr Solarenergie",
-    "improveSolarDesc": "Für mehr Solarenergie:",
-    "adjustCase": "Gehäuse ausrichten"
+    "improveSolar": "Verbesserung der Solarenergiegewinnung",
+    "improveSolarDesc": "Für eine schnellere Solarenergiegewinnung:",
+    "adjustCase": "Gehäuserichtung und -winkel anpassen"
   },
-  "help": {
-    "title": "Hilfe",
-    "contact": "Kontakt",
-    "tips": "Tipps"
+  "contactUs": {
+    "title": "Kontaktieren Sie iPowerUp",
+    "name": "Name",
+    "email": "E-Mail",
+    "messagePlaceholder": "Ihre Nachricht hier",
+    "submit": "Einreichen",
+    "nameRequired": "Bitte geben Sie Ihren Namen ein.",
+    "emailRequired": "Bitte geben Sie Ihre E-Mail-Adresse ein.",
+    "messageRequired": "Bitte geben Sie Ihre Nachricht ein",
+    "thankYou": "Vielen Dank, dass Sie uns kontaktiert haben."
+  },
+  "tips": {
+    "title": "iPowerUp-Tipps",
+    "tip1Question": "Wie maximiere ich die Solarladung?",
+    "tip1Answer": "Platzieren Sie Ihr Gerät in direktem Sonnenlicht und stellen Sie sicher, dass die Solarpaneele sauber und unversperrt sind. Die beste Ladung erfolgt zwischen 10 und 16 Uhr, wenn das Sonnenlicht am stärksten ist.",
+    "tip2Question": "Was ist die optimale Temperatur zum Laden?",
+    "tip2Answer": "Das Gehäuse funktioniert am besten zwischen 0°C und 45°C. Vermeiden Sie das Laden bei extremen Temperaturen, da dies die Batterielebensdauer und Ladeeffizienz beeinträchtigen kann.",
+    "tip3Question": "Wie lange dauert es, das Gehäuse vollständig aufzuladen?",
+    "tip3Answer": "Mit Solarenergie dauert es normalerweise 4-6 Stunden direktes Sonnenlicht, um das Gehäuse vollständig aufzuladen. Das USB-Laden dauert etwa 2-3 Stunden.",
+    "tip4Question": "Kann ich mein Telefon aufladen, während das Gehäuse geladen wird?",
+    "tip4Answer": "Ja! Das Gehäuse unterstützt Durchgangsladung, sodass Sie Ihr Telefon aufladen können, während das Gehäuse selbst über Solar oder USB geladen wird.",
+    "tip5Question": "Wie übertrage ich Energie vom Gehäuse zum Telefon?",
+    "tip5Answer": "Tippen Sie einfach auf die Schaltfläche \"Stromzufuhr zum Telefon\" auf dem Startbildschirm. Stellen Sie sicher, dass Ihr Telefon über den Ladeanschluss mit dem Gehäuse verbunden ist."
+  },
+  "troubleshooting": {
+    "title": "Helfen",
+    "faq1Question": "Bluetooth-Paarungsprobleme",
+    "faq1Answer": "Gerät nicht gefunden: Schließen Sie die iPowerUp-App. Öffnen Sie die Einstellungen auf Ihrem iPhone, um sicherzustellen, dass Bluetooth aktiviert ist. Öffnen Sie die PowerUp-App erneut, klicken Sie auf die Schaltfläche Neues Gerät verbinden, klicken Sie auf Zulassen, wenn Sie dazu aufgefordert werden, und klicken Sie auf den Namen Ihres Geräts.",
+    "faq2Question": "Laden mit dem Solarpanel des Gehäuses",
+    "faq2Answer": "Platzieren Sie Ihr Uno-Gehäuse an einem sonnigen Ort und richten Sie dann das Solarpanel in eine Richtung und einen Winkel aus, der gutes Sonnenlicht erhält. Sehen Sie sich den Bildschirm über dem Solarpanel für mA-Werte an, um die besten Ergebnisse zu erzielen.",
+    "faq3Question": "Manuell Energie vom Gehäuse auf mein Telefon übertragen",
+    "faq3Answer": "Drücken Sie die Modus-Taste am unteren Rand des Gehäuses zweimal schnell.",
+    "faq4Question": "Android-Telefone aufladen",
+    "faq4Answer": "Schließen Sie ein USB-C-Kabel vom Gehäuse an das Android-Gerät an. Hinweis: Diese App ist noch nicht für Android-Geräte verfügbar.",
+    "faq5Question": "Die kostenlose erweiterte Garantie erhalten",
+    "faq5Answer": "Es ist einfach! Richten Sie Ihr iPowerUp-App-Konto ein. Sie erhalten eine E-Mail zur Bestätigung Ihres Kontos und der Details zur erweiterten Garantie."
+  },
+  "otp": {
+    "title": "OTP eingeben",
+    "subtitle": "Wir haben einen Bestätigungscode an",
+    "yourEmail": "Ihre E-Mail",
+    "resend": "OTP erneut senden",
+    "invalid": "Ungültiger OTP"
+  },
+  "history": {
+    "title": "Geschichte",
+    "noDeviceConnected": "Kein Gerät angeschlossen. Schließen Sie ein Gerät an, um den Verlauf weiter anzuzeigen.",
+    "activityHistory": "Aktivitätsverlauf",
+    "caseToDeviceCharging": "Laden des Geräts über die Hülle",
+    "last10Days": "Letzte 10 Tage",
+    "solarUsbToCaseCharging": "Laden der Hülle über Solar/USB"
   },
   "common": {
-    "home": "Start",
+    "home": "Heim",
     "solar": "Solar",
     "help": "Hilfe",
     "profile": "Profil",
@@ -51,7 +268,12 @@
     "sending": "Senden...",
     "verifying": "Überprüfen...",
     "resetting": "Zurücksetzen...",
-    "loggedOut": "Erfolgreich abgemeldet"
+    "loggedOut": "Erfolgreich abgemeldet",
+    "terms": "Nutzungsbedingungen",
+    "privacy": "Datenschutzrichtlinie",
+    "ok": "OK",
+    "selectAll": "Alle auswählen",
+    "autoFill": "Automatische Vervollständigung"
   },
   "validation": {
     "enterFirstName": "Bitte geben Sie Ihren Vornamen ein.",
@@ -60,19 +282,27 @@
     "enterCountry": "Bitte geben Sie Ihr Land ein.",
     "validEmail": "Bitte geben Sie eine gültige E-Mail-Adresse ein.",
     "invalidPassword": "Ungültiges Passwort",
-    "passwordRequirements": "Das Passwort muss mindestens 8 Zeichen lang sein und mindestens einen Großbuchstaben, einen Kleinbuchstaben, eine Zahl und ein Sonderzeichen enthalten.",
+    "passwordRequirements": "Das Passwort muss mindestens 8 Zeichen lang sein und mindestens einen Buchstaben, eine Zahl und ein Sonderzeichen enthalten.",
     "agreeTerms": "Sie müssen den Allgemeinen Geschäftsbedingungen und der Datenschutzerklärung zustimmen.",
     "passwordMinLength": "Das Passwort muss mindestens 6 Zeichen lang sein."
   },
   "alerts": {
-    "caseBatteryLow": "Der Akku des Gehäuses ist nicht mehr voll. Bitte laden Sie ihn auf.",
+    "caseBatteryLow": "Warnung: Akkustand unter dem Minimum",
     "caseBatteryHigh": "Akku des Gehäuses über dem Maximalwert. Ladevorgang abbrechen.",
     "caseTempLow": "Die Gehäusetemperatur nähert sich der Abschalttemperatur.",
     "caseTempHigh": "Die Gehäusetemperatur nähert sich der Abschaltschwelle aufgrund zu hoher Temperatur.",
     "logoutConfirm": "Möchten Sie sich wirklich abmelden?",
     "deleteAccountConfirm": "Sind Sie sicher, dass Sie Ihr Konto löschen möchten?"
   },
-  "appSettings": {
-    "german": "Deutsch"
-  },
+  "permissions": {
+    "bluetoothTitle": "Soll die App „iPowerUp\" Bluetooth-Geräte finden dürfen?",
+    "permissionRequired": "Berechtigung erforderlich",
+    "bluetoothDescription": "Diese App benötigt Bluetooth, um sich mit BLE-Geräten zu verbinden.",
+    "permissionDescription": "Diese Berechtigung ist erforderlich, damit die App ordnungsgemäß funktioniert.",
+    "deviceFound": "Gerät gefunden",
+    "devicesFound": "Mehr als ____ Geräte gefunden",
+    "bluetoothPrivacyInfo": "Informationen von Bluetooth-Geräten können verwendet werden, um Ihren Standort zu bestimmen und ein Profil für Sie zu erstellen.",
+    "dontAllow": "Nicht zulassen",
+    "allow": "Zulassen"
+  }
 }

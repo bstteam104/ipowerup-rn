@@ -154,6 +154,23 @@ const LanguageScreen = ({navigation}) => {
             />
             <Text style={styles.optionText}>{t('appSettings.german')}</Text>
           </TouchableOpacity>
+
+          <TouchableOpacity
+            style={styles.optionItem}
+            onPress={() => selectLanguage('fr')}
+            activeOpacity={0.7}
+          >
+            <Image
+              source={
+                selectedLanguage === 'fr'
+                  ? require('../../assets/icons/checkbox-checked.png')
+                  : require('../../assets/icons/checkbox-unchecked.png')
+              }
+              style={styles.checkIcon}
+              resizeMode="contain"
+            />
+            <Text style={styles.optionText}>{t('appSettings.french')}</Text>
+          </TouchableOpacity>
         </View>
 
         {/* Continue Button */}

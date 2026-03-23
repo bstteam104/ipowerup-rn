@@ -13,6 +13,7 @@ import {
   Alert,
   PermissionsAndroid,
   Linking,
+  AppState,
 } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import DeviceInfo from 'react-native-device-info';
@@ -77,6 +78,13 @@ const HomeScreen = ({navigation, route}) => {
   const [phoneCharging, setPhoneCharging] = useState(false); // Actual phone charging status from PowerBankStatus
   const [usbCharging, setUsbCharging] = useState(false); // USB charging status from PowerBankStatus
   const batteryIntervalRef = useRef(null);
+  // Security alert flags (prevent duplicate alerts like iOS)
+  const [alertFlags, setAlertFlags] = useState({
+    vcBelowMinShown: false,
+    vcAboveMaxShown: false,
+    tcBelowMinShown: false,
+    tcAboveMaxShown: false,
+  });
   const [showDebug, setShowDebug] = useState(true); // Show debug panel
   const [debugInfo, setDebugInfo] = useState({
     connectionStatus: 'Disconnected',
@@ -371,6 +379,38 @@ const HomeScreen = ({navigation, route}) => {
       }
       BLEManager.stopPeriodicQueries();
       BLEManager.stopScanning();
+    };
+  }, []);
+
+  // ✅ FIX: AppState listener for background/foreground handling (matches iOS behavior)
+  // Stop scanning when app goes to background to prevent battery drain
+  useEffect(() => {
+    const subscription = AppState.addEventListener('change', (nextAppState) => {
+      console.log('📱 AppState changed:', nextAppState);
+      
+      if (nextAppState === 'background' || nextAppState === 'inactive') {
+        // App going to background - stop scanning to save battery
+        console.log('🛑 App going to background - stopping BLE scanning');
+        // Stop scanning if active
+        if (BLEManager.stopScanning) {
+          BLEManager.stopScanning().catch((error) => {
+            console.error('Error stopping scan on background:', error);
+          });
+        }
+        // Also stop periodic queries if connected
+        if (BLEManager.isConnected && BLEManager.stopPeriodicQueries) {
+          BLEManager.stopPeriodicQueries();
+        }
+      } else if (nextAppState === 'active') {
+        // App coming to foreground - resume scanning only if needed
+        console.log('✅ App coming to foreground');
+        // Don't auto-start scanning - let user manually start if needed
+        // This matches iOS behavior where scanning doesn't auto-resume
+      }
+    });
+
+    return () => {
+      subscription?.remove();
     };
   }, []);
 
@@ -730,12 +770,10 @@ const HomeScreen = ({navigation, route}) => {
           device: disconnectInfo?.device,
         });
         
-        // Retry scanning after disconnect
-        setTimeout(() => {
-          if (!BLEManager.isConnected) {
-            BLEManager.startScanning();
-          }
-        }, 2000);
+        // ✅ FIX: NO auto-scanning after disconnect (matches iOS behavior)
+        // iOS app doesn't auto-scan after disconnect to prevent battery drain
+        // User must manually start scanning if they want to reconnect
+        console.log('📌 Disconnected - scanning stopped. User must manually start scanning to reconnect.');
       },
       
       onDataReceived: async (data) => {
@@ -904,6 +942,56 @@ const HomeScreen = ({navigation, route}) => {
           phoneCharging: data.phoneCharging,
           solarCurrent: data.solarCurr,
         });
+
+        // Security Alerts (like iOS) - Check flags and show alerts
+        // Only show each alert once (prevent duplicate alerts)
+        if (data.vcBelowMin === true && !alertFlags.vcBelowMinShown) {
+          setAlertFlags(prev => ({...prev, vcBelowMinShown: true}));
+          Alert.alert(
+            '⚠️ Warning',
+            'Case battery charge below minimum. Please charge.',
+            [{text: 'OK'}]
+          );
+        } else if (data.vcBelowMin === false && alertFlags.vcBelowMinShown) {
+          // Reset flag when condition clears
+          setAlertFlags(prev => ({...prev, vcBelowMinShown: false}));
+        }
+
+        if (data.vcAboveMax === true && !alertFlags.vcAboveMaxShown) {
+          setAlertFlags(prev => ({...prev, vcAboveMaxShown: true}));
+          Alert.alert(
+            '⚠️ Warning',
+            'Case battery above maximum. Stop charging.',
+            [{text: 'OK'}]
+          );
+        } else if (data.vcAboveMax === false && alertFlags.vcAboveMaxShown) {
+          // Reset flag when condition clears
+          setAlertFlags(prev => ({...prev, vcAboveMaxShown: false}));
+        }
+
+        if (data.tcBelowMin === true && !alertFlags.tcBelowMinShown) {
+          setAlertFlags(prev => ({...prev, tcBelowMinShown: true}));
+          Alert.alert(
+            '⚠️ Warning',
+            'Case temperature approaching low temperature shut-down.',
+            [{text: 'OK'}]
+          );
+        } else if (data.tcBelowMin === false && alertFlags.tcBelowMinShown) {
+          // Reset flag when condition clears
+          setAlertFlags(prev => ({...prev, tcBelowMinShown: false}));
+        }
+
+        if (data.tcAboveMax === true && !alertFlags.tcAboveMaxShown) {
+          setAlertFlags(prev => ({...prev, tcAboveMaxShown: true}));
+          Alert.alert(
+            '⚠️ Warning',
+            'Case temperature approaching high temperature shut-down.',
+            [{text: 'OK'}]
+          );
+        } else if (data.tcAboveMax === false && alertFlags.tcAboveMaxShown) {
+          // Reset flag when condition clears
+          setAlertFlags(prev => ({...prev, tcAboveMaxShown: false}));
+        }
       },
       
       getTemperatureUnit: () => temperatureUnit,
@@ -1186,7 +1274,7 @@ const HomeScreen = ({navigation, route}) => {
                     ? formatTemperature(caseTemperature) 
                     : '--° C'}
                 </Text>
-                <Text style={styles.cardSubtitleRed}>{t('home.temperatureLevel')}</Text>
+                <Text style={styles.cardSubtitle}>{t('home.temperatureLevel')}</Text>
               </View>
               <Image
                 source={getTemperatureImage(caseTemperature, temperatureUnit)}
@@ -1217,9 +1305,17 @@ const HomeScreen = ({navigation, route}) => {
                   ? phoneCharging
                     ? require('../../assets/home/Stop_Charging_spanish.png')
                     : require('../../assets/home/Transfer_spanish.png')
-                  : phoneCharging
-                    ? require('../../assets/home/newYellowSlider.png')
-                    : require('../../assets/home/newWhiteSlider.png')
+                  : i18n.language === 'fr'
+                    ? phoneCharging
+                      ? require('../../assets/home/Stop_Charging_french.png')
+                      : require('../../assets/home/Transfer_french.png')
+                    : i18n.language === 'de'
+                      ? phoneCharging
+                        ? require('../../assets/home/Stop_Charging_german.png')
+                        : require('../../assets/home/Transfer_german.png')
+                      : phoneCharging
+                        ? require('../../assets/home/newYellowSlider.png')
+                        : require('../../assets/home/newWhiteSlider.png')
               }
               style={[styles.sliderImage, (!isConnected || !chargeConfigEnabled) && {opacity: 0.4}]}
               resizeMode="contain"

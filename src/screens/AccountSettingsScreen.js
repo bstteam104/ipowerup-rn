@@ -85,15 +85,11 @@ const AccountSettingsScreen = ({navigation}) => {
       } else {
         // Show error message from backend
         const errorMessage = result.error?.message || t('common.somethingWentWrong', 'Something went wrong. Please try again.');
-        setBannerMessage(errorMessage);
-        setBannerType('error');
-        setShowBanner(true);
+        showErrorToast(errorMessage);
       }
     } catch (error) {
       const errorMessage = error.message || t('common.somethingWentWrong', 'Something went wrong. Please try again.');
-      setBannerMessage(errorMessage);
-      setBannerType('error');
-      setShowBanner(true);
+      showErrorToast(errorMessage);
     } finally {
       setIsLoading(false);
     }
@@ -166,10 +162,10 @@ const AccountSettingsScreen = ({navigation}) => {
 
             {/* Email */}
             <View style={styles.inputContainer}>
-              <Text style={styles.label}>Email</Text>
+              <Text style={styles.label}>{t('contactUs.email')}</Text>
               <TextInput
                 style={styles.input}
-                placeholder="Email"
+                placeholder={t('contactUs.email')}
                 placeholderTextColor={Colors.grayColor}
                 value={email}
                 onChangeText={setEmail}
@@ -220,10 +216,10 @@ const AccountSettingsScreen = ({navigation}) => {
 
             {/* Country */}
             <View style={styles.inputContainer}>
-              <Text style={styles.label}>Country</Text>
+              <Text style={styles.label}>{t('signup.countryPlaceholder')}</Text>
               <TextInput
                 style={styles.input}
-                placeholder="Country"
+                placeholder={t('signup.countryPlaceholder')}
                 placeholderTextColor={Colors.grayColor}
                 value={country}
                 onChangeText={setCountry}

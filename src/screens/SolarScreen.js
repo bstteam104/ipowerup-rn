@@ -51,9 +51,13 @@ const SolarScreen = ({navigation}) => {
                 source={
                   i18n.language === 'es'
                     ? require('../../assets/solar/Speed_spanish.png')
-                    : selectedPanel === 1
-                      ? require('../../assets/solar/solarImage1.png')
-                      : require('../../assets/solar/solarImage2.png')
+                    : i18n.language === 'fr'
+                      ? require('../../assets/solar/Speed_french.png')
+                      : i18n.language === 'de'
+                        ? require('../../assets/solar/Speed_german.png')
+                        : selectedPanel === 1
+                          ? require('../../assets/solar/solarImage1.png')
+                          : require('../../assets/solar/solarImage2.png')
                 }
                 style={styles.gaugeImage}
                 resizeMode="contain"

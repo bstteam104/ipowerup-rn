@@ -11,28 +11,29 @@
   },
   "signup": {
     "title": "Create Account",
-    "subtitle": "Create a new App account. This is the same account used for iPowerUp.com",
+    "subtitle": "Please enter your information below to create your account",
     "firstNamePlaceholder": "Enter First Name Or Nickname",
     "lastNamePlaceholder": "Enter Last Name (Optional)",
     "emailPlaceholder": "Enter Email Address",
     "passwordPlaceholder": "Enter Password",
     "countryPlaceholder": "Country/Region",
     "createAccount": "Create Account",
-    "agreeTerms": "I agree to iPowerUp",
-    "agreePrivacy": "I consent to the use of my personal information in accordance with iPowerUp",
+    "agreeTerms": "I agree to iPowerUp Terms & Conditions",
+    "agreePrivacy": "I consent to the use of my personal information in accordance with iPowerUp Privacy Policy",
     "backToSignIn": "Back to Sign In"
   },
   "forgotPassword": {
     "title": "Forgot Password",
-    "subtitle": "Enter your email address and we'll send you a link to reset your password.",
-    "emailLabel": "Enter Email Address",
+    "subtitle": "Please Enter Your Email Address To Receive Verification Code.",
+    "emailLabel": "Email Address",
     "resendCode": "Resend Code",
     "backToSignIn": "Back to Sign In",
-    "continue": "Send Reset Link",
+    "continue": "Continue",
     "otpSent": "OTP sent to your email."
   },
   "resetPassword": {
     "title": "Reset Password",
+    "subtitle": "Please Reset Your Password",
     "passwordLabel": "Password",
     "reenterPassword": "Re-enter Password",
     "update": "Update",
@@ -41,7 +42,7 @@
     "currentPassword": "Current Password",
     "newPassword": "New Password",
     "passwordRequirements": "Your new password must be at least 8 characters long, contain at least one uppercase letter, one lowercase letter, one number, and one special character (e.g., @, #, $, %).",
-    "currentPasswordRequired": "Please enter your current password.",
+    "currentPasswordRequired": "Please enter your current password",
     "newPasswordRequired": "Please enter a new password.",
     "confirmPasswordRequired": "Please confirm your new password.",
     "passwordMismatch": "New password and confirm password do not match."
@@ -78,7 +79,8 @@
     "step3": "3. Turn on case Bluetooth",
     "step3Desc": "Set your iPowerUp case to Pairing by holding the Mode button down for 5 seconds.",
     "scanForPhone": "Scan for your Phone",
-    "backToPrevious": "Back To Previous Screen"
+    "backToPrevious": "Back To Previous Screen",
+    "success": "Subscription Successful."
   },
   "notifications": {
     "title": "Notifications",
@@ -87,7 +89,8 @@
     "phoneBatteryLow": "Phone Battery: Low",
     "phoneBatteryLowDesc": "Approximate charge level: 20% Action: Transfer energy from Case battery to Phone Battery",
     "caseBatteryHigh": "Case Battery: High",
-    "caseBatteryHighDesc": "Approximate charge level: 80%"
+    "caseBatteryHighDesc": "Approximate charge level: 80%",
+    "statusUpdated": "Notification status updated successfully"
   },
   "home": {
     "greetings": "Greetings",
@@ -130,12 +133,9 @@
     "batteryAlerts": "Get alerts at 5%, 20%, 80%, and 100% battery power levels, plus additional optional levels.",
     "bluetoothRange": "Enable case-to-phone communication even when the case is detached within Bluetooth range of up to 33 feet or 10 meters.",
     "temperatureAlerts": "Get case temperature alerts to prevent your case and phone from extreme temperature damage. Above 104° F or 40° C and below 32° F or 0° C.",
-    "history": "Check your battery usage history to understand opportunities for enhanced performance.",
+    "history": "Check your battery usage history to understand opportunities for enhanced performance. <link to History screen>",
     "enhancements": "Enjoy app enhancements throughout the year that provide continuous peace-of-mind improvements.",
     "select": "Select"
-  },
-  "subscription": {
-    "success": "Subscription Successful."
   },
   "terms": {
     "title": "Please review the following terms and conditions that govern your use of this website. Your use of the site constitutes your agreement to these terms and conditions. This website and all products or services offered on it are intended for adults, and by making any purchase or submitting any information, you represent yourself as an adult. The purchase of any IPOWERUP products or services through this site is subject to separate terms and conditions of sale, which can be viewed on the respective product and payment pages. The term \"IPOWERUP\" refers to IPOWERUP CORPORATION."
@@ -175,8 +175,11 @@
     "english": "English",
     "spanish": "Spanish",
     "german": "German",
-    "chooseLanguage": "Choose Language",
-    "languageUpdated": "Language updated successfully"
+    "french": "French",
+    "chooseLanguage": "Select Language",
+    "languageUpdated": "Language updated successfully",
+    "passwordForApp": "Password for this app",
+    "bluetoothStatusUpdated": "Bluetooth status updated successfully"
   },
   "solar": {
     "title": "Solar",
@@ -237,7 +240,7 @@
     "title": "History",
     "noDeviceConnected": "No device connected. Connect a device to continue viewing history.",
     "activityHistory": "Activity History",
-    "caseToDeviceCharging": "Case To Device Charging",
+    "caseToDeviceCharging": "Case to Device Charging",
     "last10Days": "Last 10 Days",
     "solarUsbToCaseCharging": "Solar/USB to Case Charging"
   },
@@ -264,7 +267,12 @@
     "creatingAccount": "Creating account...",
     "sending": "Sending...",
     "verifying": "Verifying...",
-    "resetting": "Resetting..."
+    "resetting": "Resetting...",
+    "terms": "Terms & Conditions",
+    "privacy": "Privacy Policy",
+    "ok": "Ok",
+    "selectAll": "Select All",
+    "autoFill": "AutoFill"
   },
   "validation": {
     "enterFirstName": "Please enter your first name.",
@@ -278,7 +286,7 @@
     "passwordMinLength": "Password must be at least 6 characters long."
   },
   "alerts": {
-    "caseBatteryLow": "Case battery charge below minimum. Please charge.",
+    "caseBatteryLow": "Alert: Case Battery Below Minimum",
     "caseBatteryHigh": "Case battery above maximum. Stop charging.",
     "caseTempLow": "Case temperature approaching low temperature shut-down.",
     "caseTempHigh": "Case temperature approaching high temperature shut-down.",
@@ -286,15 +294,14 @@
     "deleteAccountConfirm": "Are you sure you want to delete your account?"
   },
   "permissions": {
-    "bluetoothTitle": "Allow 'iPowerUp' to find Bluetooth devices?",
+    "bluetoothTitle": "Allow \"iPowerUp\" to find Bluetooth devices?",
     "permissionRequired": "Permission Required",
     "bluetoothDescription": "This app requires Bluetooth to connect to BLE devices.",
     "permissionDescription": "This permission is required for the app to function properly.",
     "deviceFound": "device found",
-    "devicesFound": "devices found",
-    "bluetoothPrivacyInfo": "Information from Bluetooth devices can be used to determine your location and create a profile of you.",
+    "devicesFound": "More than ____ devices found",
+    "bluetoothPrivacyInfo": "Information from Bluetooth devices can be used to determine your location and create a profile for you.",
     "dontAllow": "Don't Allow",
     "allow": "Allow"
   }
 }
-

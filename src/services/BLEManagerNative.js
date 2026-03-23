@@ -7,7 +7,7 @@ import {
   createStopChargingCommand,
   createQueryChargerConfigCommand,
 } from '../utils/BLECommands';
-import {parsePowerBankStatus} from '../utils/BLEParser';
+import {parsePowerBankStatus, parseChargerConfig} from '../utils/BLEParser';
 
 const {BLEManagerNative} = NativeModules;
 // CRITICAL: Check if native module is available
@@ -206,15 +206,25 @@ class BLEManagerNativeService {
                 }
               } else if (commandByte === BLE_CONSTANTS.COMMAND_QUERY_CHARGER_CONFIG) {
                 console.log('✅ Detected Charger Config response (0x03)');
-                // Parse charger config - Protocol: byte 5 (index 5) = EnPhCharger (0=off, 1=on)
-                if (buffer.length >= 6) {
-                  const enPhCharger = buffer[5] === 1;
-                  console.log('📊 Charger Config - enPhCharger:', enPhCharger);
+                // Parse charger config using full parser
+                const parsed = parseChargerConfig(buffer);
+                if (parsed) {
+                  console.log('✅ Parsed ChargerConfig:', parsed);
                   if (this.delegate?.onChargerConfigReceived) {
-                    this.delegate.onChargerConfigReceived({enPhCharger});
+                    this.delegate.onChargerConfigReceived(parsed);
                   }
                 } else {
-                  console.error('❌ Charger config response too short:', buffer.length);
+                  console.error('❌ Failed to parse ChargerConfig - but raw data logged above');
+                  // Fallback: try old simple parsing for backward compatibility
+                  if (buffer.length >= 6) {
+                    const enPhCharger = buffer[5] === 1;
+                    console.log('📊 Charger Config (fallback) - enPhCharger:', enPhCharger);
+                    if (this.delegate?.onChargerConfigReceived) {
+                      this.delegate.onChargerConfigReceived({enPhCharger});
+                    }
+                  } else {
+                    console.error('❌ Charger config response too short:', buffer.length);
+                  }
                 }
               } else if (commandByte === BLE_CONSTANTS.COMMAND_SEND_PASSWORD) {
                 // Device is acknowledging password (0x19 response) - this is normal

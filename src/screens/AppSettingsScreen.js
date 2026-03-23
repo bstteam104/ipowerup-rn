@@ -1,4 +1,4 @@
-import React, {useState, useEffect, useCallback} from 'react';
+import React, {useState, useEffect, useCallback, useRef} from 'react';
 import {
   View,
   Text,
@@ -68,6 +68,8 @@ const AppSettingsScreen = ({navigation}) => {
   const [isLoading, setIsLoading] = useState(false);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const isFocused = useIsFocused();
+  const prevLanguageRef = useRef(null);
+  const hasShownToastRef = useRef(false);
 
   // Load settings when screen is focused (fixes toggle reset issue)
   useEffect(() => {
@@ -75,6 +77,12 @@ const AppSettingsScreen = ({navigation}) => {
       loadSettings();
       const newLanguage = getCurrentLanguage();
       setCurrentLanguage(newLanguage);
+      // Initialize prevLanguageRef if not set
+      if (prevLanguageRef.current === null) {
+        prevLanguageRef.current = newLanguage;
+      }
+      // Reset toast flag when screen is focused
+      hasShownToastRef.current = false;
     }
   }, [isFocused]);
 
@@ -82,13 +90,23 @@ const AppSettingsScreen = ({navigation}) => {
   useEffect(() => {
     if (isFocused) {
       const newLanguage = getCurrentLanguage();
-      const oldLanguage = currentLanguage;
+      const oldLanguage = prevLanguageRef.current;
       
-      // Check if language changed (user came back from LanguageScreen)
-      if (oldLanguage && newLanguage && newLanguage !== oldLanguage && oldLanguage !== '') {
+      // Update currentLanguage state when language changes
+      setCurrentLanguage(newLanguage);
+      
+      // Only show toast if:
+      // 1. We have a previous language stored
+      // 2. Language actually changed
+      // 3. We haven't shown toast for this change yet
+      if (oldLanguage && newLanguage && newLanguage !== oldLanguage && !hasShownToastRef.current) {
         // Show success banner
         showSuccessToast(t('appSettings.languageUpdated'));
+        hasShownToastRef.current = true;
       }
+      
+      // Update previous language ref
+      prevLanguageRef.current = newLanguage;
     }
   }, [i18n.language, isFocused]); // Only trigger when language actually changes
 
@@ -298,7 +316,7 @@ const AppSettingsScreen = ({navigation}) => {
 
           <MenuItem
             icon={require('../../assets/icons/setting-account.png')}
-            title={`${t('appSettings.language')}: ${currentLanguage === 'en' ? t('appSettings.english') : currentLanguage === 'es' ? t('appSettings.spanish') : t('appSettings.german')}`}
+            title={`${t('appSettings.language')}: ${currentLanguage === 'en' ? t('appSettings.english') : currentLanguage === 'es' ? t('appSettings.spanish') : currentLanguage === 'de' ? t('appSettings.german') : currentLanguage === 'fr' ? t('appSettings.french') : t('appSettings.english')}`}
             onPress={handleLanguagePress}
           />
 

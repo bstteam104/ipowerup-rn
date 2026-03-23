@@ -55,23 +55,23 @@ const ContactUsScreen = ({navigation}) => {
 
   const fieldsAreValid = () => {
     if (!name || name.trim() === '') {
-      showAlert('Error', 'Please enter your name.');
+      showAlert(t('common.error'), t('contactUs.nameRequired'));
       return false;
     }
 
     if (!email || email.trim() === '') {
-      showAlert('Error', 'Please enter your email.');
+      showAlert(t('common.error'), t('contactUs.emailRequired'));
       return false;
     }
 
     if (!isValidEmail(email)) {
-      showAlert('Error', 'Please enter a valid email address.');
+      showAlert(t('common.error'), t('validation.validEmail'));
       return false;
     }
 
     const placeholderText = t('contactUs.messagePlaceholder');
     if (!message || message.trim() === '' || message === placeholderText) {
-      showAlert('Error', 'Please enter your message');
+      showAlert(t('common.error'), t('contactUs.messageRequired'));
       return false;
     }
 
