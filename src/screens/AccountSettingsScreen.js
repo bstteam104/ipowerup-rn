@@ -30,6 +30,8 @@ const AccountSettingsScreen = ({navigation}) => {
   const [phone, setPhone] = useState('');
   const [emergencyNumber, setEmergencyNumber] = useState('');
   const [country, setCountry] = useState('');
+  const [caseDeviceName, setCaseDeviceName] = useState('');
+  const [caseDeviceNameSecondary, setCaseDeviceNameSecondary] = useState('');
   const [isLoading, setIsLoading] = useState(false);
 
   useEffect(() => {
@@ -47,6 +49,8 @@ const AccountSettingsScreen = ({navigation}) => {
         setPhone(user.phone || '');
         setEmergencyNumber(user.emergency_number || '');
         setCountry(user.country || '');
+        setCaseDeviceName(user.case_device_name || '');
+        setCaseDeviceNameSecondary(user.case_device_name_2 || '');
       }
     } catch (error) {
       console.error('Error loading user data:', error);
@@ -74,6 +78,8 @@ const AccountSettingsScreen = ({navigation}) => {
         phone: phone.trim(),
         emergencyNumber: emergencyNumber.trim(),
         country: country.trim() || 'USA',
+        caseDeviceName: caseDeviceName.trim(),
+        caseDeviceNameSecondary: caseDeviceNameSecondary.trim(),
       });
 
       if (result.success && result.user) {
@@ -223,6 +229,32 @@ const AccountSettingsScreen = ({navigation}) => {
                 placeholderTextColor={Colors.grayColor}
                 value={country}
                 onChangeText={setCountry}
+                autoCapitalize="words"
+              />
+            </View>
+
+            {/* Case Device Name */}
+            <View style={styles.inputContainer}>
+              <Text style={styles.label}>Case Device Name</Text>
+              <TextInput
+                style={styles.input}
+                placeholder="Case device name"
+                placeholderTextColor={Colors.grayColor}
+                value={caseDeviceName}
+                onChangeText={setCaseDeviceName}
+                autoCapitalize="words"
+              />
+            </View>
+
+            {/* Case Device Name (2) */}
+            <View style={styles.inputContainer}>
+              <Text style={styles.label}>Case Device Name 2 (Optional)</Text>
+              <TextInput
+                style={styles.input}
+                placeholder="Second case device name"
+                placeholderTextColor={Colors.grayColor}
+                value={caseDeviceNameSecondary}
+                onChangeText={setCaseDeviceNameSecondary}
                 autoCapitalize="words"
               />
             </View>

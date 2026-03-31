@@ -24,6 +24,9 @@ const SignUpScreen = ({navigation}) => {
   const {t} = useTranslation();
   const [firstName, setFirstName] = useState('');
   const [lastName, setLastName] = useState('');
+  const [caseDeviceName, setCaseDeviceName] = useState('');
+  const [phoneNumber, setPhoneNumber] = useState('');
+  const [occupation, setOccupation] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [country, setCountry] = useState('');
@@ -49,6 +52,21 @@ const SignUpScreen = ({navigation}) => {
   const handleSignUp = async () => {
     if (!firstName || firstName.trim() === '') {
       showAlert(t('common.error'), t('validation.enterFirstName'));
+      return;
+    }
+
+    if (!caseDeviceName || caseDeviceName.trim() === '') {
+      showAlert(t('common.error'), t('validation.enterCaseDeviceName', 'Please enter your case device name.'));
+      return;
+    }
+
+    if (!phoneNumber || phoneNumber.trim() === '') {
+      showAlert(t('common.error'), t('validation.enterPhoneNumber', 'Please enter your phone number.'));
+      return;
+    }
+
+    if (!occupation || occupation.trim() === '') {
+      showAlert(t('common.error'), t('validation.enterOccupation', 'Please enter your occupation.'));
       return;
     }
 
@@ -88,6 +106,9 @@ const SignUpScreen = ({navigation}) => {
       const result = await registerAPI({
         firstName: firstName.trim(),
         lastName: lastName.trim(),
+        caseDeviceName: caseDeviceName.trim(),
+        phoneNumber: phoneNumber.trim(),
+        occupation: occupation.trim(),
         email: email.trim(),
         password: password,
         country: country.trim(),
@@ -201,6 +222,26 @@ const SignUpScreen = ({navigation}) => {
               </View>
             </View>
 
+            {/* Case Device Name Field */}
+            <View style={styles.inputContainer}>
+              <View style={styles.inputWrapper}>
+                <Image
+                  source={require('../../assets/icons/profile-icon.png')}
+                  style={styles.inputIcon}
+                  resizeMode="contain"
+                />
+                <TextInput
+                  style={styles.input}
+                  placeholder={t('signup.caseDeviceNamePlaceholder', 'Name your case device (e.g., Samis Case)')}
+                  placeholderTextColor={Colors.grayColor}
+                  value={caseDeviceName}
+                  onChangeText={setCaseDeviceName}
+                  autoCapitalize="words"
+                  autoCorrect={false}
+                />
+              </View>
+            </View>
+
             {/* Email Field */}
             <View style={styles.inputContainer}>
               <View style={styles.inputWrapper}>
@@ -222,7 +263,68 @@ const SignUpScreen = ({navigation}) => {
               </View>
             </View>
 
-            {/* Password Field */}
+            {/* Phone Number Field */}
+            <View style={styles.inputContainer}>
+              <View style={styles.inputWrapper}>
+                <Image
+                  source={require('../../assets/icons/contact.png')}
+                  style={styles.inputIcon}
+                  resizeMode="contain"
+                />
+                <TextInput
+                  style={styles.input}
+                  placeholder={t('signup.phonePlaceholder', 'Enter Phone Number')}
+                  placeholderTextColor={Colors.grayColor}
+                  value={phoneNumber}
+                  onChangeText={setPhoneNumber}
+                  keyboardType="phone-pad"
+                  autoCapitalize="none"
+                  autoCorrect={false}
+                />
+              </View>
+            </View>
+
+            {/* Occupation Field */}
+            <View style={styles.inputContainer}>
+              <View style={styles.inputWrapper}>
+                <Image
+                  source={require('../../assets/icons/profile-icon.png')}
+                  style={styles.inputIcon}
+                  resizeMode="contain"
+                />
+                <TextInput
+                  style={styles.input}
+                  placeholder={t('signup.occupationPlaceholder', 'Enter Occupation')}
+                  placeholderTextColor={Colors.grayColor}
+                  value={occupation}
+                  onChangeText={setOccupation}
+                  autoCapitalize="words"
+                  autoCorrect={false}
+                />
+              </View>
+            </View>
+
+            {/* Country Field */}
+            <View style={styles.inputContainer}>
+              <View style={styles.inputWrapper}>
+                <Image
+                  source={require('../../assets/icons/location-icon.png')}
+                  style={styles.inputIcon}
+                  resizeMode="contain"
+                />
+                <TextInput
+                  style={styles.input}
+                  placeholder={t('signup.countryPlaceholder')}
+                  placeholderTextColor={Colors.grayColor}
+                  value={country}
+                  onChangeText={setCountry}
+                  autoCapitalize="words"
+                  autoCorrect={false}
+                />
+              </View>
+            </View>
+
+            {/* Password Field (moved below country) */}
             <View style={styles.inputContainer}>
               <View style={styles.inputWrapper}>
                 <Image
@@ -249,26 +351,6 @@ const SignUpScreen = ({navigation}) => {
                     {showPassword ? '👁️' : '👁️‍🗨️'}
                   </Text>
                 </TouchableOpacity>
-              </View>
-            </View>
-
-            {/* Country Field */}
-            <View style={styles.inputContainer}>
-              <View style={styles.inputWrapper}>
-                <Image
-                  source={require('../../assets/icons/location-icon.png')}
-                  style={styles.inputIcon}
-                  resizeMode="contain"
-                />
-                <TextInput
-                  style={styles.input}
-                  placeholder={t('signup.countryPlaceholder')}
-                  placeholderTextColor={Colors.grayColor}
-                  value={country}
-                  onChangeText={setCountry}
-                  autoCapitalize="words"
-                  autoCorrect={false}
-                />
               </View>
             </View>
 

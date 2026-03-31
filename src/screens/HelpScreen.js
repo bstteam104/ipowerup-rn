@@ -57,6 +57,12 @@ const HelpScreen = ({navigation}) => {
           {/* Menu Items */}
           <View style={styles.menuContainer}>
             <MenuItem
+              icon={require('../../assets/icons/take-tour-ios.png')}
+              title={t('help.takeTour', 'Take the Tour')}
+              onPress={() => navigation.navigate('AppTour')}
+            />
+
+            <MenuItem
               icon={require('../../assets/icons/phone-help.png')}
               title={t('help.contact')}
               onPress={() => navigation.navigate('ContactUs')}

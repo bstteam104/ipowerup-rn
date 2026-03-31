@@ -103,7 +103,7 @@ const ActivityHistoryScreen = ({navigation}) => {
               resizeMode="contain"
             />
           </TouchableOpacity>
-          <Text style={styles.headerTitle}>{t('history.activityHistory')}</Text>
+          <Text style={styles.headerTitle}>{t('history.title')}</Text>
           <View style={styles.placeholder} />
         </View>
 
@@ -205,8 +205,22 @@ const styles = StyleSheet.create({
     paddingBottom: 40,
     paddingHorizontal: 20,
   },
+  historyNote: {
+    fontSize: 13,
+    color: '#4D5A67',
+    marginBottom: 12,
+    paddingHorizontal: 2,
+  },
   chartWrapper: {
     marginBottom: 20,
+    backgroundColor: '#FFFFFF',
+    borderRadius: 14,
+    padding: 10,
+    shadowColor: '#000',
+    shadowOffset: {width: 0, height: 1},
+    shadowOpacity: 0.08,
+    shadowRadius: 5,
+    elevation: 2,
   },
 });
 

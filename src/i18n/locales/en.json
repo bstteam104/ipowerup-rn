@@ -14,6 +14,9 @@
     "subtitle": "Please enter your information below to create your account",
     "firstNamePlaceholder": "Enter First Name Or Nickname",
     "lastNamePlaceholder": "Enter Last Name (Optional)",
+    "caseDeviceNamePlaceholder": "Name your case device (e.g., Samis Case)",
+    "phonePlaceholder": "Enter Phone Number",
+    "occupationPlaceholder": "Enter Occupation",
     "emailPlaceholder": "Enter Email Address",
     "passwordPlaceholder": "Enter Password",
     "countryPlaceholder": "Country/Region",
@@ -99,15 +102,16 @@
     "phoneBattery": "Phone Battery",
     "batteryLevel": "Battery Level",
     "caseBattery": "Case Battery",
-    "caseTemperature": "Case Temperature",
+    "caseTemperature": "Battery Temperature",
     "temperatureLevel": "Temperature Level",
     "transferPowerToPhone": "Transfer Power To Phone",
     "stopCharging": "Stop Charging"
   },
   "help": {
-    "title": "Help & Support",
+    "title": "Help and Support",
     "contact": "Contact iPowerUp",
-    "tips": "iPowerUp Tips"
+    "tips": "iPowerUp Tips",
+    "takeTour": "Take the Tour"
   },
   "accountSettings": {
     "title": "Account Settings",
@@ -121,7 +125,7 @@
     "updated": "Profile Updated Successfully"
   },
   "temperature": {
-    "title": "Case Temperature",
+    "title": "Battery Temperature",
     "fahrenheit": "Fahrenheit",
     "celsius": "Celsius",
     "updated": "Temperature setting updated"
@@ -155,9 +159,9 @@
     "history": "History",
     "peaceOfMind": "Peace of Mind Subscription",
     "logOut": "Log Out",
-    "noCaseConnected": "No Case Connected",
+    "noCaseConnected": "No iPowerUp devices connected",
     "caseConnected": "Case Connected",
-    "searchingForCase": "Searching for the Uno case, or Duo case?",
+    "searchingForCase": "Search for iPowerUp smart devices?",
     "connectNewDevice": "Connect New Device",
     "manageDevice": "Manage Device",
     "disconnectDevice": "Disconnect Device",
@@ -168,7 +172,7 @@
     "title": "App Settings",
     "resetPassword": "Reset Password",
     "deleteAccount": "Delete Account",
-    "caseTemperature": "Case Temperature",
+    "caseTemperature": "Battery Temperature",
     "bluetooth": "Bluetooth",
     "subscribeToMessages": "Subscribe to messages",
     "language": "Language",
@@ -239,7 +243,7 @@
   "history": {
     "title": "History",
     "noDeviceConnected": "No device connected. Connect a device to continue viewing history.",
-    "activityHistory": "Activity History",
+    "activityHistory": "History",
     "caseToDeviceCharging": "Case to Device Charging",
     "last10Days": "Last 10 Days",
     "solarUsbToCaseCharging": "Solar/USB to Case Charging"
@@ -258,7 +262,7 @@
     "submit": "Submit",
     "somethingWentWrong": "Something went wrong",
     "information": "Information",
-    "warning": "⚠️ Warning",
+    "warning": "⚠️ Alert",
     "success": "Success",
     "error": "Error",
     "updating": "Updating...",
@@ -279,6 +283,9 @@
     "enterEmail": "Please enter your email address.",
     "enterPassword": "Please enter your password.",
     "enterCountry": "Please enter your country.",
+    "enterCaseDeviceName": "Please enter your case device name.",
+    "enterPhoneNumber": "Please enter your phone number.",
+    "enterOccupation": "Please enter your occupation.",
     "validEmail": "Please enter a valid email address.",
     "invalidPassword": "Invalid Password",
     "passwordRequirements": "Password must be at least 8 characters long, contain at least one letter, one number, and one special character.",

@@ -99,7 +99,7 @@
     "phoneBattery": "Batterie de téléphone",
     "batteryLevel": "Niveau de batterie",
     "caseBattery": "Boîtier de batterie",
-    "caseTemperature": "Température du boîtier",
+    "caseTemperature": "Température de la batterie",
     "temperatureLevel": "Niveau de température",
     "transferPowerToPhone": "Transférer l'alimentation au téléphone",
     "stopCharging": "Arrêter la charge"
@@ -121,7 +121,7 @@
     "updated": "Profil mis à jour avec succès"
   },
   "temperature": {
-    "title": "Température du boîtier",
+    "title": "Température de la batterie",
     "fahrenheit": "Fahrenheit",
     "celsius": "Celsius",
     "updated": "Paramètre de température mis à jour"
@@ -155,9 +155,9 @@
     "history": "Historique",
     "peaceOfMind": "Abonnement Tranquillité d'esprit",
     "logOut": "Déconnexion",
-    "noCaseConnected": "Aucun dossier connecté",
+    "noCaseConnected": "Aucun appareil iPowerUp connecté",
     "caseConnected": "Boîtier connecté",
-    "searchingForCase": "Vous recherchez une coque pour Uno ou pour Duo ?",
+    "searchingForCase": "Rechercher les appareils intelligents iPowerUp ?",
     "connectNewDevice": "Connecter un nouvel appareil",
     "manageDevice": "Gérer l'appareil",
     "disconnectDevice": "Déconnecter l'appareil",
@@ -168,7 +168,7 @@
     "title": "Paramètres de l'application",
     "resetPassword": "Réinitialiser le mot de passe",
     "deleteAccount": "Supprimer le compte",
-    "caseTemperature": "Température du boîtier",
+    "caseTemperature": "Température de la batterie",
     "bluetooth": "Bluetooth",
     "subscribeToMessages": "S'abonner aux messages",
     "language": "Langue",
@@ -239,7 +239,7 @@
   "history": {
     "title": "Historique",
     "noDeviceConnected": "Aucun appareil connecté. Connectez un appareil pour continuer à consulter l'historique.",
-    "activityHistory": "Historique d'activité",
+    "activityHistory": "Historique",
     "caseToDeviceCharging": "Charge boîtier vers appareil",
     "last10Days": "10 derniers jours",
     "solarUsbToCaseCharging": "Charge solaire/USB vers boîtier"
@@ -258,7 +258,7 @@
     "submit": "Soumettre",
     "somethingWentWrong": "Quelque chose s'est mal passé",
     "information": "Information",
-    "warning": "⚠️ Avertissement",
+    "warning": "⚠️ Alerte",
     "success": "Succès",
     "error": "Erreur",
     "updating": "Mise à jour...",

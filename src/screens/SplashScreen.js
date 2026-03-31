@@ -7,6 +7,7 @@ import {
   Animated,
   StatusBar,
   Dimensions,
+  TouchableOpacity,
 } from 'react-native';
 import {Colors} from '../constants/Constants';
 import {isUserLoggedIn} from '../services/AuthService';
@@ -66,13 +67,13 @@ const SplashScreen = ({navigation}) => {
   return (
     <View style={styles.container}>
       <StatusBar barStyle="light-content" backgroundColor={Colors.splashBlue} />
-      
-      {/* Background gradient look */}
-      <View style={styles.backgroundContainer}>
-        <View style={styles.backgroundOverlay} />
-      </View>
+      <Image
+        source={require('../../assets/images/background.png')}
+        style={styles.backgroundImage}
+        resizeMode="cover"
+      />
+      <View style={styles.backgroundOverlay} />
 
-      {/* Logo with animation exactly */}
       <Animated.View
         style={[
           styles.logoContainer,
@@ -87,17 +88,25 @@ const SplashScreen = ({navigation}) => {
         />
       </Animated.View>
 
-      {/* Loading Text */}
-      <Text style={styles.loadingText}>Loading</Text>
+      <Text style={styles.headingText}>
+        Never Get Surprised by a Dead Phone Again
+      </Text>
 
-      {/* Progress Bar progressView styling */}
-      <View style={styles.progressContainer}>
-        <View style={styles.progressBarBackground}>
-          <Animated.View 
+      <TouchableOpacity
+        activeOpacity={0.85}
+        style={styles.takeTourButton}
+        onPress={() => navigation.navigate('AppTour')}>
+        <Text style={styles.takeTourText}>Take the Tour</Text>
+      </TouchableOpacity>
+
+      <View style={styles.footerArea}>
+        <Text style={styles.loadingText}>Loading</Text>
+        <View style={styles.progressContainer}>
+          <Animated.View
             style={[
-              styles.progressBarFill, 
-              {width: `${progress * 100}%`}
-            ]} 
+              styles.progressBarFill,
+              {width: `${progress * 100}%`},
+            ]}
           />
         </View>
       </View>
@@ -109,46 +118,72 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: Colors.splashBlue,
-    justifyContent: 'center',
+    justifyContent: 'flex-start',
     alignItems: 'center',
   },
-  backgroundContainer: {
+  backgroundImage: {
     position: 'absolute',
     top: 0,
     left: 0,
     right: 0,
     bottom: 0,
+    width: '100%',
+    height: '100%',
   },
   backgroundOverlay: {
-    flex: 1,
-    backgroundColor: Colors.splashLightBlue,
-    opacity: 0.7,
+    ...StyleSheet.absoluteFillObject,
+    backgroundColor: '#55B0DE',
+    opacity: 0.6,
   },
   logoContainer: {
-    width: width * 0.61, // 61% 
-    height: height * 0.15, // 15% 
+    width: width * 0.61,
+    height: height * 0.15,
     justifyContent: 'center',
     alignItems: 'center',
+    marginTop: height * 0.1,
   },
   logo: {
     width: '100%',
     height: '100%',
-    tintColor: Colors.white,
+  },
+  headingText: {
+    marginTop: height * 0.08,
+    width: '84%',
+    fontSize: 36,
+    fontWeight: '700',
+    color: Colors.white,
+    textAlign: 'left',
+    lineHeight: 44,
+  },
+  takeTourButton: {
+    marginTop: 26,
+    width: '84%',
+    height: 50,
+    borderRadius: 12,
+    backgroundColor: Colors.white,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  takeTourText: {
+    color: Colors.black,
+    fontSize: 16,
+    fontWeight: '700',
+  },
+  footerArea: {
+    position: 'absolute',
+    bottom: 40,
+    width: '100%',
+    alignItems: 'center',
   },
   loadingText: {
     fontSize: 16,
     fontWeight: 'bold',
     color: Colors.white,
-    marginTop: 20,
+    marginBottom: 16,
     textAlign: 'center',
   },
   progressContainer: {
-    width: width * 0.46875, // 46.875% 
-    marginTop: 20,
-    alignItems: 'center',
-  },
-  progressBarBackground: {
-    width: '100%',
+    width: width * 0.46875,
     height: 8,
     backgroundColor: Colors.white,
     borderRadius: 4,
@@ -157,7 +192,7 @@ const styles = StyleSheet.create({
     overflow: 'hidden',
   },
   progressBarFill: {
-    height: '100%',
+    height: 8,
     backgroundColor: Colors.progressYellow,
     borderRadius: 4,
   },

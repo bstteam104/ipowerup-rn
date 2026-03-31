@@ -22,7 +22,7 @@ const TabIcon = ({selectedIconSource, unselectedIconSource, label, focused}) => 
       // Inactive tab: just icon
       <Image
         source={unselectedIconSource}
-        style={styles.tabIcon}
+        style={[styles.tabIcon, {tintColor: '#1D2733'}]}
         resizeMode="contain"
       />
     )}

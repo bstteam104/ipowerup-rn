@@ -192,7 +192,7 @@ export const loginAPI = async (email, password) => {
 
 /**
  * Register/Signup API
- * @param {object} userData - {firstName, lastName, email, password, country, termsAccepted, privacyAccepted}
+ * @param {object} userData - {firstName, lastName, caseDeviceName, phoneNumber, occupation, email, password, country, termsAccepted, privacyAccepted}
  * @returns {Promise<{success: boolean, user?: object, error?: object}>}
  */
 export const registerAPI = async (userData) => {
@@ -202,6 +202,9 @@ export const registerAPI = async (userData) => {
     const params = {
       first_name: userData.firstName,
       last_name: userData.lastName,
+      case_device_name: userData.caseDeviceName,
+      phone: userData.phoneNumber,
+      occupation: userData.occupation,
       email: userData.email,
       country: userData.country || 'USA',
       password: userData.password,
@@ -539,6 +542,8 @@ export const updateAccountAPI = async (userData) => {
       phone: userData.phone || '',
       emergency_number: userData.emergencyNumber || '',
       country: userData.country || 'USA',
+      case_device_name: userData.caseDeviceName || '',
+      case_device_name_2: userData.caseDeviceNameSecondary || '',
       _method: 'patch',
     };
 

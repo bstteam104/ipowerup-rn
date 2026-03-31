@@ -99,7 +99,7 @@
     "phoneBattery": "Batería del teléfono",
     "batteryLevel": "Nivel de batería",
     "caseBattery": "Batería de caja",
-    "caseTemperature": "Temperatura de la caja",
+    "caseTemperature": "Temperatura de la bateria",
     "temperatureLevel": "Nivel de temperatura",
     "transferPowerToPhone": "Transferir energía al teléfono",
     "stopCharging": "Dejar de cargar"
@@ -121,7 +121,7 @@
     "updated": "Perfil actualizado correctamente"
   },
   "temperature": {
-    "title": "Temperatura de la caja",
+    "title": "Temperatura de la bateria",
     "fahrenheit": "Fahrenheit",
     "celsius": "Celsius",
     "updated": "Configuración de temperatura actualizada"
@@ -155,9 +155,9 @@
     "history": "Historia",
     "peaceOfMind": "Suscripción a la tranquilidad",
     "logOut": "Finalizar la sesión",
-    "noCaseConnected": "No hay ningún caso conectado",
+    "noCaseConnected": "No hay dispositivos iPowerUp conectados",
     "caseConnected": "Caso conectado",
-    "searchingForCase": "¿Estás buscando la funda Uno o la funda Duo?",
+    "searchingForCase": "¿Buscar dispositivos inteligentes iPowerUp?",
     "connectNewDevice": "Conectar nuevo dispositivo",
     "manageDevice": "Administrar dispositivo",
     "disconnectDevice": "Desconectar dispositivo",
@@ -168,7 +168,7 @@
     "title": "Configuración de la aplicación",
     "resetPassword": "Restablecer contraseña",
     "deleteAccount": "Eliminar cuenta",
-    "caseTemperature": "Temperatura de la caja",
+    "caseTemperature": "Temperatura de la bateria",
     "bluetooth": "Bluetooth",
     "subscribeToMessages": "Suscribirse a mensajes",
     "language": "Idioma",
@@ -239,7 +239,7 @@
   "history": {
     "title": "Historia",
     "noDeviceConnected": "No hay ningún dispositivo conectado. Conecta un dispositivo para seguir viendo el historial.",
-    "activityHistory": "Historial de actividad",
+    "activityHistory": "Historial",
     "caseToDeviceCharging": "Carga del estuche al dispositivo",
     "last10Days": "Últimos 10 días",
     "solarUsbToCaseCharging": "Carga solar/USB a la funda"
@@ -258,7 +258,7 @@
     "submit": "Entregar",
     "somethingWentWrong": "Algo salió mal",
     "information": "Información",
-    "warning": "⚠️ Advertencia",
+    "warning": "⚠️ Alerta",
     "success": "Éxito",
     "error": "Error",
     "updating": "Actualizando...",

@@ -414,11 +414,15 @@ const ProfileScreen = ({navigation}) => {
     }
   };
 
-  const MenuItem = ({icon, title, onPress, showArrow = true, rightComponent, showIcon = true, rightIcon}) => (
+  const MenuItem = ({icon, title, onPress, showArrow = true, rightComponent, showIcon = true, rightIcon, iconTintColor}) => (
     <TouchableOpacity style={styles.menuItem} onPress={onPress} activeOpacity={0.7}>
       {showIcon && icon && (
         <View style={styles.menuIconContainer}>
-          <Image source={icon} style={styles.menuIcon} resizeMode="contain" />
+          <Image
+            source={icon}
+            style={[styles.menuIcon, iconTintColor ? {tintColor: iconTintColor} : null]}
+            resizeMode="contain"
+          />
         </View>
       )}
       {!showIcon && <View style={styles.menuIconContainer} />}
@@ -654,6 +658,7 @@ const ProfileScreen = ({navigation}) => {
               icon={require('../../assets/icons/bell-notification.png')}
               title={t('profile.notifications')}
               onPress={() => {}}
+              iconTintColor={isNotificationEnabled ? Colors.black : '#0097D9'}
               showArrow={false}
               rightComponent={
                 <View style={styles.switchContainer}>
@@ -675,7 +680,7 @@ const ProfileScreen = ({navigation}) => {
               title={t('profile.appSettings')}
               onPress={() => navigation.navigate('AppSettings')}
             />
-            
+
             <MenuItem
               icon={require('../../assets/icons/file-history.png')}
               title={t('profile.history')}

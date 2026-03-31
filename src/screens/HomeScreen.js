@@ -65,9 +65,12 @@ const HomeScreen = ({navigation, route}) => {
   const {t, i18n} = useTranslation();
   const isFocused = useIsFocused();
   const [userName, setUserName] = useState('User');
+  const [phoneName, setPhoneName] = useState("User's Phone");
   const [phoneBatteryLevel, setPhoneBatteryLevel] = useState(0);
   const [caseBatteryLevel, setCaseBatteryLevel] = useState(0);
   const [caseTemperature, setCaseTemperature] = useState(0);
+  const [caseDeviceName, setCaseDeviceName] = useState('Your Case');
+  const [caseMacLast4, setCaseMacLast4] = useState('');
   const [temperatureUnit, setTemperatureUnit] = useState('celsius');
   const [isCharging, setIsCharging] = useState(false);
   const [isConnected, setIsConnected] = useState(false);
@@ -491,7 +494,14 @@ const HomeScreen = ({navigation, route}) => {
       if (userData) {
         const user = JSON.parse(userData);
         setUserName(user.full_name || user.first_name || 'User');
+        setCaseDeviceName(user.case_device_name || 'Your Case');
         if (user.tempreture) setTemperatureUnit(user.tempreture);
+      }
+      if (typeof DeviceInfo.getDeviceName === 'function') {
+        const deviceName = await DeviceInfo.getDeviceName();
+        if (deviceName) {
+          setPhoneName(deviceName);
+        }
       }
     } catch (error) {
       console.error('Error loading user data:', error);
@@ -568,6 +578,10 @@ const HomeScreen = ({navigation, route}) => {
       onConnected: (device) => {
         console.log('✅ Connected to:', device?.name || 'Unknown Device');
         setIsConnected(true);
+        const connectedId = device?.id || '';
+        if (connectedId && connectedId.length >= 4) {
+          setCaseMacLast4(connectedId.slice(-4).toUpperCase());
+        }
         // Reset charging states when connecting
         setUsbCharging(false);
         setPhoneCharging(false);
@@ -1229,7 +1243,7 @@ const HomeScreen = ({navigation, route}) => {
           </View>
 
           {/* Your Phone Section */}
-          <Text style={styles.sectionTitle}>{t('home.yourPhone')}</Text>
+          <Text style={styles.sectionTitle}>{phoneName}</Text>
           <View style={styles.card}>
             <View style={styles.cardRow}>
               <View style={styles.cardTextContainer}>
@@ -1246,7 +1260,7 @@ const HomeScreen = ({navigation, route}) => {
           </View>
 
           {/* Your Case Section */}
-          <Text style={styles.sectionTitle}>{t('home.yourCase')}</Text>
+          <Text style={styles.sectionTitle}>{`${userName}'s ${caseDeviceName}`}</Text>
           <View style={styles.card}>
             <View style={styles.cardRow}>
               <View style={styles.cardTextContainer}>
@@ -1262,6 +1276,7 @@ const HomeScreen = ({navigation, route}) => {
                 resizeMode="contain"
               />
             </View>
+            <Text style={styles.caseMacText}>{`Case MAC (last 4): ${caseMacLast4 || '----'}`}</Text>
           </View>
 
           {/* Temperature Card */}
@@ -1687,6 +1702,13 @@ const styles = StyleSheet.create({
   sliderImage: {
     width: '100%',
     height: 55,
+  },
+  caseMacText: {
+    paddingHorizontal: 20,
+    paddingBottom: 14,
+    fontSize: 12,
+    color: '#646D77',
+    fontWeight: '600',
   },
   debugToggle: {
     marginHorizontal: 20,

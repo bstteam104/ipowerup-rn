@@ -25,6 +25,7 @@ import TemperatureScreen from '../screens/TemperatureScreen';
 import LanguageScreen from '../screens/LanguageScreen';
 import TermsAndConditionsScreen from '../screens/TermsAndConditionsScreen';
 import PrivacyPolicyScreen from '../screens/PrivacyPolicyScreen';
+import AppTourScreen from '../screens/AppTourScreen';
 import TabNavigator from './TabNavigator';
 
 const Stack = createNativeStackNavigator();
@@ -86,6 +87,7 @@ const AppNavigator = () => {
         <Stack.Screen name="ContactUs" component={ContactUsScreen} />
         <Stack.Screen name="Troubleshooting" component={TroubleshootingScreen} />
         <Stack.Screen name="Tips" component={TipsScreen} />
+        <Stack.Screen name="AppTour" component={AppTourScreen} />
       </Stack.Navigator>
     </NavigationContainer>
   );

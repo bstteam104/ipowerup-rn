@@ -99,7 +99,7 @@
     "phoneBattery": "Akku",
     "batteryLevel": "Batteriestand",
     "caseBattery": "Gehäusebatterie",
-    "caseTemperature": "Gehäusetemperatur",
+    "caseTemperature": "Akkutemperatur",
     "temperatureLevel": "Temperaturniveau",
     "transferPowerToPhone": "Stromzufuhr zum Telefon",
     "stopCharging": "Ladevorgang abbrechen"
@@ -121,7 +121,7 @@
     "updated": "Profil erfolgreich aktualisiert"
   },
   "temperature": {
-    "title": "Gehäusetemperatur",
+    "title": "Akkutemperatur",
     "fahrenheit": "Fahrenheit",
     "celsius": "Celsius",
     "updated": "Temperatureinstellung aktualisiert"
@@ -155,9 +155,9 @@
     "history": "Geschichte",
     "peaceOfMind": "Sorglos-Abonnement",
     "logOut": "Abmelden",
-    "noCaseConnected": "Kein Fall verbunden",
+    "noCaseConnected": "Keine iPowerUp Geräte verbunden",
     "caseConnected": "Fall verbunden",
-    "searchingForCase": "Suchen Sie die Uno- oder Duo-Hülle?",
+    "searchingForCase": "Nach iPowerUp Smart-Geräten suchen?",
     "connectNewDevice": "Neues Gerät anschließen",
     "manageDevice": "Gerät verwalten",
     "disconnectDevice": "Gerät trennen",
@@ -168,7 +168,7 @@
     "title": "App-Einstellungen",
     "resetPassword": "Passwort zurücksetzen",
     "deleteAccount": "Konto löschen",
-    "caseTemperature": "Gehäusetemperatur",
+    "caseTemperature": "Akkutemperatur",
     "bluetooth": "Bluetooth",
     "subscribeToMessages": "Nachrichten abonnieren",
     "language": "Sprache",
@@ -239,7 +239,7 @@
   "history": {
     "title": "Geschichte",
     "noDeviceConnected": "Kein Gerät angeschlossen. Schließen Sie ein Gerät an, um den Verlauf weiter anzuzeigen.",
-    "activityHistory": "Aktivitätsverlauf",
+    "activityHistory": "Verlauf",
     "caseToDeviceCharging": "Laden des Geräts über die Hülle",
     "last10Days": "Letzte 10 Tage",
     "solarUsbToCaseCharging": "Laden der Hülle über Solar/USB"
@@ -258,7 +258,7 @@
     "submit": "Einreichen",
     "somethingWentWrong": "Etwas ist schiefgelaufen.",
     "information": "Information",
-    "warning": "⚠️ Warnung",
+    "warning": "⚠️ Alarm",
     "success": "Erfolg",
     "error": "Fehler",
     "updating": "Aktualisieren...",
