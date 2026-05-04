@@ -232,7 +232,7 @@ const SignUpScreen = ({navigation}) => {
                 />
                 <TextInput
                   style={styles.input}
-                  placeholder={t('signup.caseDeviceNamePlaceholder', 'Name your case device (e.g., Samis Case)')}
+                  placeholder={t('signup.caseDeviceNamePlaceholder', "Name your case device (e.g., Sam's Case)")}
                   placeholderTextColor={Colors.grayColor}
                   value={caseDeviceName}
                   onChangeText={setCaseDeviceName}
@@ -470,7 +470,7 @@ const styles = StyleSheet.create({
   subtitle: {
     fontSize: FontSizes.large,
     fontWeight: '500',
-    color: Colors.grayColor,
+    color: Colors.iosLatestSecondaryLabel,
     textAlign: 'center',
     marginBottom: 30,
     lineHeight: 22,

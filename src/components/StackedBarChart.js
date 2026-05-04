@@ -125,7 +125,7 @@ const StackedBarChart = ({
 
 const styles = StyleSheet.create({
   container: {
-    backgroundColor: Colors.white,
+    backgroundColor: 'transparent',
     height: 140,
   },
   chartWrapper: {

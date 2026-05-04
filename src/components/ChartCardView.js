@@ -69,16 +69,11 @@ const ChartCardView = ({
 };
 
 const styles = StyleSheet.create({
+  /** Content only — outer white card comes from ActivityHistoryScreen `chartWrapper` */
   cardView: {
-    backgroundColor: Colors.white,
-    borderRadius: 16,
-    padding: 20,
+    backgroundColor: 'transparent',
+    padding: 0,
     marginHorizontal: 0,
-    shadowColor: '#000',
-    shadowOffset: {width: 0, height: 2},
-    shadowOpacity: 0.1,
-    shadowRadius: 8,
-    elevation: 4,
   },
   subtitle: {
     fontSize: FontSizes.medium,

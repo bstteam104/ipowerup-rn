@@ -1,4 +1,4 @@
-import React, {useState, useEffect, useRef} from 'react';
+import React, {useState, useEffect, useRef, useMemo} from 'react';
 import {
   View,
   Text,
@@ -69,7 +69,7 @@ const HomeScreen = ({navigation, route}) => {
   const [phoneBatteryLevel, setPhoneBatteryLevel] = useState(0);
   const [caseBatteryLevel, setCaseBatteryLevel] = useState(0);
   const [caseTemperature, setCaseTemperature] = useState(0);
-  const [caseDeviceName, setCaseDeviceName] = useState('Your Case');
+  const [caseDeviceName, setCaseDeviceName] = useState('');
   const [caseMacLast4, setCaseMacLast4] = useState('');
   const [temperatureUnit, setTemperatureUnit] = useState('celsius');
   const [isCharging, setIsCharging] = useState(false);
@@ -494,7 +494,7 @@ const HomeScreen = ({navigation, route}) => {
       if (userData) {
         const user = JSON.parse(userData);
         setUserName(user.full_name || user.first_name || 'User');
-        setCaseDeviceName(user.case_device_name || 'Your Case');
+        setCaseDeviceName(user.case_device_name || '');
         if (user.tempreture) setTemperatureUnit(user.tempreture);
       }
       if (typeof DeviceInfo.getDeviceName === 'function') {
@@ -1199,6 +1199,20 @@ const HomeScreen = ({navigation, route}) => {
     }, 500); // 0.5 seconds delay - enough for device, but feels instant in UI
   };
 
+  const caseSectionTitleSuffix = useMemo(() => {
+    const trimmed = (caseDeviceName || '').trim();
+    const localizedYourCase = t('home.yourCase');
+    if (
+      !trimmed ||
+      trimmed === 'Your Case' ||
+      trimmed === localizedYourCase ||
+      trimmed.toLowerCase() === 'your case'
+    ) {
+      return t('home.caseShort', 'Case');
+    }
+    return trimmed;
+  }, [caseDeviceName, t, i18n.language]);
+
   return (
     <View style={styles.container}>
       <StatusBar barStyle="dark-content" backgroundColor="transparent" translucent />
@@ -1260,7 +1274,7 @@ const HomeScreen = ({navigation, route}) => {
           </View>
 
           {/* Your Case Section */}
-          <Text style={styles.sectionTitle}>{`${userName}'s ${caseDeviceName}`}</Text>
+          <Text style={styles.sectionTitle}>{`${userName}'s ${caseSectionTitleSuffix}`}</Text>
           <View style={styles.card}>
             <View style={styles.cardRow}>
               <View style={styles.cardTextContainer}>

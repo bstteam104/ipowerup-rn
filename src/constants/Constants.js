@@ -1,4 +1,5 @@
 // Constants
+import {Platform, PlatformColor} from 'react-native';
 
 export const Constants = {
   deviceOS: "Android",
@@ -36,6 +37,11 @@ export const Colors = {
   
   // Text colors
   placeholderColor: "#AAAAAA",
+  /** Legible secondary text: iOS system `secondaryLabel`; solid fallback on Android */
+  iosLatestSecondaryLabel: Platform.select({
+    ios: PlatformColor('secondaryLabel'),
+    default: '#636366',
+  }),
   
   // Border colors
   inputBorderColor: "#999B9F",

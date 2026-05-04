@@ -15,6 +15,10 @@ import {
 
 const {width, height} = Dimensions.get('window');
 
+/** White cards use 72% width, centered — section titles share this inset so text lines up with card left edge */
+const SOLAR_CARD_WIDTH = width * 0.72;
+const SOLAR_CARD_SIDE_INSET = (width - SOLAR_CARD_WIDTH) / 2;
+
 const SolarScreen = ({navigation}) => {
   const {t, i18n} = useTranslation();
   const [solarMilliAmps, setSolarMilliAmps] = useState(0);
@@ -161,7 +165,7 @@ const styles = StyleSheet.create({
     paddingBottom: 120,
   },
   header: {
-    paddingHorizontal: 20,
+    paddingHorizontal: SOLAR_CARD_SIDE_INSET,
     paddingTop: Platform.OS === 'android' ? 50 : 10,
     // Extra space between heading/subheading and first card
     paddingBottom: 8,
@@ -187,7 +191,7 @@ const styles = StyleSheet.create({
   },
   card: {
     alignSelf: 'center',
-    width: width * 0.72,
+    width: SOLAR_CARD_WIDTH,
     backgroundColor: '#FFFFFF',
     borderRadius: 20,
     paddingVertical: 18,
@@ -332,7 +336,7 @@ const styles = StyleSheet.create({
     color: '#1D2733',
     marginTop: 12,
     marginBottom: 12,
-    paddingHorizontal: 32,
+    paddingHorizontal: SOLAR_CARD_SIDE_INSET,
     textAlign: 'left',
   },
   imageShadowBox: {
@@ -350,7 +354,7 @@ const styles = StyleSheet.create({
   },
   imageCard: {
     alignSelf: 'center',
-    width: width * 0.72,
+    width: SOLAR_CARD_WIDTH,
     backgroundColor: '#FFFFFF',
     borderRadius: 20,
     paddingVertical: 18,
@@ -378,7 +382,7 @@ const styles = StyleSheet.create({
     color: '#1D2733',
     marginTop: 8,
     marginBottom: 3,
-    paddingHorizontal: 32,
+    paddingHorizontal: SOLAR_CARD_SIDE_INSET,
     textAlign: 'left',
   },
   tipText: {
@@ -386,7 +390,7 @@ const styles = StyleSheet.create({
     color: '#1D2733', // black-ish, like design
     fontWeight: 'bold',
     marginBottom: 15,
-    paddingHorizontal: 32,
+    paddingHorizontal: SOLAR_CARD_SIDE_INSET,
     textAlign: 'left',
   },
   noteText: {
@@ -395,7 +399,7 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     textAlign: 'left',
     fontStyle: 'italic',
-    paddingHorizontal: 32,
+    paddingHorizontal: SOLAR_CARD_SIDE_INSET,
   },
 });
 

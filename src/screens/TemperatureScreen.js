@@ -171,41 +171,43 @@ const TemperatureScreen = ({navigation}) => {
           <View style={styles.placeholder} />
         </View>
 
-        {/* Temperature Options */}
+        {/* Temperature options — white rows like Reset Password */}
         <View style={styles.optionsContainer}>
-          <TouchableOpacity
-            style={styles.optionItem}
-            onPress={() => selectButton('fahrenheit')}
-            activeOpacity={0.7}
-          >
-            <Image
-              source={
-                tempValue === 'fahrenheit'
-                  ? require('../../assets/icons/checkbox-checked.png')
-                  : require('../../assets/icons/checkbox-unchecked.png')
-              }
-              style={styles.checkIcon}
-              resizeMode="contain"
-            />
-            <Text style={styles.optionText}>{t('temperature.fahrenheit')}</Text>
-          </TouchableOpacity>
+          <View style={styles.optionBlock}>
+            <TouchableOpacity
+              style={styles.optionRow}
+              onPress={() => selectButton('fahrenheit')}
+              activeOpacity={0.7}>
+              <Image
+                source={
+                  tempValue === 'fahrenheit'
+                    ? require('../../assets/icons/checkbox-checked.png')
+                    : require('../../assets/icons/checkbox-unchecked.png')
+                }
+                style={styles.checkIcon}
+                resizeMode="contain"
+              />
+              <Text style={styles.optionText}>{t('temperature.fahrenheit')}</Text>
+            </TouchableOpacity>
+          </View>
 
-          <TouchableOpacity
-            style={styles.optionItem}
-            onPress={() => selectButton('celsius')}
-            activeOpacity={0.7}
-          >
-            <Image
-              source={
-                tempValue === 'celsius'
-                  ? require('../../assets/icons/checkbox-checked.png')
-                  : require('../../assets/icons/checkbox-unchecked.png')
-              }
-              style={styles.checkIcon}
-              resizeMode="contain"
-            />
-            <Text style={styles.optionText}>{t('temperature.celsius')}</Text>
-          </TouchableOpacity>
+          <View style={styles.optionBlock}>
+            <TouchableOpacity
+              style={styles.optionRow}
+              onPress={() => selectButton('celsius')}
+              activeOpacity={0.7}>
+              <Image
+                source={
+                  tempValue === 'celsius'
+                    ? require('../../assets/icons/checkbox-checked.png')
+                    : require('../../assets/icons/checkbox-unchecked.png')
+                }
+                style={styles.checkIcon}
+                resizeMode="contain"
+              />
+              <Text style={styles.optionText}>{t('temperature.celsius')}</Text>
+            </TouchableOpacity>
+          </View>
         </View>
 
         {/* Continue Button */}
@@ -274,24 +276,32 @@ const styles = StyleSheet.create({
   },
   optionsContainer: {
     paddingHorizontal: 20,
-    paddingTop: 40,
+    paddingTop: 30,
   },
-  optionItem: {
+  optionBlock: {
+    marginBottom: 23,
+  },
+  optionRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingVertical: 20,
-    borderBottomWidth: 1,
-    borderBottomColor: Colors.lightGray,
+    minHeight: 56,
+    borderWidth: 0.8,
+    borderColor: '#E0E0E0',
+    borderRadius: 10,
+    backgroundColor: Colors.white,
+    paddingLeft: 20,
+    paddingRight: 15,
   },
   checkIcon: {
     width: 24,
     height: 24,
-    marginRight: 15,
+    marginRight: 12,
   },
   optionText: {
-    fontSize: FontSizes.large,
+    flex: 1,
+    fontSize: 15,
     fontWeight: '500',
-    color: Colors.lightBlackColor,
+    color: Colors.black,
   },
   continueButton: {
     marginHorizontal: 20,

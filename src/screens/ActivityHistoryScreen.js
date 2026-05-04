@@ -13,7 +13,7 @@ import {
 } from 'react-native';
 import {useTranslation} from 'react-i18next';
 import ChartCardView from '../components/ChartCardView';
-import {Colors, FontSizes} from '../constants/Constants';
+import {Colors} from '../constants/Constants';
 
 const {width, height} = Dimensions.get('window');
 
@@ -133,15 +133,15 @@ const ActivityHistoryScreen = ({navigation}) => {
             <ChartCardView
               title={t('history.solarUsbToCaseCharging')}
               subtitle=""
-              wallOutletColor="rgba(255, 128, 0, 1)" // Orange UIColor(red: 1.0, green: 0.5, blue: 0.0, alpha: 1.0)
-              unoCaseColor="rgba(0, 128, 255, 1)" // Blue UIColor(red: 0.0, green: 0.5, blue: 1.0, alpha: 1.0)
+              wallOutletColor={Colors.progressYellow}
+              unoCaseColor="rgba(0, 128, 255, 1)"
               percentageLabels={phonePercentageLabels}
               chartHeight={140}
               data={phoneData}
               dayLabels={dayLabels}
               showLegends={true}
-              legendWallOutletColor="rgba(0, 128, 255, 1)" // USB - Blue
-              legendUnoCaseColor="rgba(255, 128, 0, 1)" // Solar - Orange
+              legendWallOutletColor="rgba(0, 128, 255, 1)"
+              legendUnoCaseColor={Colors.progressYellow}
             />
           </View>
         </ScrollView>
@@ -215,7 +215,8 @@ const styles = StyleSheet.create({
     marginBottom: 20,
     backgroundColor: '#FFFFFF',
     borderRadius: 14,
-    padding: 10,
+    paddingHorizontal: 16,
+    paddingVertical: 16,
     shadowColor: '#000',
     shadowOffset: {width: 0, height: 1},
     shadowOpacity: 0.08,

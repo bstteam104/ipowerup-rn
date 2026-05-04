@@ -102,75 +102,79 @@ const LanguageScreen = ({navigation}) => {
           <View style={styles.placeholder} />
         </View>
 
-        {/* Language Options */}
+        {/* Language options — white rows like Reset Password */}
         <View style={styles.optionsContainer}>
-          <TouchableOpacity
-            style={styles.optionItem}
-            onPress={() => selectLanguage('en')}
-            activeOpacity={0.7}
-          >
-            <Image
-              source={
-                selectedLanguage === 'en'
-                  ? require('../../assets/icons/checkbox-checked.png')
-                  : require('../../assets/icons/checkbox-unchecked.png')
-              }
-              style={styles.checkIcon}
-              resizeMode="contain"
-            />
-            <Text style={styles.optionText}>{t('appSettings.english')}</Text>
-          </TouchableOpacity>
+          <View style={styles.optionBlock}>
+            <TouchableOpacity
+              style={styles.optionRow}
+              onPress={() => selectLanguage('en')}
+              activeOpacity={0.7}>
+              <Image
+                source={
+                  selectedLanguage === 'en'
+                    ? require('../../assets/icons/checkbox-checked.png')
+                    : require('../../assets/icons/checkbox-unchecked.png')
+                }
+                style={styles.checkIcon}
+                resizeMode="contain"
+              />
+              <Text style={styles.optionText}>{t('appSettings.english')}</Text>
+            </TouchableOpacity>
+          </View>
 
-          <TouchableOpacity
-            style={styles.optionItem}
-            onPress={() => selectLanguage('es')}
-            activeOpacity={0.7}
-          >
-            <Image
-              source={
-                selectedLanguage === 'es'
-                  ? require('../../assets/icons/checkbox-checked.png')
-                  : require('../../assets/icons/checkbox-unchecked.png')
-              }
-              style={styles.checkIcon}
-              resizeMode="contain"
-            />
-            <Text style={styles.optionText}>{t('appSettings.spanish')}</Text>
-          </TouchableOpacity>
+          <View style={styles.optionBlock}>
+            <TouchableOpacity
+              style={styles.optionRow}
+              onPress={() => selectLanguage('es')}
+              activeOpacity={0.7}>
+              <Image
+                source={
+                  selectedLanguage === 'es'
+                    ? require('../../assets/icons/checkbox-checked.png')
+                    : require('../../assets/icons/checkbox-unchecked.png')
+                }
+                style={styles.checkIcon}
+                resizeMode="contain"
+              />
+              <Text style={styles.optionText}>{t('appSettings.spanish')}</Text>
+            </TouchableOpacity>
+          </View>
 
-          <TouchableOpacity
-            style={styles.optionItem}
-            onPress={() => selectLanguage('de')}
-            activeOpacity={0.7}
-          >
-            <Image
-              source={
-                selectedLanguage === 'de'
-                  ? require('../../assets/icons/checkbox-checked.png')
-                  : require('../../assets/icons/checkbox-unchecked.png')
-              }
-              style={styles.checkIcon}
-              resizeMode="contain"
-            />
-            <Text style={styles.optionText}>{t('appSettings.german')}</Text>
-          </TouchableOpacity>
+          <View style={styles.optionBlock}>
+            <TouchableOpacity
+              style={styles.optionRow}
+              onPress={() => selectLanguage('de')}
+              activeOpacity={0.7}>
+              <Image
+                source={
+                  selectedLanguage === 'de'
+                    ? require('../../assets/icons/checkbox-checked.png')
+                    : require('../../assets/icons/checkbox-unchecked.png')
+                }
+                style={styles.checkIcon}
+                resizeMode="contain"
+              />
+              <Text style={styles.optionText}>{t('appSettings.german')}</Text>
+            </TouchableOpacity>
+          </View>
 
-          <TouchableOpacity
-            style={styles.optionItem}
-            onPress={() => selectLanguage('fr')}
-            activeOpacity={0.7}
-          >
-            <Image
-              source={
-                selectedLanguage === 'fr'
-                  ? require('../../assets/icons/checkbox-checked.png')
-                  : require('../../assets/icons/checkbox-unchecked.png')
-              }
-              style={styles.checkIcon}
-              resizeMode="contain"
-            />
-            <Text style={styles.optionText}>{t('appSettings.french')}</Text>
-          </TouchableOpacity>
+          <View style={styles.optionBlock}>
+            <TouchableOpacity
+              style={styles.optionRow}
+              onPress={() => selectLanguage('fr')}
+              activeOpacity={0.7}>
+              <Image
+                source={
+                  selectedLanguage === 'fr'
+                    ? require('../../assets/icons/checkbox-checked.png')
+                    : require('../../assets/icons/checkbox-unchecked.png')
+                }
+                style={styles.checkIcon}
+                resizeMode="contain"
+              />
+              <Text style={styles.optionText}>{t('appSettings.french')}</Text>
+            </TouchableOpacity>
+          </View>
         </View>
 
         {/* Continue Button */}
@@ -239,24 +243,32 @@ const styles = StyleSheet.create({
   },
   optionsContainer: {
     paddingHorizontal: 20,
-    paddingTop: 40,
+    paddingTop: 30,
   },
-  optionItem: {
+  optionBlock: {
+    marginBottom: 23,
+  },
+  optionRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingVertical: 20,
-    borderBottomWidth: 1,
-    borderBottomColor: Colors.lightGray,
+    minHeight: 56,
+    borderWidth: 0.8,
+    borderColor: '#E0E0E0',
+    borderRadius: 10,
+    backgroundColor: Colors.white,
+    paddingLeft: 20,
+    paddingRight: 15,
   },
   checkIcon: {
     width: 24,
     height: 24,
-    marginRight: 15,
+    marginRight: 12,
   },
   optionText: {
-    fontSize: FontSizes.large,
+    flex: 1,
+    fontSize: 15,
     fontWeight: '500',
-    color: Colors.lightBlackColor,
+    color: Colors.black,
   },
   continueButton: {
     marginHorizontal: 20,

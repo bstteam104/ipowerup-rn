@@ -17,6 +17,7 @@ import {useTranslation} from 'react-i18next';
 import {Colors, Constants, BorderRadius, FontSizes} from '../constants/Constants';
 import {loginAPI} from '../services/AuthService';
 import {showErrorToast} from '../utils/toastHelper';
+import DeviceInfo from 'react-native-device-info';
 
 const {width} = Dimensions.get('window');
 
@@ -26,6 +27,11 @@ const LoginScreen = ({navigation}) => {
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const appVersion = useMemo(() => {
+    const version = DeviceInfo.getVersion?.() || '0.0.0';
+    const buildNumber = DeviceInfo.getBuildNumber?.();
+    return buildNumber ? `v${version} (${buildNumber})` : `v${version}`;
+  }, []);
 
   const isValidEmail = useCallback((email) => {
     const emailRegex = /[A-Z0-9a-z._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,64}/;
@@ -204,6 +210,7 @@ const LoginScreen = ({navigation}) => {
             >
               <Text style={styles.createAccountText}>{t('login.createAccount')}</Text>
             </TouchableOpacity>
+            <Text style={styles.versionText}>Version {appVersion}</Text>
           </View>
         </ScrollView>
       </KeyboardAvoidingView>
@@ -251,7 +258,7 @@ const styles = StyleSheet.create({
   subtitle: {
     fontSize: FontSizes.large,
     fontWeight: '500',
-    color: Colors.grayColor,
+    color: Colors.iosLatestSecondaryLabel,
     textAlign: 'center',
     marginBottom: 40,
     lineHeight: 22,
@@ -322,10 +329,16 @@ const styles = StyleSheet.create({
     marginBottom: 20,
   },
   createAccountText: {
-    fontSize: FontSizes.medium,
-    fontWeight: '500',
+    fontSize: 18,
+    fontWeight: '600',
     color: Colors.black,
     textDecorationLine: 'underline',
+  },
+  versionText: {
+    alignSelf: 'center',
+    marginTop: 8,
+    fontSize: 12,
+    color: Colors.iosLatestSecondaryLabel,
   },
 });
 

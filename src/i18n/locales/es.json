@@ -96,6 +96,7 @@
     "greetings": "Saludos",
     "yourPhone": "Tu teléfono",
     "yourCase": "Su caso",
+    "caseShort": "Caja",
     "phoneBattery": "Batería del teléfono",
     "batteryLevel": "Nivel de batería",
     "caseBattery": "Batería de caja",
@@ -132,7 +133,7 @@
     "description": "Obtenga tranquilidad con un estuche y una aplicación que monitorea su estuche y teléfono para que usted no tenga que hacerlo.",
     "batteryAlerts": "Reciba alertas en niveles de carga de batería del 5%, 20%, 80% y 100%, además de niveles opcionales adicionales.",
     "bluetoothRange": "Habilite la comunicación entre el estuche y el teléfono incluso cuando el estuche esté separado dentro del alcance de Bluetooth de hasta 33 pies o 10 metros.",
-    "temperatureAlerts": "Recibe alertas de temperatura para evitar que tu funda y teléfono sufran daños por temperaturas extremas. Por encima de 40 °C (104 °F) y por debajo de 0 °C (32 °F).",
+    "temperatureAlerts": "Recibe alertas de temperatura para evitar que tu funda y teléfono sufran daños por temperaturas extremas.",
     "history": "Consulte el historial de uso de la batería para comprender las oportunidades de mejorar el rendimiento. <link to History screen>",
     "enhancements": "Disfrute de mejoras en la aplicación durante todo el año que le brindarán tranquilidad continua.",
     "select": "Seleccionar"
@@ -163,6 +164,23 @@
     "disconnectDevice": "Desconectar dispositivo",
     "caseConnectedMessage": "Su funda {{deviceName}} está conectada.",
     "caseConnectedDefault": "Su funda iPowerUp Uno está conectada."
+  },
+  "appTour": {
+    "title": "Recorrido de la app",
+    "welcomeTitle": "Bienvenido a la app inteligente de iPowerUp",
+    "benefitsSubtitle": "Beneficios de la app",
+    "feature1": "Estado en tiempo real",
+    "feature2": "Carga automática",
+    "feature3": "Carga remota",
+    "feature4": "Evita sorpresas",
+    "feature1Description": "Niveles instantáneos de batería del teléfono y de la funda.",
+    "feature2Description": "Elige carga lenta o carga rápida manual.",
+    "feature3Description": "La funda inteligente se comunica mientras está separada.",
+    "feature4Description": "Alertas automáticas activadas en niveles bajos y altos de energía.",
+    "feature5": "Carga múltiple",
+    "feature5Description": "Elige carga solar, con cable USB-C o con dispositivo micro.",
+    "feature6": "Historial de uso",
+    "feature6Description": "Aprende de los patrones de carga y uso."
   },
   "appSettings": {
     "title": "Configuración de la aplicación",
@@ -208,7 +226,7 @@
     "tip1Question": "¿Cómo maximizar la carga solar?",
     "tip1Answer": "Coloque su dispositivo a la luz solar directa y asegúrese de que los paneles solares estén limpios y sin obstáculos. La mejor carga ocurre entre las 10 AM y las 4 PM cuando la luz solar es más fuerte.",
     "tip2Question": "¿Cuál es la temperatura óptima para cargar?",
-    "tip2Answer": "La funda funciona mejor entre 0°C y 45°C. Evite cargar en temperaturas extremas ya que puede afectar la vida útil de la batería y la eficiencia de carga.",
+    "tip2Answer": "La funda funciona mejor entre 32 °F (0 °C) y 113 °F (45 °C). Evite cargar en temperaturas extremas ya que puede afectar la vida útil de la batería y la eficiencia de carga.",
     "tip3Question": "¿Cuánto tiempo se tarda en cargar completamente la funda?",
     "tip3Answer": "Usando energía solar, normalmente toma de 4 a 6 horas de luz solar directa para cargar completamente la funda. La carga USB toma aproximadamente de 2 a 3 horas.",
     "tip4Question": "¿Puedo cargar mi teléfono mientras la funda se está cargando?",
@@ -225,9 +243,7 @@
     "faq3Question": "Transferir manualmente energía de la funda a mi teléfono",
     "faq3Answer": "Presione el botón Modo en la parte inferior de la funda dos veces rápidamente.",
     "faq4Question": "Carga de teléfonos Android",
-    "faq4Answer": "Coloque su funda Uno en un lugar soleado, luego apunte el panel solar en una dirección y ángulo que reciba buena luz solar. Vea la pantalla sobre el panel solar para los niveles de mA para obtener los mejores resultados.",
-    "faq5Question": "Obtener la garantía extendida gratuita",
-    "faq5Answer": "¡Es fácil! Configure su cuenta de la aplicación iPowerUp. Recibirá un correo electrónico confirmando su cuenta y los detalles de la garantía extendida."
+    "faq4Answer": "Conecte un cable USB-C de la funda al dispositivo Android."
   },
   "otp": {
     "title": "Ingrese OTP",

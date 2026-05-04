@@ -96,6 +96,7 @@
     "greetings": "Salutations",
     "yourPhone": "Votre téléphone",
     "yourCase": "Votre cas",
+    "caseShort": "Étui",
     "phoneBattery": "Batterie de téléphone",
     "batteryLevel": "Niveau de batterie",
     "caseBattery": "Boîtier de batterie",
@@ -132,7 +133,7 @@
     "description": "Ayez l'esprit tranquille grâce à une coque et une application qui surveillent votre coque et votre téléphone pour que vous n'ayez plus à vous en soucier.",
     "batteryAlerts": "Recevez des alertes aux niveaux de batterie de 5 %, 20 %, 80 % et 100 %, ainsi que des niveaux supplémentaires optionnels.",
     "bluetoothRange": "Activez la communication entre l'étui et le téléphone même lorsque l'étui est détaché, dans une portée Bluetooth allant jusqu'à 10 mètres (33 pieds).",
-    "temperatureAlerts": "Recevez des alertes de température pour protéger votre coque et votre téléphone des dommages causés par les températures extrêmes. Au-dessus de 40 °C (104 °F) et en dessous de 0 °C (32 °F).",
+    "temperatureAlerts": "Recevez des alertes de température pour protéger votre coque et votre téléphone des dommages causés par les températures extrêmes.",
     "history": "Consultez l'historique d'utilisation de votre batterie pour identifier les possibilités d'amélioration de ses performances. <link to History screen>",
     "enhancements": "Profitez d'améliorations de l'application tout au long de l'année, pour une tranquillité d'esprit continue.",
     "select": "Sélectionner"
@@ -163,6 +164,23 @@
     "disconnectDevice": "Déconnecter l'appareil",
     "caseConnectedMessage": "Votre coque {{deviceName}} est connectée.",
     "caseConnectedDefault": "Votre coque iPowerUp Uno est connectée."
+  },
+  "appTour": {
+    "title": "Visite de l'application",
+    "welcomeTitle": "Bienvenue dans l'application intelligente iPowerUp",
+    "benefitsSubtitle": "Avantages de l'application",
+    "feature1": "Statut en temps réel",
+    "feature2": "Charge automatique",
+    "feature3": "Charge à distance",
+    "feature4": "Évitez les surprises",
+    "feature1Description": "Niveaux de batterie instantanés pour le téléphone et la coque.",
+    "feature2Description": "Choisissez une charge lente ou une charge rapide manuelle.",
+    "feature3Description": "La coque intelligente se connecte lorsqu'elle est détachée.",
+    "feature4Description": "Alertes automatiques déclenchées aux niveaux de puissance bas et élevés.",
+    "feature5": "Charge multiple",
+    "feature5Description": "Choisissez la charge solaire, par câble USB-C ou via micro-appareil.",
+    "feature6": "Historique d'utilisation",
+    "feature6Description": "Apprenez des habitudes de charge et d'utilisation."
   },
   "appSettings": {
     "title": "Paramètres de l'application",
@@ -208,7 +226,7 @@
     "tip1Question": "Comment maximiser la charge solaire ?",
     "tip1Answer": "Placez votre appareil en plein soleil et assurez-vous que les panneaux solaires sont propres et sans obstruction. La meilleure charge se produit entre 10 h et 16 h lorsque le soleil est le plus fort.",
     "tip2Question": "Quelle est la température optimale pour la charge ?",
-    "tip2Answer": "L'étui fonctionne mieux entre 0°C et 45°C. Évitez de charger à des températures extrêmes car cela peut affecter la durée de vie de la batterie et l'efficacité de la charge.",
+    "tip2Answer": "L'étui fonctionne mieux entre 32 °F (0 °C) et 113 °F (45 °C). Évitez de charger à des températures extrêmes car cela peut affecter la durée de vie de la batterie et l'efficacité de la charge.",
     "tip3Question": "Combien de temps faut-il pour charger complètement l'étui ?",
     "tip3Answer": "En utilisant l'énergie solaire, il faut généralement 4 à 6 heures de soleil direct pour charger complètement l'étui. La charge USB prend environ 2 à 3 heures.",
     "tip4Question": "Puis-je charger mon téléphone pendant que l'étui se charge ?",
@@ -225,9 +243,7 @@
     "faq3Question": "Transférer manuellement l'énergie de l'étui à mon téléphone",
     "faq3Answer": "Appuyez deux fois rapidement sur le bouton Mode en bas de l'étui.",
     "faq4Question": "Chargement des téléphones Android",
-    "faq4Answer": "Connectez un câble USB-C de l'étui à l'appareil Android. Remarque : cette application n'est pas encore disponible pour les appareils Android.",
-    "faq5Question": "Obtenir la garantie étendue gratuite",
-    "faq5Answer": "C'est facile ! Configurez votre compte d'application iPowerUp. Vous recevrez un e-mail confirmant votre compte et les détails de la garantie étendue."
+    "faq4Answer": "Connectez un câble USB-C de l'étui à l'appareil Android."
   },
   "otp": {
     "title": "Saisissez le code",
@@ -305,4 +321,3 @@
     "allow": "Autoriser"
   }
 }
-

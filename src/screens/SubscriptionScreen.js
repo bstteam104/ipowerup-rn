@@ -1,4 +1,4 @@
-import React from 'react';
+import React, {useState} from 'react';
 import {
   View,
   Text,
@@ -6,36 +6,47 @@ import {
   TouchableOpacity,
   Image,
   StatusBar,
-  Alert,
   ScrollView,
   Platform,
   Dimensions,
 } from 'react-native';
 import {useTranslation} from 'react-i18next';
-import {Colors, BorderRadius, FontSizes} from '../constants/Constants';
+import {Colors} from '../constants/Constants';
+import ConfirmModal from '../components/ConfirmModal';
 
 const {width, height} = Dimensions.get('window');
 
 const SubscriptionScreen = ({navigation}) => {
   const {t} = useTranslation();
+  const [showSuccessModal, setShowSuccessModal] = useState(false);
+
   const handleSelect = () => {
-    Alert.alert(t('common.success'), t('subscription.success', 'Subscription Successful.'), [
-      {
-        text: t('common.ok', 'OK'),
-        onPress: () => {
-          // Navigate back after 0.8 seconds
-          setTimeout(() => {
-            navigation.goBack();
-          }, 800);
-        },
-      },
-    ]);
+    setShowSuccessModal(true);
+  };
+
+  const handleSuccessOk = () => {
+    setShowSuccessModal(false);
+    setTimeout(() => {
+      navigation.goBack();
+    }, 400);
   };
 
   return (
     <View style={styles.container}>
       <StatusBar barStyle="dark-content" backgroundColor="transparent" translucent />
-      
+
+      <ConfirmModal
+        visible={showSuccessModal}
+        title={t('common.success')}
+        message={t('subscription.success', 'Subscription Successful.')}
+        confirmText={t('common.ok', 'OK')}
+        cancelText={t('common.cancel')}
+        onConfirm={handleSuccessOk}
+        onCancel={handleSuccessOk}
+        confirmStyle="default"
+        singleButton
+      />
+
       {/* Background Image */}
       <Image
         source={require('../../assets/images/background.png')}

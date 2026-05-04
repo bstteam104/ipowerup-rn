@@ -18,6 +18,17 @@ import {safeJsonParse} from '../utils/apiHelper';
 
 const {width, height} = Dimensions.get('window');
 
+/** Hide “Extended Warranty” FAQ (removed per design); matches EN + localized titles from API */
+const EXTENDED_WARRANTY_TITLE_REGEX =
+  /extended warranty|garantía extendida|garantie étendue|erweiterte garantie/i;
+
+function stripAndroidChargingNote(answer) {
+  if (!answer || typeof answer !== 'string') {
+    return answer;
+  }
+  return answer.replace(/\s*(Note|Remarque|Hinweis|Nota)\s*:\s*.+$/is, '').trim();
+}
+
 const TroubleshootingScreen = ({navigation}) => {
   const {t} = useTranslation();
   const [faqs, setFaqs] = useState([
@@ -45,12 +56,6 @@ const TroubleshootingScreen = ({navigation}) => {
       answer: t('troubleshooting.faq4Answer'),
       isExpanded: false,
     },
-    {
-      id: '5',
-      question: t('troubleshooting.faq5Question'),
-      answer: t('troubleshooting.faq5Answer'),
-      isExpanded: false,
-    },
   ]);
 
   useEffect(() => {
@@ -75,11 +80,15 @@ const TroubleshootingScreen = ({navigation}) => {
       }
 
       if (data && data.data && data.data.length > 0) {
-        // Add isExpanded property to each FAQ
-        const faqsWithExpanded = data.data.map(faq => ({
-          ...faq,
-          isExpanded: false,
-        }));
+        const faqsWithExpanded = data.data
+          .filter(faq => !EXTENDED_WARRANTY_TITLE_REGEX.test(faq.question || ''))
+          .map(faq => {
+            const q = faq.question || '';
+            const answer = /android/i.test(q)
+              ? stripAndroidChargingNote(faq.answer)
+              : faq.answer;
+            return {...faq, answer, isExpanded: false};
+          });
         setFaqs(faqsWithExpanded);
       }
       // If API fails or returns empty, keep default FAQs

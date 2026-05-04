@@ -14,7 +14,7 @@
     "subtitle": "Please enter your information below to create your account",
     "firstNamePlaceholder": "Enter First Name Or Nickname",
     "lastNamePlaceholder": "Enter Last Name (Optional)",
-    "caseDeviceNamePlaceholder": "Name your case device (e.g., Samis Case)",
+    "caseDeviceNamePlaceholder": "Name your case device (e.g., Sam's Case)",
     "phonePlaceholder": "Enter Phone Number",
     "occupationPlaceholder": "Enter Occupation",
     "emailPlaceholder": "Enter Email Address",
@@ -99,6 +99,7 @@
     "greetings": "Greetings",
     "yourPhone": "Your Phone",
     "yourCase": "Your Case",
+    "caseShort": "Case",
     "phoneBattery": "Phone Battery",
     "batteryLevel": "Battery Level",
     "caseBattery": "Case Battery",
@@ -136,7 +137,7 @@
     "description": "Get peace of mind from a case and app that monitors your case and phone so you don't need to.",
     "batteryAlerts": "Get alerts at 5%, 20%, 80%, and 100% battery power levels, plus additional optional levels.",
     "bluetoothRange": "Enable case-to-phone communication even when the case is detached within Bluetooth range of up to 33 feet or 10 meters.",
-    "temperatureAlerts": "Get case temperature alerts to prevent your case and phone from extreme temperature damage. Above 104° F or 40° C and below 32° F or 0° C.",
+    "temperatureAlerts": "Get case temperature alerts to prevent your case and phone from extreme temperature damage.",
     "history": "Check your battery usage history to understand opportunities for enhanced performance. <link to History screen>",
     "enhancements": "Enjoy app enhancements throughout the year that provide continuous peace-of-mind improvements.",
     "select": "Select"
@@ -167,6 +168,23 @@
     "disconnectDevice": "Disconnect Device",
     "caseConnectedMessage": "Your {{deviceName}} case is connected.",
     "caseConnectedDefault": "Your iPowerUp Uno case is connected."
+  },
+  "appTour": {
+    "title": "App Tour",
+    "welcomeTitle": "Welcome to iPowerUp Smart App",
+    "benefitsSubtitle": "App Benefits",
+    "feature1": "Real-time Status",
+    "feature1Description": "Instant battery levels for phone and case.",
+    "feature2": "Auto Charging",
+    "feature2Description": "Choose trickle or manual quick charging.",
+    "feature3": "Remote Charging",
+    "feature3Description": "Smart case communicates while detached.",
+    "feature4": "Prevent Surprises",
+    "feature4Description": "Auto alerts triggered at low and high power levels.",
+    "feature5": "Multi-charging",
+    "feature5Description": "Choose Solar, USB C cable, or micro device charging.",
+    "feature6": "Usage History",
+    "feature6Description": "Learn from charging and usage patterns."
   },
   "appSettings": {
     "title": "App Settings",
@@ -212,7 +230,7 @@
     "tip1Question": "How to maximize solar charging?",
     "tip1Answer": "Place your device in direct sunlight and ensure the solar panels are clean and unobstructed. The best charging occurs between 10 AM and 4 PM when sunlight is strongest.",
     "tip2Question": "What is the optimal temperature for charging?",
-    "tip2Answer": "The case works best between 0°C and 45°C. Avoid charging in extreme temperatures as it may affect battery life and charging efficiency.",
+    "tip2Answer": "The case works best between 32°F (0°C) and 113°F (45°C). Avoid charging in extreme temperatures as it may affect battery life and charging efficiency.",
     "tip3Question": "How long does it take to fully charge the case?",
     "tip3Answer": "Using solar power, it typically takes 4-6 hours of direct sunlight to fully charge the case. USB charging takes approximately 2-3 hours.",
     "tip4Question": "Can I charge my phone while the case is charging?",
@@ -229,9 +247,7 @@
     "faq3Question": "Manually transfer power from the case to my phone",
     "faq3Answer": "Press the Mode button at the bottom of the case two times quickly.",
     "faq4Question": "Charging Android phones",
-    "faq4Answer": "Connect a USB-C cable from the case to the Android device. Note: this App is not yet available for Android devices.",
-    "faq5Question": "Getting the free Extended Warranty",
-    "faq5Answer": "It's easy! Set up your iPowerUp App account. You'll get an email confirming your account and extended Warranty details."
+    "faq4Answer": "Connect a USB-C cable from the case to the Android device."
   },
   "otp": {
     "title": "Enter OTP",

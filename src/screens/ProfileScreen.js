@@ -860,7 +860,7 @@ const styles = StyleSheet.create({
   },
   deviceSubtitle: {
     fontSize: 14,
-    color: '#888888',
+    color: Colors.iosLatestSecondaryLabel,
     marginBottom: 15,
   },
   connectButton: {

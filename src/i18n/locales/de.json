@@ -96,6 +96,7 @@
     "greetings": "Grüße",
     "yourPhone": "Ihr Telefon",
     "yourCase": "Ihr Fall",
+    "caseShort": "Gehäuse",
     "phoneBattery": "Akku",
     "batteryLevel": "Batteriestand",
     "caseBattery": "Gehäusebatterie",
@@ -132,7 +133,7 @@
     "description": "Genießen Sie die Sicherheit einer Hülle und einer App, die Ihre Hülle und Ihr Telefon überwachen, sodass Sie es nicht tun müssen.",
     "batteryAlerts": "Sie erhalten Benachrichtigungen bei einem Akkustand von 5 %, 20 %, 80 % und 100 % sowie bei zusätzlichen optionalen Stufen.",
     "bluetoothRange": "Ermöglicht die Kommunikation zwischen Hülle und Telefon auch dann, wenn die Hülle abgenommen ist, innerhalb einer Bluetooth-Reichweite von bis zu 10 Metern.",
-    "temperatureAlerts": "Lassen Sie sich bei zu hohen Temperaturen über die Hülle benachrichtigen, um Schäden an Ihrer Hülle und Ihrem Smartphone durch extreme Temperaturen zu vermeiden. Warnung bei Temperaturen über 40 °C (104 °F) und unter 0 °C (32 °F).",
+    "temperatureAlerts": "Lassen Sie sich bei zu hohen Temperaturen über die Hülle benachrichtigen, um Schäden an Ihrer Hülle und Ihrem Smartphone durch extreme Temperaturen zu vermeiden.",
     "history": "Überprüfen Sie Ihren Akkuverbrauchsverlauf, um Möglichkeiten zur Leistungsverbesserung zu erkennen. <Link zum Verlauf Bildschirm>",
     "enhancements": "Profitieren Sie das ganze Jahr über von App-Verbesserungen, die Ihnen kontinuierliche Sicherheit und Komfort bieten.",
     "select": "Wählen"
@@ -163,6 +164,23 @@
     "disconnectDevice": "Gerät trennen",
     "caseConnectedMessage": "Ihr {{deviceName}} Gehäuse ist verbunden.",
     "caseConnectedDefault": "Ihr iPowerUp Uno Gehäuse ist verbunden."
+  },
+  "appTour": {
+    "title": "App-Tour",
+    "welcomeTitle": "Willkommen in der iPowerUp Smart App",
+    "benefitsSubtitle": "App-Vorteile",
+    "feature1": "Echtzeit-Status",
+    "feature2": "Automatisches Laden",
+    "feature3": "Fernladen",
+    "feature4": "Überraschungen vermeiden",
+    "feature1Description": "Sofortige Akkustände für Telefon und Hülle.",
+    "feature2Description": "Wählen Sie Erhaltungsladung oder manuelles Schnellladen.",
+    "feature3Description": "Die Smart-Hülle kommuniziert, während sie getrennt ist.",
+    "feature4Description": "Automatische Warnungen bei niedrigen und hohen Leistungswerten.",
+    "feature5": "Mehrfachladen",
+    "feature5Description": "Wählen Sie Solar-, USB-C-Kabel- oder Micro-Geräteladung.",
+    "feature6": "Nutzungsverlauf",
+    "feature6Description": "Lernen Sie aus Lade- und Nutzungsmustern."
   },
   "appSettings": {
     "title": "App-Einstellungen",
@@ -208,7 +226,7 @@
     "tip1Question": "Wie maximiere ich die Solarladung?",
     "tip1Answer": "Platzieren Sie Ihr Gerät in direktem Sonnenlicht und stellen Sie sicher, dass die Solarpaneele sauber und unversperrt sind. Die beste Ladung erfolgt zwischen 10 und 16 Uhr, wenn das Sonnenlicht am stärksten ist.",
     "tip2Question": "Was ist die optimale Temperatur zum Laden?",
-    "tip2Answer": "Das Gehäuse funktioniert am besten zwischen 0°C und 45°C. Vermeiden Sie das Laden bei extremen Temperaturen, da dies die Batterielebensdauer und Ladeeffizienz beeinträchtigen kann.",
+    "tip2Answer": "Das Gehäuse funktioniert am besten zwischen 32 °F (0 °C) und 113 °F (45 °C). Vermeiden Sie das Laden bei extremen Temperaturen, da dies die Batterielebensdauer und Ladeeffizienz beeinträchtigen kann.",
     "tip3Question": "Wie lange dauert es, das Gehäuse vollständig aufzuladen?",
     "tip3Answer": "Mit Solarenergie dauert es normalerweise 4-6 Stunden direktes Sonnenlicht, um das Gehäuse vollständig aufzuladen. Das USB-Laden dauert etwa 2-3 Stunden.",
     "tip4Question": "Kann ich mein Telefon aufladen, während das Gehäuse geladen wird?",
@@ -225,9 +243,7 @@
     "faq3Question": "Manuell Energie vom Gehäuse auf mein Telefon übertragen",
     "faq3Answer": "Drücken Sie die Modus-Taste am unteren Rand des Gehäuses zweimal schnell.",
     "faq4Question": "Android-Telefone aufladen",
-    "faq4Answer": "Schließen Sie ein USB-C-Kabel vom Gehäuse an das Android-Gerät an. Hinweis: Diese App ist noch nicht für Android-Geräte verfügbar.",
-    "faq5Question": "Die kostenlose erweiterte Garantie erhalten",
-    "faq5Answer": "Es ist einfach! Richten Sie Ihr iPowerUp-App-Konto ein. Sie erhalten eine E-Mail zur Bestätigung Ihres Kontos und der Details zur erweiterten Garantie."
+    "faq4Answer": "Schließen Sie ein USB-C-Kabel vom Gehäuse an das Android-Gerät an."
   },
   "otp": {
     "title": "OTP eingeben",

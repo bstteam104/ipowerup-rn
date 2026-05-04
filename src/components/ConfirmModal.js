@@ -20,6 +20,8 @@ const ConfirmModal = ({
   onConfirm,
   onCancel,
   confirmStyle = 'destructive', // 'destructive' or 'default'
+  /** One full-width action (e.g. OK) — same white shell as logout, no Cancel column */
+  singleButton = false,
 }) => {
   return (
     <Modal
@@ -33,19 +35,21 @@ const ConfirmModal = ({
             {title && <Text style={styles.title}>{title}</Text>}
             {message && <Text style={styles.message}>{message}</Text>}
           </View>
-          
+
           <View style={styles.buttonContainer}>
-            <TouchableOpacity
-              style={[styles.button, styles.cancelButton]}
-              onPress={onCancel}
-              activeOpacity={0.7}>
-              <Text style={styles.cancelButtonText}>
-                {cancelText || 'Cancel'}
-              </Text>
-            </TouchableOpacity>
-            
-            <View style={styles.buttonSeparator} />
-            
+            {!singleButton && (
+              <>
+                <TouchableOpacity
+                  style={[styles.button, styles.cancelButton]}
+                  onPress={onCancel}
+                  activeOpacity={0.7}>
+                  <Text style={styles.cancelButtonText}>
+                    {cancelText || 'Cancel'}
+                  </Text>
+                </TouchableOpacity>
+                <View style={styles.buttonSeparator} />
+              </>
+            )}
             <TouchableOpacity
               style={[
                 styles.button,
