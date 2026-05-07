@@ -12,7 +12,7 @@ import {
   Alert,
   useWindowDimensions,
 } from 'react-native';
-import {useIsFocused} from '@react-navigation/native';
+import {useIsFocused, useRoute} from '@react-navigation/native';
 import {useTranslation} from 'react-i18next';
 import {Colors} from '../constants/Constants';
 import {BLE_CONSTANTS} from '../constants/BLEConstants';
@@ -29,6 +29,7 @@ const TOUR_IMAGES = {
 
 const AppTourScreen = ({navigation}) => {
   const {t} = useTranslation();
+  const route = useRoute();
   const {height: screenHeight, width: screenWidth} = useWindowDimensions();
   const isFocused = useIsFocused();
   const [showDetailedTour, setShowDetailedTour] = useState(false);
@@ -47,6 +48,13 @@ const AppTourScreen = ({navigation}) => {
       setShowDetailedTour(false);
       setSelectedFeatureKey(null);
       setCurrentTourIndex(0);
+      return;
+    }
+    if (route.params?.fromSplashWhileLoggedIn) {
+      navigation.reset({
+        index: 0,
+        routes: [{name: 'TabBar', params: {screen: 'Help'}}],
+      });
       return;
     }
     navigation.goBack();

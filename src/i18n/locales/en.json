@@ -7,7 +7,8 @@
     "forgotPassword": "Forgot Password?",
     "signIn": "Sign In",
     "createAccount": "Create an Account?",
-    "connectNewDevice": "Connect New Device"
+    "connectNewDevice": "Connect New Device",
+    "versionLabel": "Version"
   },
   "signup": {
     "title": "Create Account",
@@ -16,7 +17,7 @@
     "lastNamePlaceholder": "Enter Last Name (Optional)",
     "caseDeviceNamePlaceholder": "Name your case device (e.g., Sam's Case)",
     "phonePlaceholder": "Enter Phone Number",
-    "occupationPlaceholder": "Enter Occupation",
+    "occupationPlaceholder": "Enter Occupation (Optional)",
     "emailPlaceholder": "Enter Email Address",
     "passwordPlaceholder": "Enter Password",
     "countryPlaceholder": "Country/Region",
@@ -103,7 +104,7 @@
     "phoneBattery": "Phone Battery",
     "batteryLevel": "Battery Level",
     "caseBattery": "Case Battery",
-    "caseTemperature": "Battery Temperature",
+    "caseTemperature": "Case Battery Temperature",
     "temperatureLevel": "Temperature Level",
     "transferPowerToPhone": "Transfer Power To Phone",
     "stopCharging": "Stop Charging"
@@ -121,14 +122,16 @@
     "alternateEmail": "Alternate Email",
     "phoneNumber": "Phone Number",
     "emergencyNumber": "Emergency Number",
+    "occupation": "Occupation",
+    "occupationPlaceholder": "Please enter occupation (optional)",
     "update": "Update",
     "submit": "Submit",
     "updated": "Profile Updated Successfully"
   },
   "temperature": {
-    "title": "Battery Temperature",
-    "fahrenheit": "Fahrenheit",
-    "celsius": "Celsius",
+    "title": "Case Battery Temperature",
+    "fahrenheit": "Fahrenheit °F",
+    "celsius": "Celsius °C",
     "updated": "Temperature setting updated"
   },
   "peaceOfMind": {
@@ -190,7 +193,8 @@
     "title": "App Settings",
     "resetPassword": "Reset Password",
     "deleteAccount": "Delete Account",
-    "caseTemperature": "Battery Temperature",
+    "caseTemperature": "Case Battery Temperature",
+    "options": "Options",
     "bluetooth": "Bluetooth",
     "subscribeToMessages": "Subscribe to messages",
     "language": "Language",
@@ -202,6 +206,18 @@
     "languageUpdated": "Language updated successfully",
     "passwordForApp": "Password for this app",
     "bluetoothStatusUpdated": "Bluetooth status updated successfully"
+  },
+  "options": {
+    "title": "Options",
+    "powerTransferTitle": "Power Transfer Ratio",
+    "powerTransferSubtitle": "Allocation when charging",
+    "phone": "Phone",
+    "case": "Case",
+    "ledTitle": "LED Brightness",
+    "blue": "Blue",
+    "red": "Red",
+    "stepHint": "Adjust in 10% steps",
+    "fingerSwipingHint": "For finger swiping"
   },
   "solar": {
     "title": "Solar",
@@ -231,8 +247,6 @@
     "tip1Answer": "Place your device in direct sunlight and ensure the solar panels are clean and unobstructed. The best charging occurs between 10 AM and 4 PM when sunlight is strongest.",
     "tip2Question": "What is the optimal temperature for charging?",
     "tip2Answer": "The case works best between 32°F (0°C) and 113°F (45°C). Avoid charging in extreme temperatures as it may affect battery life and charging efficiency.",
-    "tip3Question": "How long does it take to fully charge the case?",
-    "tip3Answer": "Using solar power, it typically takes 4-6 hours of direct sunlight to fully charge the case. USB charging takes approximately 2-3 hours.",
     "tip4Question": "Can I charge my phone while the case is charging?",
     "tip4Answer": "Yes! The case supports pass-through charging, allowing you to charge your phone while the case itself is being charged via solar or USB.",
     "tip5Question": "How do I transfer power from case to phone?",
@@ -241,7 +255,7 @@
   "troubleshooting": {
     "title": "Help",
     "faq1Question": "Bluetooth pairing issues",
-    "faq1Answer": "Device not found: Close the iPowerUp app. Open Settings on your iPhone to ensure Bluetooth is on. Reopen the PowerUp app, click the Connect New Device button, click Allow when prompted, and click your device name.",
+    "faq1Answer": "Device not found: Close the iPowerUp app. Open Settings on your Android phone to ensure Bluetooth is on. Reopen the PowerUp app, tap the Connect New Device button, tap Allow when prompted, and tap your device name.",
     "faq2Question": "Charging with the case Solar Panel",
     "faq2Answer": "Place your Uno case in a sunny location, then aim the solar panel in a direction and angle that gets the good sunlight. View the screen above the solar panel for mA levels for the best results.",
     "faq3Question": "Manually transfer power from the case to my phone",
@@ -317,12 +331,12 @@
     "deleteAccountConfirm": "Are you sure you want to delete your account?"
   },
   "permissions": {
-    "bluetoothTitle": "Allow \"iPowerUp\" to find Bluetooth devices?",
+    "bluetoothTitle": "Allow \"iPowerUp\" App to find Bluetooth devices?",
     "permissionRequired": "Permission Required",
     "bluetoothDescription": "This app requires Bluetooth to connect to BLE devices.",
     "permissionDescription": "This permission is required for the app to function properly.",
-    "deviceFound": "device found",
-    "devicesFound": "More than ____ devices found",
+    "deviceFoundSingular": "{{deviceCount}} device found",
+    "devicesFoundPlural": "More than {{deviceCount}} devices found",
     "bluetoothPrivacyInfo": "Information from Bluetooth devices can be used to determine your location and create a profile for you.",
     "dontAllow": "Don't Allow",
     "allow": "Allow"

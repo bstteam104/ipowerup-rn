@@ -7,7 +7,8 @@
     "forgotPassword": "Mot de passe oublié ?",
     "signIn": "Se connecter",
     "createAccount": "Créer un compte ?",
-    "connectNewDevice": "Connecter un nouvel appareil"
+    "connectNewDevice": "Connecter un nouvel appareil",
+    "versionLabel": "Version"
   },
   "signup": {
     "title": "Créer un compte",
@@ -100,7 +101,7 @@
     "phoneBattery": "Batterie de téléphone",
     "batteryLevel": "Niveau de batterie",
     "caseBattery": "Boîtier de batterie",
-    "caseTemperature": "Température de la batterie",
+    "caseTemperature": "Température de la batterie du boîtier",
     "temperatureLevel": "Niveau de température",
     "transferPowerToPhone": "Transférer l'alimentation au téléphone",
     "stopCharging": "Arrêter la charge"
@@ -117,14 +118,16 @@
     "alternateEmail": "E-mail secondaire",
     "phoneNumber": "Numéro de téléphone",
     "emergencyNumber": "Numéro d'urgence",
+    "occupation": "Profession",
+    "occupationPlaceholder": "Veuillez saisir la profession (facultatif)",
     "update": "Mise à jour",
     "submit": "Soumettre",
     "updated": "Profil mis à jour avec succès"
   },
   "temperature": {
-    "title": "Température de la batterie",
-    "fahrenheit": "Fahrenheit",
-    "celsius": "Celsius",
+    "title": "Température de la batterie du boîtier",
+    "fahrenheit": "Fahrenheit °F",
+    "celsius": "Celsius °C",
     "updated": "Paramètre de température mis à jour"
   },
   "peaceOfMind": {
@@ -186,7 +189,8 @@
     "title": "Paramètres de l'application",
     "resetPassword": "Réinitialiser le mot de passe",
     "deleteAccount": "Supprimer le compte",
-    "caseTemperature": "Température de la batterie",
+    "caseTemperature": "Température de la batterie du boîtier",
+    "options": "Options",
     "bluetooth": "Bluetooth",
     "subscribeToMessages": "S'abonner aux messages",
     "language": "Langue",
@@ -198,6 +202,18 @@
     "languageUpdated": "Langue mise à jour avec succès",
     "passwordForApp": "Mot de passe pour cette application",
     "bluetoothStatusUpdated": "Statut Bluetooth mis à jour avec succès"
+  },
+  "options": {
+    "title": "Options",
+    "powerTransferTitle": "Ratio de transfert d'énergie",
+    "powerTransferSubtitle": "Répartition pendant la charge",
+    "phone": "Téléphone",
+    "case": "Boîtier",
+    "ledTitle": "Luminosité des LED",
+    "blue": "Bleu",
+    "red": "Rouge",
+    "stepHint": "Réglage par pas de 10 %",
+    "fingerSwipingHint": "Pour glisser avec le doigt"
   },
   "solar": {
     "title": "Solaire",
@@ -227,8 +243,6 @@
     "tip1Answer": "Placez votre appareil en plein soleil et assurez-vous que les panneaux solaires sont propres et sans obstruction. La meilleure charge se produit entre 10 h et 16 h lorsque le soleil est le plus fort.",
     "tip2Question": "Quelle est la température optimale pour la charge ?",
     "tip2Answer": "L'étui fonctionne mieux entre 32 °F (0 °C) et 113 °F (45 °C). Évitez de charger à des températures extrêmes car cela peut affecter la durée de vie de la batterie et l'efficacité de la charge.",
-    "tip3Question": "Combien de temps faut-il pour charger complètement l'étui ?",
-    "tip3Answer": "En utilisant l'énergie solaire, il faut généralement 4 à 6 heures de soleil direct pour charger complètement l'étui. La charge USB prend environ 2 à 3 heures.",
     "tip4Question": "Puis-je charger mon téléphone pendant que l'étui se charge ?",
     "tip4Answer": "Oui ! L'étui prend en charge la charge de passage, vous permettant de charger votre téléphone pendant que l'étui lui-même est chargé via l'énergie solaire ou USB.",
     "tip5Question": "Comment transférer l'énergie de l'étui au téléphone ?",
@@ -237,7 +251,7 @@
   "troubleshooting": {
     "title": "Aide",
     "faq1Question": "Problèmes de jumelage Bluetooth",
-    "faq1Answer": "Appareil introuvable : Fermez l'application iPowerUp. Ouvrez Réglages sur votre iPhone pour vous assurer que le Bluetooth est activé. Rouvrez l'application PowerUp, cliquez sur le bouton Connecter un nouvel appareil, cliquez sur Autoriser lorsque vous y êtes invité, puis cliquez sur le nom de votre appareil.",
+    "faq1Answer": "Appareil introuvable : Fermez l'application iPowerUp. Ouvrez Réglages sur votre téléphone Android pour vous assurer que le Bluetooth est activé. Rouvrez l'application PowerUp, appuyez sur le bouton Connecter un nouvel appareil, appuyez sur Autoriser lorsque vous y êtes invité, puis appuyez sur le nom de votre appareil.",
     "faq2Question": "Chargement avec le panneau solaire de l'étui",
     "faq2Answer": "Placez votre étui Uno dans un endroit ensoleillé, puis orientez le panneau solaire dans une direction et un angle qui reçoivent une bonne lumière du soleil. Consultez l'écran au-dessus du panneau solaire pour les niveaux de mA pour obtenir les meilleurs résultats.",
     "faq3Question": "Transférer manuellement l'énergie de l'étui à mon téléphone",
@@ -310,12 +324,12 @@
     "deleteAccountConfirm": "Êtes-vous sûr de vouloir supprimer votre compte ?"
   },
   "permissions": {
-    "bluetoothTitle": "Autoriser l'application « iPowerUp » à rechercher des appareils Bluetooth ?",
+    "bluetoothTitle": "Autoriser l'application « iPowerUp » à rechercher des appareils Bluetooth?",
     "permissionRequired": "Autorisation requise",
     "bluetoothDescription": "Cette application nécessite le Bluetooth pour se connecter aux appareils BLE.",
     "permissionDescription": "Cette autorisation est nécessaire pour que l'application fonctionne correctement.",
-    "deviceFound": "appareil trouvé",
-    "devicesFound": "Plus de ____ appareils trouvés",
+    "deviceFoundSingular": "{{deviceCount}} appareil trouvé",
+    "devicesFoundPlural": "Plus de {{deviceCount}} appareils trouvés",
     "bluetoothPrivacyInfo": "Les informations provenant des appareils Bluetooth peuvent être utilisées pour déterminer votre position et créer un profil vous concernant.",
     "dontAllow": "Ne pas autoriser",
     "allow": "Autoriser"

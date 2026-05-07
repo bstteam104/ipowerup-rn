@@ -65,11 +65,6 @@ const SignUpScreen = ({navigation}) => {
       return;
     }
 
-    if (!occupation || occupation.trim() === '') {
-      showAlert(t('common.error'), t('validation.enterOccupation', 'Please enter your occupation.'));
-      return;
-    }
-
     if (!email || email.trim() === '') {
       showAlert(t('common.error'), t('validation.enterEmail'));
       return;

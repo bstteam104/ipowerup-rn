@@ -17,6 +17,8 @@ const {width, height} = Dimensions.get('window');
 const SplashScreen = ({navigation}) => {
   const [progress, setProgress] = useState(0);
   const logoAnim = useRef(new Animated.Value(-width)).current;
+  const autoNavTimerRef = useRef(null);
+  const skipAutoNavigationRef = useRef(false);
 
   useEffect(() => {
     // Logo animation from left animation
@@ -44,13 +46,23 @@ const SplashScreen = ({navigation}) => {
   useEffect(() => {
     if (progress >= 1.0) {
       const timer = setTimeout(() => {
+        if (skipAutoNavigationRef.current) {
+          return;
+        }
         checkLoginStatus();
       }, 100);
-      return () => clearTimeout(timer);
+      autoNavTimerRef.current = timer;
+      return () => {
+        clearTimeout(timer);
+        autoNavTimerRef.current = null;
+      };
     }
   }, [progress]);
 
   const checkLoginStatus = async () => {
+    if (skipAutoNavigationRef.current) {
+      return;
+    }
     try {
       const isLoggedIn = await isUserLoggedIn();
       if (isLoggedIn) {
@@ -60,6 +72,25 @@ const SplashScreen = ({navigation}) => {
       }
     } catch (error) {
       console.error('Error checking login status:', error);
+      navigation.replace('Login');
+    }
+  };
+
+  const handleTakeTour = async () => {
+    skipAutoNavigationRef.current = true;
+    if (autoNavTimerRef.current) {
+      clearTimeout(autoNavTimerRef.current);
+      autoNavTimerRef.current = null;
+    }
+    try {
+      const loggedIn = await isUserLoggedIn();
+      if (loggedIn) {
+        navigation.navigate('AppTour', {fromSplashWhileLoggedIn: true});
+      } else {
+        navigation.replace('Login');
+      }
+    } catch (error) {
+      console.error('Error checking login for tour:', error);
       navigation.replace('Login');
     }
   };
@@ -95,7 +126,7 @@ const SplashScreen = ({navigation}) => {
       <TouchableOpacity
         activeOpacity={0.85}
         style={styles.takeTourButton}
-        onPress={() => navigation.navigate('AppTour')}>
+        onPress={handleTakeTour}>
         <Text style={styles.takeTourText}>Take the Tour</Text>
       </TouchableOpacity>
 
@@ -160,14 +191,15 @@ const styles = StyleSheet.create({
     width: '84%',
     height: 50,
     borderRadius: 12,
-    backgroundColor: Colors.white,
+    // Same yellow as loading bar fill + Profile "Connect New Device" (Colors.progressYellow)
+    backgroundColor: Colors.progressYellow,
     alignItems: 'center',
     justifyContent: 'center',
   },
   takeTourText: {
     color: Colors.black,
-    fontSize: 16,
-    fontWeight: '700',
+    fontSize: 14,
+    fontWeight: '600',
   },
   footerArea: {
     position: 'absolute',

@@ -235,7 +235,9 @@ const PermissionModal = ({
 
             {/* Device Count - Real-time */}
             <Text style={styles.deviceCountText}>
-              {displayCount} {displayCount === 1 ? t('permissions.deviceFound') : t('permissions.devicesFound')}
+              {displayCount === 1
+                ? t('permissions.deviceFoundSingular', {deviceCount: displayCount})
+                : t('permissions.devicesFoundPlural', {deviceCount: displayCount})}
             </Text>
 
 

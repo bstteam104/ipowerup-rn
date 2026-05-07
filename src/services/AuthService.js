@@ -541,6 +541,7 @@ export const updateAccountAPI = async (userData) => {
       alternate_email: userData.alternateEmail || '',
       phone: userData.phone || '',
       emergency_number: userData.emergencyNumber || '',
+      occupation: userData.occupation || '',
       country: userData.country || 'USA',
       case_device_name: userData.caseDeviceName || '',
       case_device_name_2: userData.caseDeviceNameSecondary || '',

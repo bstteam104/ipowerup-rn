@@ -29,6 +29,7 @@ const AccountSettingsScreen = ({navigation}) => {
   const [alternateEmail, setAlternateEmail] = useState('');
   const [phone, setPhone] = useState('');
   const [emergencyNumber, setEmergencyNumber] = useState('');
+  const [occupation, setOccupation] = useState('');
   const [country, setCountry] = useState('');
   const [caseDeviceName, setCaseDeviceName] = useState('');
   const [caseDeviceNameSecondary, setCaseDeviceNameSecondary] = useState('');
@@ -48,6 +49,7 @@ const AccountSettingsScreen = ({navigation}) => {
         setAlternateEmail(user.alternate_email || '');
         setPhone(user.phone || '');
         setEmergencyNumber(user.emergency_number || '');
+        setOccupation(user.occupation || '');
         setCountry(user.country || '');
         setCaseDeviceName(user.case_device_name || '');
         setCaseDeviceNameSecondary(user.case_device_name_2 || '');
@@ -77,6 +79,7 @@ const AccountSettingsScreen = ({navigation}) => {
         alternateEmail: alternateEmail.trim(),
         phone: phone.trim(),
         emergencyNumber: emergencyNumber.trim(),
+        occupation: occupation.trim(),
         country: country.trim() || 'USA',
         caseDeviceName: caseDeviceName.trim(),
         caseDeviceNameSecondary: caseDeviceNameSecondary.trim(),
@@ -217,6 +220,19 @@ const AccountSettingsScreen = ({navigation}) => {
                 value={emergencyNumber}
                 onChangeText={setEmergencyNumber}
                 keyboardType="phone-pad"
+              />
+            </View>
+
+            {/* Occupation (optional) */}
+            <View style={styles.inputContainer}>
+              <Text style={styles.label}>{t('accountSettings.occupation')}</Text>
+              <TextInput
+                style={styles.input}
+                placeholder={t('accountSettings.occupationPlaceholder')}
+                placeholderTextColor={Colors.grayColor}
+                value={occupation}
+                onChangeText={setOccupation}
+                autoCapitalize="words"
               />
             </View>
 

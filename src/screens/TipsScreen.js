@@ -33,16 +33,11 @@ const TipsScreen = ({navigation}) => {
     },
     {
       id: '3',
-      question: t('tips.tip3Question'),
-      answer: t('tips.tip3Answer'),
-    },
-    {
-      id: '4',
       question: t('tips.tip4Question'),
       answer: t('tips.tip4Answer'),
     },
     {
-      id: '5',
+      id: '4',
       question: t('tips.tip5Question'),
       answer: t('tips.tip5Answer'),
     },

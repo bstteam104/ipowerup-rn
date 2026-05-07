@@ -197,6 +197,10 @@ const AppSettingsScreen = ({navigation}) => {
     navigation.navigate('Temperature');
   };
 
+  const handleOptionsPress = () => {
+    navigation.navigate('Options');
+  };
+
   const handleLanguagePress = () => {
     navigation.navigate('Language');
   };
@@ -312,6 +316,12 @@ const AppSettingsScreen = ({navigation}) => {
             icon={require('../../assets/icons/celsius-temperature.png')}
             title={t('appSettings.caseTemperature')}
             onPress={handleTemperaturePress}
+          />
+
+          <MenuItem
+            icon={require('../../assets/icons/wrench-help.png')}
+            title={t('appSettings.options', 'Options')}
+            onPress={handleOptionsPress}
           />
 
           <MenuItem

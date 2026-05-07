@@ -7,7 +7,8 @@
     "forgotPassword": "Passwort vergessen?",
     "signIn": "Anmelden",
     "createAccount": "Ein Konto erstellen?",
-    "connectNewDevice": "Neues Gerät anschließen"
+    "connectNewDevice": "Neues Gerät anschließen",
+    "versionLabel": "Version"
   },
   "signup": {
     "title": "Benutzerkonto erstellen",
@@ -100,7 +101,7 @@
     "phoneBattery": "Akku",
     "batteryLevel": "Batteriestand",
     "caseBattery": "Gehäusebatterie",
-    "caseTemperature": "Akkutemperatur",
+    "caseTemperature": "Gehäuse-Akkutemperatur",
     "temperatureLevel": "Temperaturniveau",
     "transferPowerToPhone": "Stromzufuhr zum Telefon",
     "stopCharging": "Ladevorgang abbrechen"
@@ -117,14 +118,16 @@
     "alternateEmail": "Alternative E-Mail",
     "phoneNumber": "Telefonnummer",
     "emergencyNumber": "Notrufnummer",
+    "occupation": "Beruf",
+    "occupationPlaceholder": "Bitte Beruf eingeben (optional)",
     "update": "Aktualisieren",
     "submit": "Einreichen",
     "updated": "Profil erfolgreich aktualisiert"
   },
   "temperature": {
-    "title": "Akkutemperatur",
-    "fahrenheit": "Fahrenheit",
-    "celsius": "Celsius",
+    "title": "Gehäuse-Akkutemperatur",
+    "fahrenheit": "Fahrenheit °F",
+    "celsius": "Celsius °C",
     "updated": "Temperatureinstellung aktualisiert"
   },
   "peaceOfMind": {
@@ -186,7 +189,8 @@
     "title": "App-Einstellungen",
     "resetPassword": "Passwort zurücksetzen",
     "deleteAccount": "Konto löschen",
-    "caseTemperature": "Akkutemperatur",
+    "caseTemperature": "Gehäuse-Akkutemperatur",
+    "options": "Optionen",
     "bluetooth": "Bluetooth",
     "subscribeToMessages": "Nachrichten abonnieren",
     "language": "Sprache",
@@ -198,6 +202,18 @@
     "languageUpdated": "Sprache erfolgreich aktualisiert",
     "passwordForApp": "Passwort für diese App",
     "bluetoothStatusUpdated": "Bluetooth-Status erfolgreich aktualisiert"
+  },
+  "options": {
+    "title": "Optionen",
+    "powerTransferTitle": "Leistungsübertragungsverhältnis",
+    "powerTransferSubtitle": "Aufteilung beim Laden",
+    "phone": "Telefon",
+    "case": "Gehäuse",
+    "ledTitle": "LED-Helligkeit",
+    "blue": "Blau",
+    "red": "Rot",
+    "stepHint": "In 10%-Schritten anpassen",
+    "fingerSwipingHint": "Zum Wischen mit dem Finger"
   },
   "solar": {
     "title": "Solar",
@@ -227,8 +243,6 @@
     "tip1Answer": "Platzieren Sie Ihr Gerät in direktem Sonnenlicht und stellen Sie sicher, dass die Solarpaneele sauber und unversperrt sind. Die beste Ladung erfolgt zwischen 10 und 16 Uhr, wenn das Sonnenlicht am stärksten ist.",
     "tip2Question": "Was ist die optimale Temperatur zum Laden?",
     "tip2Answer": "Das Gehäuse funktioniert am besten zwischen 32 °F (0 °C) und 113 °F (45 °C). Vermeiden Sie das Laden bei extremen Temperaturen, da dies die Batterielebensdauer und Ladeeffizienz beeinträchtigen kann.",
-    "tip3Question": "Wie lange dauert es, das Gehäuse vollständig aufzuladen?",
-    "tip3Answer": "Mit Solarenergie dauert es normalerweise 4-6 Stunden direktes Sonnenlicht, um das Gehäuse vollständig aufzuladen. Das USB-Laden dauert etwa 2-3 Stunden.",
     "tip4Question": "Kann ich mein Telefon aufladen, während das Gehäuse geladen wird?",
     "tip4Answer": "Ja! Das Gehäuse unterstützt Durchgangsladung, sodass Sie Ihr Telefon aufladen können, während das Gehäuse selbst über Solar oder USB geladen wird.",
     "tip5Question": "Wie übertrage ich Energie vom Gehäuse zum Telefon?",
@@ -237,7 +251,7 @@
   "troubleshooting": {
     "title": "Helfen",
     "faq1Question": "Bluetooth-Paarungsprobleme",
-    "faq1Answer": "Gerät nicht gefunden: Schließen Sie die iPowerUp-App. Öffnen Sie die Einstellungen auf Ihrem iPhone, um sicherzustellen, dass Bluetooth aktiviert ist. Öffnen Sie die PowerUp-App erneut, klicken Sie auf die Schaltfläche Neues Gerät verbinden, klicken Sie auf Zulassen, wenn Sie dazu aufgefordert werden, und klicken Sie auf den Namen Ihres Geräts.",
+    "faq1Answer": "Gerät nicht gefunden: Schließen Sie die iPowerUp-App. Öffnen Sie die Einstellungen auf Ihrem Android-Smartphone, um sicherzustellen, dass Bluetooth aktiviert ist. Öffnen Sie die PowerUp-App erneut, tippen Sie auf die Schaltfläche Neues Gerät verbinden, tippen Sie auf Zulassen, wenn Sie dazu aufgefordert werden, und tippen Sie auf den Namen Ihres Geräts.",
     "faq2Question": "Laden mit dem Solarpanel des Gehäuses",
     "faq2Answer": "Platzieren Sie Ihr Uno-Gehäuse an einem sonnigen Ort und richten Sie dann das Solarpanel in eine Richtung und einen Winkel aus, der gutes Sonnenlicht erhält. Sehen Sie sich den Bildschirm über dem Solarpanel für mA-Werte an, um die besten Ergebnisse zu erzielen.",
     "faq3Question": "Manuell Energie vom Gehäuse auf mein Telefon übertragen",
@@ -311,12 +325,12 @@
     "deleteAccountConfirm": "Sind Sie sicher, dass Sie Ihr Konto löschen möchten?"
   },
   "permissions": {
-    "bluetoothTitle": "Soll die App „iPowerUp\" Bluetooth-Geräte finden dürfen?",
+    "bluetoothTitle": "Soll die App „iPowerUp“ Bluetooth-Geräte finden dürfen?",
     "permissionRequired": "Berechtigung erforderlich",
     "bluetoothDescription": "Diese App benötigt Bluetooth, um sich mit BLE-Geräten zu verbinden.",
     "permissionDescription": "Diese Berechtigung ist erforderlich, damit die App ordnungsgemäß funktioniert.",
-    "deviceFound": "Gerät gefunden",
-    "devicesFound": "Mehr als ____ Geräte gefunden",
+    "deviceFoundSingular": "{{deviceCount}} Gerät gefunden",
+    "devicesFoundPlural": "Mehr als {{deviceCount}} Geräte gefunden",
     "bluetoothPrivacyInfo": "Informationen von Bluetooth-Geräten können verwendet werden, um Ihren Standort zu bestimmen und ein Profil für Sie zu erstellen.",
     "dontAllow": "Nicht zulassen",
     "allow": "Zulassen"

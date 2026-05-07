@@ -29,8 +29,7 @@ const LoginScreen = ({navigation}) => {
   const [isLoading, setIsLoading] = useState(false);
   const appVersion = useMemo(() => {
     const version = DeviceInfo.getVersion?.() || '0.0.0';
-    const buildNumber = DeviceInfo.getBuildNumber?.();
-    return buildNumber ? `v${version} (${buildNumber})` : `v${version}`;
+    return `v${version}`;
   }, []);
 
   const isValidEmail = useCallback((email) => {
@@ -210,7 +209,9 @@ const LoginScreen = ({navigation}) => {
             >
               <Text style={styles.createAccountText}>{t('login.createAccount')}</Text>
             </TouchableOpacity>
-            <Text style={styles.versionText}>Version {appVersion}</Text>
+            <Text style={styles.versionText}>
+              {t('login.versionLabel', 'Version')} {appVersion}
+            </Text>
           </View>
         </ScrollView>
       </KeyboardAvoidingView>
