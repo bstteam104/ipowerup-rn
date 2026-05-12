@@ -317,6 +317,8 @@
   },
   "alerts": {
     "caseBatteryLow": "⚠️ Avertissement\nLe niveau de charge de la batterie du boîtier est inférieur au minimum. Veuillez la recharger.",
+    "criticalBatteryTitle": "Batterie critique",
+    "caseBatteryBelowCharge": "Charge de la batterie du boîtier sous le minimum. Veuillez recharger.",
     "caseBatteryHigh": "Batterie du boîtier supérieure à la capacité maximale. Arrêtez la charge.",
     "caseTempLow": "Température du boîtier approchant la coupure basse température.",
     "caseTempHigh": "Température du boîtier approchant la température d'arrêt élevée.",

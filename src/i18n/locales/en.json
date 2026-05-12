@@ -324,6 +324,8 @@
   },
   "alerts": {
     "caseBatteryLow": "Alert: Case Battery Below Minimum",
+    "criticalBatteryTitle": "Critical battery",
+    "caseBatteryBelowCharge": "Case battery charge below minimum. Please charge.",
     "caseBatteryHigh": "Case battery above maximum. Stop charging.",
     "caseTempLow": "Case temperature approaching low temperature shut-down.",
     "caseTempHigh": "Case temperature approaching high temperature shut-down.",

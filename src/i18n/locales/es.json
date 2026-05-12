@@ -317,6 +317,8 @@
   },
   "alerts": {
     "caseBatteryLow": "Alerta: Nivel de batería de la carcasa inferior al mínimo.",
+    "criticalBatteryTitle": "Batería crítica",
+    "caseBatteryBelowCharge": "La carga de la batería del estuche está por debajo del mínimo. Cargue.",
     "caseBatteryHigh": "La batería del estuche está por encima del máximo. Deje de cargar.",
     "caseTempLow": "La temperatura de la caja se acerca al nivel mínimo de apagado.",
     "caseTempHigh": "La temperatura de la caja se acerca al punto de apagado por temperatura alta.",

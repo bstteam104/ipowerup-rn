@@ -318,6 +318,8 @@
   },
   "alerts": {
     "caseBatteryLow": "Warnung: Akkustand unter dem Minimum",
+    "criticalBatteryTitle": "Kritischer Akkustand",
+    "caseBatteryBelowCharge": "Akkuladung des Gehäuses unter dem Minimum. Bitte laden.",
     "caseBatteryHigh": "Akku des Gehäuses über dem Maximalwert. Ladevorgang abbrechen.",
     "caseTempLow": "Die Gehäusetemperatur nähert sich der Abschalttemperatur.",
     "caseTempHigh": "Die Gehäusetemperatur nähert sich der Abschaltschwelle aufgrund zu hoher Temperatur.",

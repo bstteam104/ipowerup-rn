@@ -1,4 +1,4 @@
-import React, {useState, useEffect, useRef, useMemo} from 'react';
+import React, {useState, useEffect, useRef, useMemo, useCallback} from 'react';
 import {
   View,
   Text,
@@ -10,9 +10,7 @@ import {
   SafeAreaView,
   Platform,
   ScrollView,
-  Alert,
   PermissionsAndroid,
-  Linking,
   AppState,
 } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
@@ -23,8 +21,18 @@ import BLEManager from '../services/BLEManagerNative';
 import {BLE_CONSTANTS} from '../constants/BLEConstants';
 import {saveHistoryEntry} from '../storage/HistoryStorage';
 import PermissionModal from '../components/PermissionModal';
-
+import {showErrorToast, showInfoToast} from '../utils/toastHelper';
 const {width, height} = Dimensions.get('window');
+
+// iOS HomeVC: after `queryChargerConfigStatus`, interaction is applied after ~2.5s.
+const IOS_CHARGER_CONFIG_UI_DELAY_MS = 2500;
+// iOS SlideBasedTimerHandler: poll power status while waiting for charging to flip.
+const IOS_CHARGING_ACTION_POLL_MS = 1000;
+const IOS_CHARGING_ACTION_MAX_WAIT_MS = 20000;
+
+/** iOS UserDefaults parity: min-battery toast only at 20/10/5/0% bands while vcBelowMin. */
+const STORAGE_LAST_MIN_BATTERY_ALERT = '@ipowerup:last_min_battery_alert_level';
+const STORAGE_LAST_MAX_BATTERY_ALERT = '@ipowerup:last_max_battery_alert_level';
 
 // Battery images
 const getBatteryImage = (level) => {
@@ -78,17 +86,19 @@ const HomeScreen = ({navigation, route}) => {
   const [showScanningModal, setShowScanningModal] = useState(false); // Scanning modal after permission
   const [allDiscoveredDevices, setAllDiscoveredDevices] = useState([]); // Devices for scanning modal
   const [chargeConfigEnabled, setChargeConfigEnabled] = useState(false); // Phone charging enabled in config
+  const [isChargeConfigKnown, setIsChargeConfigKnown] = useState(false);
+  /** After charger config (iOS delays enabling the toggle ~2.5s). */
+  const [transferButtonUiReady, setTransferButtonUiReady] = useState(false);
+  /** After start/stop command: disable until status catches up (iOS SlideBasedTimerHandler). */
+  const [chargingCommandPending, setChargingCommandPending] = useState(false);
   const [phoneCharging, setPhoneCharging] = useState(false); // Actual phone charging status from PowerBankStatus
   const [usbCharging, setUsbCharging] = useState(false); // USB charging status from PowerBankStatus
   const batteryIntervalRef = useRef(null);
-  // Security alert flags (prevent duplicate alerts like iOS)
+  // Security alert flags (temp only — battery uses AsyncStorage thresholds like iOS)
   const [alertFlags, setAlertFlags] = useState({
-    vcBelowMinShown: false,
-    vcAboveMaxShown: false,
     tcBelowMinShown: false,
     tcAboveMaxShown: false,
   });
-  const [showDebug, setShowDebug] = useState(true); // Show debug panel
   const [debugInfo, setDebugInfo] = useState({
     connectionStatus: 'Disconnected',
     lastDataTime: null,
@@ -107,6 +117,225 @@ const HomeScreen = ({navigation, route}) => {
     lastDeviceResponse: null, // Last device response info
   });
   const dataReceivedCountRef = useRef(0);
+  const chargerConfigUiDelayTimerRef = useRef(null);
+  const chargingActionPollRef = useRef(null);
+  const chargingActionMaxTimerRef = useRef(null);
+  const chargingActionExpectedRef = useRef(null);
+  /** iOS only delays the first charger-config interaction (counting <= 1); later configs apply immediately. */
+  const chargerConfigUiDelayCompletedRef = useRef(false);
+  /** Ignore duplicate charger-config packets (same enPhCharger) to avoid timer reset / enable-disable flicker. */
+  const lastChargerConfigModeKeyRef = useRef(null);
+
+  const cancelChargerConfigUiDelayTimer = useCallback(() => {
+    if (chargerConfigUiDelayTimerRef.current) {
+      clearTimeout(chargerConfigUiDelayTimerRef.current);
+      chargerConfigUiDelayTimerRef.current = null;
+    }
+  }, []);
+
+  const cancelChargingActionTimers = useCallback(() => {
+    if (chargingActionPollRef.current) {
+      clearInterval(chargingActionPollRef.current);
+      chargingActionPollRef.current = null;
+    }
+    if (chargingActionMaxTimerRef.current) {
+      clearTimeout(chargingActionMaxTimerRef.current);
+      chargingActionMaxTimerRef.current = null;
+    }
+    chargingActionExpectedRef.current = null;
+  }, []);
+
+  const clearCaseTelemetry = useCallback(() => {
+    cancelChargerConfigUiDelayTimer();
+    cancelChargingActionTimers();
+    chargerConfigUiDelayCompletedRef.current = false;
+    lastChargerConfigModeKeyRef.current = null;
+    setTransferButtonUiReady(false);
+    setChargingCommandPending(false);
+    setCaseBatteryLevel(0);
+    setCaseTemperature(0);
+    setIsCharging(false);
+    setPhoneCharging(false);
+    setUsbCharging(false);
+    setChargeConfigEnabled(false);
+    setIsChargeConfigKnown(false);
+    setCaseMacLast4('');
+  }, [cancelChargerConfigUiDelayTimer, cancelChargingActionTimers]);
+
+  /** Last 4 hex digits of case MAC; works on reconnect when delegate missed onConnected. */
+  const applyCaseMacFromBle = useCallback((deviceFromEvent = null) => {
+    try {
+      const d =
+        deviceFromEvent ||
+        (typeof BLEManager.getConnectedDeviceInfo === 'function'
+          ? BLEManager.getConnectedDeviceInfo()
+          : null);
+      if (!d) {
+        return;
+      }
+      const raw = String(d.address || d.id || '').trim();
+      if (!raw) {
+        return;
+      }
+      const hex = raw.replace(/:/g, '').toUpperCase();
+      if (hex.length >= 4) {
+        setCaseMacLast4(hex.slice(-4));
+      }
+    } catch (e) {
+      console.warn('applyCaseMacFromBle:', e);
+    }
+  }, []);
+
+  /** iOS handleMinBattery: only when vcBelowMin and level hits 20/10/5/0% bands (not e.g. 30%). */
+  const processMinBatteryThresholdToast = useCallback(
+    async (level, isBelowMin) => {
+      if (typeof level !== 'number' || level < 0 || level > 100) {
+        return;
+      }
+      if (level > 20) {
+        try {
+          await AsyncStorage.setItem(STORAGE_LAST_MIN_BATTERY_ALERT, '100');
+        } catch (e) {}
+        return;
+      }
+      if (!isBelowMin) {
+        return;
+      }
+      let lastAlerted = 100;
+      try {
+        const raw = await AsyncStorage.getItem(STORAGE_LAST_MIN_BATTERY_ALERT);
+        if (raw != null && raw !== '') {
+          lastAlerted = parseInt(raw, 10);
+        }
+        if (Number.isNaN(lastAlerted)) {
+          lastAlerted = 100;
+        }
+      } catch (e) {}
+      const asc = [0, 5, 10, 20];
+      const threshold = asc.find(th => level <= th);
+      if (threshold === undefined) {
+        return;
+      }
+      if (lastAlerted === threshold) {
+        return;
+      }
+      if (!(lastAlerted === 0 || threshold < lastAlerted)) {
+        return;
+      }
+      try {
+        await AsyncStorage.setItem(STORAGE_LAST_MIN_BATTERY_ALERT, String(threshold));
+      } catch (e) {}
+      const msg = t(
+        'alerts.caseBatteryBelowCharge',
+        'Case battery charge below minimum. Please charge.',
+      );
+      const title = t('alerts.criticalBatteryTitle', 'Critical battery');
+      showErrorToast(`${title}: ${msg}`, 5500);
+    },
+    [t],
+  );
+
+  /** iOS handleMaxBattery: vcAboveMax + 80/85/90/95% escalation. */
+  const processMaxBatteryThresholdToast = useCallback(
+    async (level, isAboveMax) => {
+      if (typeof level !== 'number' || level < 0 || level > 100) {
+        return;
+      }
+      if (level < 80) {
+        try {
+          await AsyncStorage.setItem(STORAGE_LAST_MAX_BATTERY_ALERT, '0');
+        } catch (e) {}
+        return;
+      }
+      if (!isAboveMax) {
+        return;
+      }
+      let lastAlerted = 0;
+      try {
+        const raw = await AsyncStorage.getItem(STORAGE_LAST_MAX_BATTERY_ALERT);
+        if (raw != null && raw !== '') {
+          lastAlerted = parseInt(raw, 10);
+        }
+        if (Number.isNaN(lastAlerted)) {
+          lastAlerted = 0;
+        }
+      } catch (e) {}
+      const maxT = [80, 85, 90, 95];
+      let threshold = null;
+      for (let i = maxT.length - 1; i >= 0; i--) {
+        if (level >= maxT[i]) {
+          threshold = maxT[i];
+          break;
+        }
+      }
+      if (threshold === null) {
+        return;
+      }
+      if (lastAlerted === threshold) {
+        return;
+      }
+      if (!(threshold > lastAlerted)) {
+        return;
+      }
+      try {
+        await AsyncStorage.setItem(STORAGE_LAST_MAX_BATTERY_ALERT, String(threshold));
+      } catch (e) {}
+      showInfoToast(
+        t('alerts.caseBatteryHigh', 'Case battery above maximum. Stop charging.'),
+        5500,
+      );
+    },
+    [t],
+  );
+
+  const beginChargingActionWait = useCallback(
+    expectedPhoneCharging => {
+      cancelChargingActionTimers();
+      chargingActionExpectedRef.current = expectedPhoneCharging;
+      setChargingCommandPending(true);
+      chargingActionPollRef.current = setInterval(() => {
+        if (BLEManager.isConnected && BLEManager.queryPowerBankStatus) {
+          BLEManager.queryPowerBankStatus().catch(() => {});
+        }
+      }, IOS_CHARGING_ACTION_POLL_MS);
+      chargingActionMaxTimerRef.current = setTimeout(() => {
+        chargingActionMaxTimerRef.current = null;
+        cancelChargingActionTimers();
+        setChargingCommandPending(false);
+      }, IOS_CHARGING_ACTION_MAX_WAIT_MS);
+    },
+    [cancelChargingActionTimers],
+  );
+
+  useEffect(() => {
+    if (!chargingCommandPending) {
+      return;
+    }
+    const expected = chargingActionExpectedRef.current;
+    if (expected === null) {
+      return;
+    }
+    if (phoneCharging === expected) {
+      cancelChargingActionTimers();
+      setChargingCommandPending(false);
+    }
+  }, [phoneCharging, chargingCommandPending, cancelChargingActionTimers]);
+
+  const canPressTransferPower = useMemo(
+    () =>
+      isConnected &&
+      isChargeConfigKnown &&
+      chargeConfigEnabled &&
+      transferButtonUiReady &&
+      !chargingCommandPending,
+    [
+      isConnected,
+      isChargeConfigKnown,
+      chargeConfigEnabled,
+      transferButtonUiReady,
+      chargingCommandPending,
+    ],
+  );
 
   // Get phone battery level
   const getPhoneBatteryLevel = async () => {
@@ -191,13 +420,9 @@ const HomeScreen = ({navigation, route}) => {
               setupBLEManager();
             });
           } else {
-            Alert.alert(
-              'Permission Denied',
-              'Bluetooth permission is required. Please enable it in Settings.',
-              [
-                {text: 'Cancel', style: 'cancel'},
-                {text: 'Open Settings', onPress: () => Linking.openSettings()},
-              ]
+            showErrorToast(
+              'Bluetooth permission required. Open system Settings to enable Bluetooth and Location.',
+              5000,
             );
           }
         } else {
@@ -217,13 +442,9 @@ const HomeScreen = ({navigation, route}) => {
               setupBLEManager();
             });
           } else {
-            Alert.alert(
-              'Permission Denied',
-              'Location permission is required for Bluetooth. Please enable it in Settings.',
-              [
-                {text: 'Cancel', style: 'cancel'},
-                {text: 'Open Settings', onPress: () => Linking.openSettings()},
-              ]
+            showErrorToast(
+              'Location permission required for Bluetooth. Open system Settings to enable it.',
+              5000,
             );
           }
         }
@@ -240,10 +461,9 @@ const HomeScreen = ({navigation, route}) => {
       }
     } catch (error) {
       console.error('Permission request error:', error);
-      Alert.alert(
-        'Error',
-        'Failed to request permissions. Please try again or enable in Settings.',
-        [{text: 'OK'}]
+      showErrorToast(
+        'Failed to request permissions. Try again or enable them in system Settings.',
+        5000,
       );
     }
   };
@@ -255,16 +475,9 @@ const HomeScreen = ({navigation, route}) => {
       console.log('📶 Current Bluetooth state:', state);
       
       if (state === 'PoweredOff') {
-        Alert.alert(
-          'Bluetooth is Off',
-          'Bluetooth needs to be enabled to scan for devices. Please enable it in Settings.',
-          [
-            {text: 'Cancel', style: 'cancel'},
-            {
-              text: 'Open Settings',
-              onPress: () => Linking.openSettings(),
-            },
-          ]
+        showInfoToast(
+          'Bluetooth is off. Turn on Bluetooth in system Settings to scan for your case.',
+          5000,
         );
       }
     } catch (error) {
@@ -336,6 +549,9 @@ const HomeScreen = ({navigation, route}) => {
             periodicQueryActive: true,
           }));
         }
+        if (!currentConnected) {
+          clearCaseTelemetry();
+        }
       }
       
       // CRITICAL: Check if connected but values are missing - auto-retry
@@ -379,6 +595,18 @@ const HomeScreen = ({navigation, route}) => {
       }
       if (connectionSyncInterval) {
         clearInterval(connectionSyncInterval);
+      }
+      if (chargerConfigUiDelayTimerRef.current) {
+        clearTimeout(chargerConfigUiDelayTimerRef.current);
+        chargerConfigUiDelayTimerRef.current = null;
+      }
+      if (chargingActionPollRef.current) {
+        clearInterval(chargingActionPollRef.current);
+        chargingActionPollRef.current = null;
+      }
+      if (chargingActionMaxTimerRef.current) {
+        clearTimeout(chargingActionMaxTimerRef.current);
+        chargingActionMaxTimerRef.current = null;
       }
       BLEManager.stopPeriodicQueries();
       BLEManager.stopScanning();
@@ -488,6 +716,20 @@ const HomeScreen = ({navigation, route}) => {
     }
   }, [isFocused, isConnected, caseBatteryLevel, caseTemperature]);
 
+  // Re-attach Home delegate whenever screen regains focus.
+  // This avoids missing callbacks if another screen replaced BLE delegate.
+  useEffect(() => {
+    if (isFocused) {
+      setupBLEManager({startScanIfNeeded: false});
+      if (!BLEManager.isConnected) {
+        setIsConnected(false);
+        clearCaseTelemetry();
+      } else {
+        applyCaseMacFromBle();
+      }
+    }
+  }, [isFocused, clearCaseTelemetry, applyCaseMacFromBle]);
+
   const loadUserData = async () => {
     try {
       const userData = await AsyncStorage.getItem('loggedInUser');
@@ -508,7 +750,7 @@ const HomeScreen = ({navigation, route}) => {
     }
   };
 
-  const setupBLEManager = () => {
+  const setupBLEManager = ({startScanIfNeeded = true} = {}) => {
     // Set phone battery getter
     BLEManager.setPhoneBatteryGetter(getPhoneBatteryLevel);
     
@@ -521,16 +763,12 @@ const HomeScreen = ({navigation, route}) => {
           setShowScanningModal(false);
           setIsConnected(false);
           // Clear data when Bluetooth is off
-          setCaseBatteryLevel(0);
-          setCaseTemperature(0);
-          setIsCharging(false);
-          setPhoneCharging(false);
-          setUsbCharging(false);
+          clearCaseTelemetry();
           // Stop periodic queries
           BLEManager.stopPeriodicQueries();
-          Alert.alert(
-            'Bluetooth Off',
-            'Please enable Bluetooth to connect to your device'
+          showInfoToast(
+            'Bluetooth turned off. Enable Bluetooth to connect to your case.',
+            4500,
           );
         } else if (state === 'PoweredOn') {
           // As soon as Bluetooth turns ON, restart scanning if not connected
@@ -578,16 +816,20 @@ const HomeScreen = ({navigation, route}) => {
       onConnected: (device) => {
         console.log('✅ Connected to:', device?.name || 'Unknown Device');
         setIsConnected(true);
-        const connectedId = device?.id || '';
-        if (connectedId && connectedId.length >= 4) {
-          setCaseMacLast4(connectedId.slice(-4).toUpperCase());
-        }
+        applyCaseMacFromBle(device);
         // Reset charging states when connecting
         setUsbCharging(false);
         setPhoneCharging(false);
         setIsCharging(false);
-        // Enable button by default when connected (will be updated when charger config is received)
-        setChargeConfigEnabled(true); // Default to enabled, will be updated by config
+        // Prevent "enabled then disabled" flicker: keep disabled until config actually arrives.
+        setChargeConfigEnabled(false);
+        setIsChargeConfigKnown(false);
+        cancelChargerConfigUiDelayTimer();
+        cancelChargingActionTimers();
+        chargerConfigUiDelayCompletedRef.current = false;
+        lastChargerConfigModeKeyRef.current = null;
+        setTransferButtonUiReady(false);
+        setChargingCommandPending(false);
         // Close scanning modal when connected
         setShowScanningModal(false);
         // Start periodic queries immediately. Stop any existing periodic query first,
@@ -743,25 +985,8 @@ const HomeScreen = ({navigation, route}) => {
         
         console.log('🔌 Disconnected - Reason:', reason, 'Status:', status);
         setIsConnected(false);
-        
-        // CRITICAL: Don't reset values to 0 on disconnect - keep last known values
-        // This helps identify if it's a connection issue vs data issue
-        // Only reset if explicitly disconnected by user
-        if (reason !== 'User disconnect') {
-          // Keep last values for debugging
-          console.log('📌 Keeping last known values for debugging:', {
-            battery: caseBatteryLevel,
-            temp: caseTemperature,
-          });
-        } else {
-          // User explicitly disconnected - reset values
-          setCaseBatteryLevel(0);
-          setCaseTemperature(0);
-        }
-        
-        setIsCharging(false);
-        setPhoneCharging(false);
-        setUsbCharging(false);
+        // iOS-like behavior: disconnected case should immediately clear case values.
+        clearCaseTelemetry();
         
         // CRITICAL: Stop periodic query on disconnect
         if (BLEManager.stopPeriodicQueries) {
@@ -957,53 +1182,46 @@ const HomeScreen = ({navigation, route}) => {
           solarCurrent: data.solarCurr,
         });
 
-        // Security Alerts (like iOS) - Check flags and show alerts
-        // Only show each alert once (prevent duplicate alerts)
-        if (data.vcBelowMin === true && !alertFlags.vcBelowMinShown) {
-          setAlertFlags(prev => ({...prev, vcBelowMinShown: true}));
-          Alert.alert(
-            '⚠️ Warning',
-            'Case battery charge below minimum. Please charge.',
-            [{text: 'OK'}]
+        // Case battery warnings: iOS-style thresholds + toast (not blocking Alert).
+        if (
+          data &&
+          typeof data.caseBatPct === 'number' &&
+          data.caseBatPct >= 0 &&
+          data.caseBatPct <= 100
+        ) {
+          await processMinBatteryThresholdToast(
+            data.caseBatPct,
+            data.vcBelowMin === true,
           );
-        } else if (data.vcBelowMin === false && alertFlags.vcBelowMinShown) {
-          // Reset flag when condition clears
-          setAlertFlags(prev => ({...prev, vcBelowMinShown: false}));
-        }
-
-        if (data.vcAboveMax === true && !alertFlags.vcAboveMaxShown) {
-          setAlertFlags(prev => ({...prev, vcAboveMaxShown: true}));
-          Alert.alert(
-            '⚠️ Warning',
-            'Case battery above maximum. Stop charging.',
-            [{text: 'OK'}]
+          await processMaxBatteryThresholdToast(
+            data.caseBatPct,
+            data.vcAboveMax === true,
           );
-        } else if (data.vcAboveMax === false && alertFlags.vcAboveMaxShown) {
-          // Reset flag when condition clears
-          setAlertFlags(prev => ({...prev, vcAboveMaxShown: false}));
         }
 
         if (data.tcBelowMin === true && !alertFlags.tcBelowMinShown) {
           setAlertFlags(prev => ({...prev, tcBelowMinShown: true}));
-          Alert.alert(
-            '⚠️ Warning',
-            'Case temperature approaching low temperature shut-down.',
-            [{text: 'OK'}]
+          showInfoToast(
+            t(
+              'alerts.caseTempLow',
+              'Case temperature approaching low temperature shut-down.',
+            ),
+            5500,
           );
         } else if (data.tcBelowMin === false && alertFlags.tcBelowMinShown) {
-          // Reset flag when condition clears
           setAlertFlags(prev => ({...prev, tcBelowMinShown: false}));
         }
 
         if (data.tcAboveMax === true && !alertFlags.tcAboveMaxShown) {
           setAlertFlags(prev => ({...prev, tcAboveMaxShown: true}));
-          Alert.alert(
-            '⚠️ Warning',
-            'Case temperature approaching high temperature shut-down.',
-            [{text: 'OK'}]
+          showInfoToast(
+            t(
+              'alerts.caseTempHigh',
+              'Case temperature approaching high temperature shut-down.',
+            ),
+            5500,
           );
         } else if (data.tcAboveMax === false && alertFlags.tcAboveMaxShown) {
-          // Reset flag when condition clears
           setAlertFlags(prev => ({...prev, tcAboveMaxShown: false}));
         }
       },
@@ -1016,7 +1234,7 @@ const HomeScreen = ({navigation, route}) => {
           ...prev,
           lastError: `Scan error: ${error?.message || error}`,
         }));
-        Alert.alert('Scan Error', error.message || 'Could not scan for devices.');
+        showErrorToast(error.message || 'Could not scan for devices.', 5000);
       },
       
       onPermissionError: (error) => {
@@ -1025,27 +1243,57 @@ const HomeScreen = ({navigation, route}) => {
           ...prev,
           lastError: `Permission error: ${error?.message || error}`,
         }));
-        Alert.alert(
-          'Bluetooth Permission Required',
-          'Please grant Bluetooth permissions in Settings to connect to your iPowerUp device.',
-          [
-            {text: 'OK', style: 'default'},
-          ]
+        showErrorToast(
+          'Bluetooth permission required. Grant it in system Settings to connect to your case.',
+          5000,
         );
       },
       
       // Charger config received - enable/disable button based on enPhCharger
       onChargerConfigReceived: (config) => {
         console.log('📊 Charger Config received:', config);
-        const isEnabled = config.enPhCharger === true;
+        // Protocol returns numeric mode: 0=off, 1=on, 2=auto
+        // Treat ON/AUTO as actionable (iOS parity behavior).
+        const mode = config?.enPhCharger;
+        const modeKey =
+          mode === undefined || mode === null ? '__none__' : String(mode);
+        if (lastChargerConfigModeKeyRef.current === modeKey) {
+          return;
+        }
+        lastChargerConfigModeKeyRef.current = modeKey;
+
+        const isEnabled = mode === true || mode === 1 || mode === 2;
+        cancelChargerConfigUiDelayTimer();
+        setIsChargeConfigKnown(true);
         setChargeConfigEnabled(isEnabled);
-        console.log('🔘 Transfer Power Button enabled:', isEnabled, '(enPhCharger:', config.enPhCharger, ')');
-        
-        // Update debug info
+        console.log('🔘 Transfer Power Button enabled:', isEnabled, '(enPhCharger:', mode, ')');
+
         setDebugInfo(prev => ({
           ...prev,
           lastError: null,
         }));
+
+        // iOS HomeVC: first config(s) apply interaction after ~2.5s; later updates are immediate (counting > 1).
+        if (!isEnabled) {
+          setTransferButtonUiReady(false);
+          chargerConfigUiDelayCompletedRef.current = false;
+          return;
+        }
+
+        if (chargerConfigUiDelayCompletedRef.current) {
+          setTransferButtonUiReady(true);
+          return;
+        }
+
+        setTransferButtonUiReady(false);
+        chargerConfigUiDelayTimerRef.current = setTimeout(() => {
+          chargerConfigUiDelayTimerRef.current = null;
+          if (!BLEManager.isConnected) {
+            return;
+          }
+          chargerConfigUiDelayCompletedRef.current = true;
+          setTransferButtonUiReady(true);
+        }, IOS_CHARGER_CONFIG_UI_DELAY_MS);
       },
       
       // Notification enabled callback - CRITICAL for data reception
@@ -1111,13 +1359,14 @@ const HomeScreen = ({navigation, route}) => {
     });
     
     // Start scanning immediately (auto-connect enabled by default)
-    if (!BLEManager.isConnected) {
+    if (startScanIfNeeded && !BLEManager.isConnected) {
       // Enable auto-connect for HomeScreen
       BLEManager.isAutoScanEnabled = true;
       BLEManager.startScanning();
-    } else {
+    } else if (BLEManager.isConnected) {
       // Already connected - just query status
       BLEManager.queryPowerBankStatus();
+      applyCaseMacFromBle();
     }
   };
 
@@ -1141,19 +1390,42 @@ const HomeScreen = ({navigation, route}) => {
         ...prev,
         lastError: 'Button pressed but not connected',
       }));
-      Alert.alert('Not Connected', 'Please connect to your device first');
+      showErrorToast('Please connect to your device first.', 4000);
       return;
     }
     
+    if (!isChargeConfigKnown) {
+      showInfoToast('Reading charger config from case…', 3500);
+      return;
+    }
+
     if (!chargeConfigEnabled) {
       setDebugInfo(prev => ({
         ...prev,
         lastError: 'Button pressed but enPhCharger disabled',
       }));
-      Alert.alert('Charging Disabled', 'Phone charging is disabled in device configuration');
+      showInfoToast(
+        'Phone charging is disabled in device configuration.',
+        4500,
+      );
       return;
     }
-    
+
+    if (!transferButtonUiReady) {
+      showInfoToast(
+        'Case is still applying charger settings. Try again in a moment.',
+        4000,
+      );
+      return;
+    }
+
+    if (chargingCommandPending) {
+      return;
+    }
+
+    const expectedNextPhoneCharging = !phoneCharging;
+    beginChargingActionWait(expectedNextPhoneCharging);
+
     // Toggle based on ACTUAL phoneCharging status (use actual charging status, not config setting)
     if (phoneCharging) {
       // Phone is actually charging - send stop command (0x18)
@@ -1164,11 +1436,13 @@ const HomeScreen = ({navigation, route}) => {
       }));
       BLEManager.stopCharging().catch((error) => {
         console.error('❌ Failed to stop charging:', error);
+        cancelChargingActionTimers();
+        setChargingCommandPending(false);
         setDebugInfo(prev => ({
           ...prev,
           lastError: `Stop charging failed: ${error?.message || error}`,
         }));
-        Alert.alert('Error', 'Failed to stop charging. Please try again.');
+        showErrorToast('Failed to stop charging. Please try again.', 4500);
       });
     } else {
       // Phone is not charging - send enable command (0x21)
@@ -1179,11 +1453,13 @@ const HomeScreen = ({navigation, route}) => {
       }));
       BLEManager.enablePhoneCharging().catch((error) => {
         console.error('❌ Failed to enable charging:', error);
+        cancelChargingActionTimers();
+        setChargingCommandPending(false);
         setDebugInfo(prev => ({
           ...prev,
           lastError: `Enable charging failed: ${error?.message || error}`,
         }));
-        Alert.alert('Error', 'Failed to enable charging. Please try again.');
+        showErrorToast('Failed to enable charging. Please try again.', 4500);
       });
     }
     
@@ -1315,18 +1591,18 @@ const HomeScreen = ({navigation, route}) => {
 
           {/* Transfer Power Button */}
           {/* 
-            Button Logic:
-            - Button is ENABLED when: BLE connected AND enPhCharger config == true
-            - Button is DISABLED when: BLE not connected OR enPhCharger == false
+            Button Logic (iOS parity):
+            - Config known + enPhCharger allows transfer; UI enables ~2.5s after first good config (HomeVC).
+            - After start/stop, interaction disabled until PowerBankStatus reflects change or timeout
+              (SlideBasedTimerHandler-style poll).
             - Button shows YELLOW (Stop Charging) when phoneCharging == true
             - Button shows WHITE (Start Charging) when phoneCharging == false
-            - USB connection status is informational only, doesn't control button enable/disable
           */}
           <TouchableOpacity 
             style={styles.sliderButton}
             onPress={handleTransferPower}
             activeOpacity={0.9}
-            disabled={!isConnected || !chargeConfigEnabled}
+            disabled={!canPressTransferPower}
           >
             <Image
               source={
@@ -1346,258 +1622,10 @@ const HomeScreen = ({navigation, route}) => {
                         ? require('../../assets/home/newYellowSlider.png')
                         : require('../../assets/home/newWhiteSlider.png')
               }
-              style={[styles.sliderImage, (!isConnected || !chargeConfigEnabled) && {opacity: 0.4}]}
+              style={[styles.sliderImage, !canPressTransferPower && {opacity: 0.4}]}
               resizeMode="contain"
             />
           </TouchableOpacity>
-
-          {/* Debug Panel - Commented out for now */}
-          {/* 
-          <TouchableOpacity 
-            style={styles.debugToggle}
-            onPress={() => setShowDebug(!showDebug)}
-            activeOpacity={0.7}
-          >
-            <Text style={styles.debugToggleText}>
-              {showDebug ? '▼ Hide Debug' : '▲ Show Debug'}
-            </Text>
-          </TouchableOpacity>
-
-          {showDebug && (
-            <View style={styles.debugPanel}>
-              <Text style={styles.debugTitle}>🔍 Debug Information</Text>
-              
-              <View style={styles.debugRow}>
-                <Text style={styles.debugLabel}>Connection:</Text>
-                <Text style={[styles.debugValue, isConnected ? styles.debugSuccess : styles.debugError]}>
-                  {isConnected ? '✅ Connected' : '❌ Disconnected'}
-                </Text>
-              </View>
-
-              <View style={styles.debugRow}>
-                <Text style={styles.debugLabel}>Button State:</Text>
-                <Text style={[styles.debugValue, (!isConnected || !chargeConfigEnabled) ? styles.debugError : styles.debugSuccess]}>
-                  {!isConnected ? '❌ Not Connected' : !chargeConfigEnabled ? '❌ Config Disabled' : '✅ Enabled'}
-                </Text>
-              </View>
-
-              <View style={styles.debugRow}>
-                <Text style={styles.debugLabel}>enPhCharger Config:</Text>
-                <Text style={[styles.debugValue, chargeConfigEnabled ? styles.debugSuccess : styles.debugError]}>
-                  {chargeConfigEnabled ? '✅ Enabled' : '❌ Disabled'}
-                </Text>
-              </View>
-
-              <View style={styles.debugRow}>
-                <Text style={styles.debugLabel}>USB Connected:</Text>
-                <Text style={[styles.debugValue, usbCharging ? styles.debugSuccess : styles.debugWarning]}>
-                  {usbCharging ? '✅ Yes' : '⚠️ No'}
-                </Text>
-              </View>
-
-              {debugInfo.rawData && typeof debugInfo.rawData.usbCharging === 'boolean' && (
-                <View style={styles.debugRow}>
-                  <Text style={styles.debugLabel}>USB (from device):</Text>
-                  <Text style={[styles.debugValue, debugInfo.rawData.usbCharging ? styles.debugSuccess : styles.debugWarning]}>
-                    {debugInfo.rawData.usbCharging ? '✅ Yes' : '⚠️ No'}
-                  </Text>
-                </View>
-              )}
-
-              {debugInfo.usbStatusHistory && debugInfo.usbStatusHistory.length > 0 && (
-                <View style={styles.debugRow}>
-                  <Text style={styles.debugLabel}>USB History:</Text>
-                  <Text style={styles.debugValueSmall} numberOfLines={2}>
-                    {debugInfo.usbStatusHistory.slice(0, 3).map((entry, idx) => 
-                      `${entry.status ? '✅' : '❌'} ${new Date(entry.timestamp).toLocaleTimeString()}`
-                    ).join(', ')}
-                  </Text>
-                </View>
-              )}
-
-              <View style={styles.debugRow}>
-                <Text style={styles.debugLabel}>USB Info:</Text>
-                <Text style={[styles.debugValue, styles.debugValueSmall]} numberOfLines={3}>
-                  {(() => {
-                    if (debugInfo.rawData && typeof debugInfo.rawData.usbCharging === 'boolean') {
-                      if (!debugInfo.rawData.usbCharging) {
-                        return '⚠️ Device reports USB NOT connected. Check: 1) USB cable physically connected? 2) Cable working? 3) Case USB port working?';
-                      }
-                      return '✅ USB connected (from PowerBankStatus byte 4, bit 1)';
-                    }
-                    return '💡 USB status from PowerBankStatus (byte 4, bit 1 = 0x02)';
-                  })()}
-                </Text>
-              </View>
-
-              <View style={styles.debugRow}>
-                <Text style={styles.debugLabel}>Phone Charging:</Text>
-                <Text style={[styles.debugValue, phoneCharging ? styles.debugSuccess : styles.debugWarning]}>
-                  {phoneCharging ? '✅ Yes' : '⚠️ No'}
-                </Text>
-              </View>
-
-              <View style={styles.debugRow}>
-                <Text style={styles.debugLabel}>Case Battery:</Text>
-                <Text style={styles.debugValue}>
-                  {caseBatteryLevel !== undefined && caseBatteryLevel !== null ? `${caseBatteryLevel}%` : '--%'}
-                </Text>
-              </View>
-
-              <View style={styles.debugRow}>
-                <Text style={styles.debugLabel}>Case Temperature:</Text>
-                <Text style={styles.debugValue}>
-                  {!isNaN(caseTemperature) && caseTemperature !== undefined && caseTemperature !== null 
-                    ? formatTemperature(caseTemperature) 
-                    : '--° C'}
-                </Text>
-              </View>
-
-              <View style={styles.debugRow}>
-                <Text style={styles.debugLabel}>Last Data:</Text>
-                <Text style={styles.debugValue}>
-                  {debugInfo.lastDataTime 
-                    ? new Date(debugInfo.lastDataTime).toLocaleTimeString() 
-                    : 'Never'}
-                </Text>
-              </View>
-
-              <View style={styles.debugRow}>
-                <Text style={styles.debugLabel}>Query Attempts:</Text>
-                <Text style={styles.debugValue}>{debugInfo.queryAttempts}</Text>
-              </View>
-
-              <View style={styles.debugRow}>
-                <Text style={styles.debugLabel}>Data Received:</Text>
-                <Text style={[styles.debugValue, debugInfo.dataReceivedCount > 0 ? styles.debugSuccess : styles.debugWarning]}>
-                  {debugInfo.dataReceivedCount || 0} times
-                </Text>
-              </View>
-
-              <View style={styles.debugRow}>
-                <Text style={styles.debugLabel}>Periodic Query:</Text>
-                <Text style={[styles.debugValue, debugInfo.periodicQueryActive ? styles.debugSuccess : styles.debugError]}>
-                  {debugInfo.periodicQueryActive ? '✅ Active' : '❌ Inactive'}
-                </Text>
-              </View>
-
-              {debugInfo.lastValidBattery !== null && (
-                <View style={styles.debugRow}>
-                  <Text style={styles.debugLabel}>Last Valid Battery:</Text>
-                  <Text style={styles.debugValue}>
-                    {debugInfo.lastValidBattery}%
-                  </Text>
-                </View>
-              )}
-
-              {debugInfo.lastValidTemp !== null && (
-                <View style={styles.debugRow}>
-                  <Text style={styles.debugLabel}>Last Valid Temp:</Text>
-                  <Text style={styles.debugValue}>
-                    {debugInfo.lastValidTemp}°C
-                  </Text>
-                </View>
-              )}
-
-              <View style={styles.debugRow}>
-                <Text style={styles.debugLabel}>Values Status:</Text>
-                <Text style={[styles.debugValue, (caseBatteryLevel > 0 || caseTemperature > 0) ? styles.debugSuccess : styles.debugWarning]}>
-                  {(caseBatteryLevel > 0 || caseTemperature > 0) ? '✅ Showing' : '⚠️ Missing'}
-                </Text>
-              </View>
-
-              <View style={styles.debugRow}>
-                <Text style={styles.debugLabel}>Issue Diagnosis:</Text>
-                <Text style={[styles.debugValue, styles.debugValueSmall]} numberOfLines={3}>
-                  {(() => {
-                    if (!isConnected) return '❌ Not Connected';
-                    if (debugInfo.dataReceivedCount === 0) {
-                      return '⚠️ Case Issue: No data received from device';
-                    }
-                    if (caseBatteryLevel === 0 && caseTemperature === 0 && debugInfo.dataReceivedCount > 0) {
-                      return '⚠️ App Issue: Data received but values not updating';
-                    }
-                    if (!debugInfo.periodicQueryActive) {
-                      return '⚠️ App Issue: Periodic query inactive';
-                    }
-                    return '✅ All Good';
-                  })()}
-                </Text>
-              </View>
-
-              <View style={styles.debugRow}>
-                <Text style={styles.debugLabel}>BLE State:</Text>
-                <Text style={styles.debugValueSmall}>
-                  {BLEManager.isConnected ? 'Connected' : 'Disconnected'} | 
-                  Scanning: {BLEManager.isScanning ? 'Yes' : 'No'} |
-                  Query Active: {debugInfo.periodicQueryActive ? 'Yes' : 'No'}
-                </Text>
-              </View>
-
-              <View style={styles.debugRow}>
-                <Text style={styles.debugLabel}>Notifications:</Text>
-                <Text style={[styles.debugValue, (debugInfo.dataReceivedCount > 0) ? styles.debugSuccess : styles.debugError]}>
-                  {debugInfo.dataReceivedCount > 0 ? '✅ Enabled (data received)' : '❌ Not working (no data)'}
-                </Text>
-              </View>
-
-              {isConnected && debugInfo.dataReceivedCount === 0 && (
-                <View style={styles.debugRow}>
-                  <Text style={styles.debugLabel}>Troubleshooting:</Text>
-                  <Text style={[styles.debugValue, styles.debugValueSmall]} numberOfLines={4}>
-                    1. Check if notifications enabled in native{'\n'}
-                    2. Try disconnect & reconnect{'\n'}
-                    3. Check device logs for onCharacteristicChanged{'\n'}
-                    4. Verify GATT connection is stable
-                  </Text>
-                </View>
-              )}
-
-              {debugInfo.lastError && (
-                <View style={styles.debugRow}>
-                  <Text style={styles.debugLabel}>Last Error:</Text>
-                  <Text style={[styles.debugValue, styles.debugError]} numberOfLines={2}>
-                    {debugInfo.lastError}
-                  </Text>
-                </View>
-              )}
-
-              {debugInfo.rawData && (
-                <View style={styles.debugRow}>
-                  <Text style={styles.debugLabel}>Last Raw Data:</Text>
-                  <Text style={styles.debugValueSmall} numberOfLines={3}>
-                    {(() => {
-                      if (debugInfo.rawDataHex) {
-                        const cmd = debugInfo.rawDataHex.substring(0, 2);
-                        const cmdMap = {
-                          '04': 'PowerBankStatus',
-                          '03': 'ChargerConfig',
-                          '21': 'EnableCharging ACK',
-                          '18': 'StopCharging ACK',
-                          '19': 'Password ACK',
-                        };
-                        const cmdName = cmdMap[cmd] || `Unknown (0x${cmd})`;
-                        return `[${cmdName}] ${debugInfo.rawDataHex.substring(0, 60)}${debugInfo.rawDataHex.length > 60 ? '...' : ''}`;
-                      }
-                      return typeof debugInfo.rawData === 'string' 
-                        ? debugInfo.rawData.substring(0, 80) + '...' 
-                        : JSON.stringify(debugInfo.rawData).substring(0, 80) + '...';
-                    })()}
-                  </Text>
-                </View>
-              )}
-
-              {debugInfo.lastDeviceResponse && (
-                <View style={styles.debugRow}>
-                  <Text style={styles.debugLabel}>Last Response:</Text>
-                  <Text style={styles.debugValueSmall}>
-                    {debugInfo.lastDeviceResponse}
-                  </Text>
-                </View>
-              )}
-            </View>
-          )}
-          */}
 
         </ScrollView>
       </SafeAreaView>
@@ -1723,71 +1751,6 @@ const styles = StyleSheet.create({
     fontSize: 12,
     color: '#646D77',
     fontWeight: '600',
-  },
-  debugToggle: {
-    marginHorizontal: 20,
-    marginTop: 10,
-    padding: 10,
-    backgroundColor: '#F0F0F0',
-    borderRadius: 8,
-    alignItems: 'center',
-  },
-  debugToggleText: {
-    fontSize: 14,
-    fontWeight: '600',
-    color: '#666',
-  },
-  debugPanel: {
-    marginHorizontal: 20,
-    marginTop: 10,
-    marginBottom: 20,
-    padding: 15,
-    backgroundColor: '#F8F8F8',
-    borderRadius: 10,
-    borderWidth: 1,
-    borderColor: '#E0E0E0',
-  },
-  debugTitle: {
-    fontSize: 16,
-    fontWeight: 'bold',
-    color: '#1D2733',
-    marginBottom: 12,
-  },
-  debugRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'flex-start',
-    marginBottom: 8,
-    paddingVertical: 4,
-  },
-  debugLabel: {
-    fontSize: 13,
-    fontWeight: '500',
-    color: '#666',
-    flex: 1,
-  },
-  debugValue: {
-    fontSize: 13,
-    fontWeight: '600',
-    color: '#1D2733',
-    flex: 1,
-    textAlign: 'right',
-  },
-  debugValueSmall: {
-    fontSize: 11,
-    fontWeight: '400',
-    color: '#666',
-    flex: 1,
-    textAlign: 'right',
-  },
-  debugSuccess: {
-    color: '#28A745',
-  },
-  debugError: {
-    color: '#DC3545',
-  },
-  debugWarning: {
-    color: '#FFC107',
   },
 });
 

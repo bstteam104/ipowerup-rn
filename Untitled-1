@@ -1,6 +1,0 @@
-cd /home/ankush/ipowerup/ipowerup-rn/android
-./gradlew clean
-./gradlew assembleRelease
-
-cd /home/ankush/ipowerup/ipowerup-rn/android
-./gradlew assembleRelease
