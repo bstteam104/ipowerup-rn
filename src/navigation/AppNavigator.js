@@ -27,6 +27,7 @@ import TermsAndConditionsScreen from '../screens/TermsAndConditionsScreen';
 import PrivacyPolicyScreen from '../screens/PrivacyPolicyScreen';
 import AppTourScreen from '../screens/AppTourScreen';
 import OptionsScreen from '../screens/OptionsScreen';
+import DebugLogsScreen from '../screens/DebugLogsScreen';
 import TabNavigator from './TabNavigator';
 
 const Stack = createNativeStackNavigator();
@@ -77,6 +78,7 @@ const AppNavigator = () => {
         <Stack.Screen name="AccountSettings" component={AccountSettingsScreen} />
         <Stack.Screen name="AppSettings" component={AppSettingsScreen} />
         <Stack.Screen name="Options" component={OptionsScreen} />
+        <Stack.Screen name="DebugLogs" component={DebugLogsScreen} />
         <Stack.Screen name="Temperature" component={TemperatureScreen} />
         <Stack.Screen name="Language" component={LanguageScreen} />
         <Stack.Screen name="ResetPassword" component={ResetPasswordScreen} />

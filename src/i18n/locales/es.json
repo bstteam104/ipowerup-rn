@@ -272,7 +272,10 @@
     "activityHistory": "Historial",
     "caseToDeviceCharging": "Carga del estuche al dispositivo",
     "last10Days": "Últimos 10 días",
-    "solarUsbToCaseCharging": "Carga solar/USB a la funda"
+    "solarUsbToCaseCharging": "Carga solar/USB a la funda",
+    "chartLocalNote": "Los gráficos usan datos guardados con la app abierta y la funda conectada (solo local, sin API).",
+    "noChartDataYet": "Sin lecturas para estos días. Abre Inicio con la funda conectada para acumular historial.",
+    "solarChartNeedsCase": "El historial solar/USB proviene de la funda por Bluetooth. Conecta la funda para actualizar este gráfico."
   },
   "common": {
     "home": "Hogar",

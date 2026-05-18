@@ -276,7 +276,10 @@
     "activityHistory": "History",
     "caseToDeviceCharging": "Case to Device Charging",
     "last10Days": "Last 10 Days",
-    "solarUsbToCaseCharging": "Solar/USB to Case Charging"
+    "solarUsbToCaseCharging": "Solar/USB to Case Charging",
+    "chartLocalNote": "Charts use data saved while the app was open with your case (local only, no API).",
+    "noChartDataYet": "No readings for these days yet. Open Home with the case connected to collect history.",
+    "solarChartNeedsCase": "Solar/USB history comes from the case over Bluetooth. Connect the case to refresh this chart."
   },
   "common": {
     "home": "Home",

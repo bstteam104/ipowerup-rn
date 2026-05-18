@@ -272,7 +272,10 @@
     "activityHistory": "Historique",
     "caseToDeviceCharging": "Charge boîtier vers appareil",
     "last10Days": "10 derniers jours",
-    "solarUsbToCaseCharging": "Charge solaire/USB vers boîtier"
+    "solarUsbToCaseCharging": "Charge solaire/USB vers boîtier",
+    "chartLocalNote": "Les graphiques utilisent les données enregistrées lorsque l’app était ouverte avec le boîtier (local uniquement, pas d’API).",
+    "noChartDataYet": "Aucune mesure pour ces jours. Ouvrez l’accueil avec le boîtier connecté pour constituer l’historique.",
+    "solarChartNeedsCase": "L’historique solaire/USB provient du boîtier en Bluetooth. Connectez le boîtier pour actualiser ce graphique."
   },
   "common": {
     "home": "Accueil",

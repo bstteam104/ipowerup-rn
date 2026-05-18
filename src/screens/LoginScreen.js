@@ -27,10 +27,11 @@ const LoginScreen = ({navigation}) => {
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
-  const appVersion = useMemo(() => {
-    const version = DeviceInfo.getVersion?.() || '0.0.0';
-    return `v${version}`;
-  }, []);
+  /** Matches native versionName (Android) / MARKETING_VERSION (iOS); bump in build.gradle + Xcode when releasing. */
+  const appVersion = useMemo(
+    () => DeviceInfo.getVersion?.() || '1.2.2',
+    [],
+  );
 
   const isValidEmail = useCallback((email) => {
     const emailRegex = /[A-Z0-9a-z._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,64}/;

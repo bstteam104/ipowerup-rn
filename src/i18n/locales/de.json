@@ -272,7 +272,10 @@
     "activityHistory": "Verlauf",
     "caseToDeviceCharging": "Laden des Geräts über die Hülle",
     "last10Days": "Letzte 10 Tage",
-    "solarUsbToCaseCharging": "Laden der Hülle über Solar/USB"
+    "solarUsbToCaseCharging": "Laden der Hülle über Solar/USB",
+    "chartLocalNote": "Diagramme nutzen lokal gespeicherte Daten, während die App mit der Hülle offen war (keine API).",
+    "noChartDataYet": "Keine Messwerte für diese Tage. Home mit verbundener Hülle öffnen, um Verlauf zu sammeln.",
+    "solarChartNeedsCase": "Solar-/USB-Verlauf kommt von der Hülle per Bluetooth. Hülle verbinden, um dieses Diagramm zu aktualisieren."
   },
   "common": {
     "home": "Heim",

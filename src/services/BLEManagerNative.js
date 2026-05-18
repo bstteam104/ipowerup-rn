@@ -8,6 +8,11 @@ import {
   createQueryChargerConfigCommand,
 } from '../utils/BLECommands';
 import {parsePowerBankStatus, parseChargerConfig} from '../utils/BLEParser';
+import {
+  mergeFetchedHistory,
+  mergeTodayFromStatus08,
+  HISTORY_KEYS,
+} from '../storage/BLEHistoryStorage';
 
 const {BLEManagerNative} = NativeModules;
 // CRITICAL: Check if native module is available
@@ -31,7 +36,9 @@ class BLEManagerNativeService {
     this.queryInterval = null; // Expose for debugging
     this.currentCommand = null;
     this.getPhoneBatteryLevel = null;
-    
+    /** @type {{commandByte: number, resolve: function, reject: function, timer: *}|null} */
+    this._historyWaiter = null;
+
     // Setup event listeners
     this.setupEventListeners();
   }
@@ -104,6 +111,10 @@ class BLEManagerNativeService {
       console.log('🔌 Disconnected - Reason:', reason, 'Status:', status);
       this.isConnected = false;
       this.isConnecting = false;
+      this.hasReceivedData = false;
+      this.lastDataReceivedTime = null;
+      this.currentCommand = null;
+      this.stopPeriodicQuery();
       
       // Store disconnect info for debug logs
       const previousDevice = this.connectedDevice;
@@ -249,6 +260,14 @@ class BLEManagerNativeService {
                   this.delegate.onDeviceResponse('0x18 (STOP_CHARGING_ACK)', rawDataStr, buffer.length);
                 }
                 // Don't update UI from command response - wait for PowerBankStatus query
+              } else if (
+                commandByte === BLE_CONSTANTS.COMMAND_HISTORY_SOLAR_CHARGING ||
+                commandByte === BLE_CONSTANTS.COMMAND_HISTORY_USB_CHARGING ||
+                commandByte === BLE_CONSTANTS.COMMAND_HISTORY_PHONE_CHARGING ||
+                commandByte === BLE_CONSTANTS.COMMAND_TODAY_STATUS
+              ) {
+                console.log('✅ BLE history / today status payload:', commandHex);
+                this._fulfillHistoryWaiter(commandByte, rawDataStr);
               } else {
                 // For other/unknown commands, log them
                 console.log('⚠️ Unknown/unexpected command byte:', commandHex);
@@ -450,6 +469,10 @@ class BLEManagerNativeService {
       this.isConnected = false;
       this.isConnecting = false;
       this.connectedDevice = null;
+      this.hasReceivedData = false;
+      this.lastDataReceivedTime = null;
+      this.currentCommand = null;
+      this.stopPeriodicQuery();
     } catch (error) {
       console.error('❌ Error disconnecting:', error);
       throw error;
@@ -515,6 +538,70 @@ class BLEManagerNativeService {
     console.log('📊 Sending QUERY_CHARGER_CONFIG_STATUS command (0x03)...');
     await this.sendCommand(BLE_CONSTANTS.COMMAND_QUERY_CHARGER_CONFIG);
     console.log('✅ QUERY_CHARGER_CONFIG_STATUS command sent successfully');
+  }
+
+  _fulfillHistoryWaiter(commandByte, rawHex) {
+    const w = this._historyWaiter;
+    if (w && w.commandByte === commandByte) {
+      clearTimeout(w.timer);
+      this._historyWaiter = null;
+      w.resolve({rawHex, commandByte});
+    }
+  }
+
+  /**
+   * Resolves when the next notification whose first byte matches `commandByte` arrives.
+   * Used for iOS-parity history sync (0x05–0x08).
+   */
+  waitForHistoryResponse(commandByte, timeoutMs = 8000) {
+    return new Promise((resolve, reject) => {
+      if (this._historyWaiter) {
+        reject(new Error('Another BLE history response is already being awaited'));
+        return;
+      }
+      const timer = setTimeout(() => {
+        if (this._historyWaiter?.commandByte === commandByte) {
+          this._historyWaiter = null;
+        }
+        reject(new Error(`Timeout waiting for 0x${commandByte.toString(16)}`));
+      }, timeoutMs);
+      this._historyWaiter = {commandByte, resolve, reject, timer};
+    });
+  }
+
+  /**
+   * Pull today + multi-day mWh history from the case (same sequence as iOS HomeVC), merge into AsyncStorage.
+   */
+  async syncBleHistoryFromDevice() {
+    if (!this.isConnected) {
+      throw new Error('Not connected');
+    }
+    const pause = ms => new Promise(r => setTimeout(r, ms));
+    const TMO = 8000;
+    const sendAndWait = async cmd => {
+      const pending = this.waitForHistoryResponse(cmd, TMO);
+      await this.sendCommand(cmd, 0);
+      return pending;
+    };
+    try {
+      const r08 = await sendAndWait(BLE_CONSTANTS.COMMAND_TODAY_STATUS);
+      await mergeTodayFromStatus08(r08.rawHex);
+      await pause(200);
+      const r06 = await sendAndWait(BLE_CONSTANTS.COMMAND_HISTORY_USB_CHARGING);
+      await mergeFetchedHistory(HISTORY_KEYS.usb, r06.rawHex);
+      await pause(200);
+      const r07 = await sendAndWait(BLE_CONSTANTS.COMMAND_HISTORY_PHONE_CHARGING);
+      await mergeFetchedHistory(HISTORY_KEYS.phone, r07.rawHex);
+      await pause(200);
+      const r05 = await sendAndWait(BLE_CONSTANTS.COMMAND_HISTORY_SOLAR_CHARGING);
+      await mergeFetchedHistory(HISTORY_KEYS.solar, r05.rawHex);
+      return true;
+    } finally {
+      if (this._historyWaiter) {
+        clearTimeout(this._historyWaiter.timer);
+        this._historyWaiter = null;
+      }
+    }
   }
   
   getDiscoveredDevices() {
