@@ -29,6 +29,14 @@ function stripAndroidChargingNote(answer) {
   return answer.replace(/\s*(Note|Remarque|Hinweis|Nota)\s*:\s*.+$/is, '').trim();
 }
 
+function fixBrandNames(text) {
+  if (!text || typeof text !== 'string') {
+    return text;
+  }
+  // Replace bare "PowerUp" (not already preceded by 'i') with "iPowerUp"
+  return text.replace(/(?<![iI])PowerUp/g, 'iPowerUp');
+}
+
 const TroubleshootingScreen = ({navigation}) => {
   const {t} = useTranslation();
   const [faqs, setFaqs] = useState([
@@ -84,10 +92,12 @@ const TroubleshootingScreen = ({navigation}) => {
           .filter(faq => !EXTENDED_WARRANTY_TITLE_REGEX.test(faq.question || ''))
           .map(faq => {
             const q = faq.question || '';
-            const answer = /android/i.test(q)
+            let answer = /android/i.test(q)
               ? stripAndroidChargingNote(faq.answer)
               : faq.answer;
-            return {...faq, answer, isExpanded: false};
+            answer = fixBrandNames(answer);
+            const question = fixBrandNames(q);
+            return {...faq, question, answer, isExpanded: false};
           });
         setFaqs(faqsWithExpanded);
       }

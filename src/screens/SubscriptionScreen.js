@@ -99,7 +99,12 @@ const SubscriptionScreen = ({navigation}) => {
               </Text>
               
               <Text style={styles.paragraph}>
-                {t('peaceOfMind.history')}
+                {t('peaceOfMind.historyPrefix', 'Check your battery usage history to understand opportunities for enhanced performance. ')}
+                <Text
+                  style={styles.historyLink}
+                  onPress={() => navigation.navigate('ActivityHistory')}>
+                  {t('peaceOfMind.historyLink', 'View History')}
+                </Text>
               </Text>
               
               <Text style={styles.paragraph}>
@@ -202,6 +207,10 @@ const styles = StyleSheet.create({
     color: Colors.black,
     lineHeight: 20,
     marginBottom: 10,
+  },
+  historyLink: {
+    color: Colors.cyanBlue,
+    fontWeight: '600',
   },
   selectButton: {
     width: '100%',

@@ -666,9 +666,9 @@ const ProfileScreen = ({navigation}) => {
                     isOn={isNotificationEnabled}
                     onColor="#000000"
                     offColor="#E0E0E0"
-                    size="small"
-                    thumbOnStyle={{backgroundColor: '#5CA3CC', width: 22, height: 22, borderRadius: 11}}
-                    thumbOffStyle={{backgroundColor: '#5CA3CC', width: 22, height: 22, borderRadius: 11}}
+                    size="medium"
+                    thumbOnStyle={{backgroundColor: '#5CA3CC'}}
+                    thumbOffStyle={{backgroundColor: '#5CA3CC'}}
                     onToggle={setIsNotificationEnabled}
                   />
                 </View>

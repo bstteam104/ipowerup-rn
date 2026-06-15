@@ -1,185 +1,139 @@
-import React, {useState, useCallback} from 'react';
+import React, {useCallback, useRef, useState} from 'react';
 import {
-  View,
-  Text,
-  StyleSheet,
-  TouchableOpacity,
   Image,
-  StatusBar,
-  ScrollView,
-  SafeAreaView,
   Platform,
-  NativeModules,
-  NativeEventEmitter,
+  SafeAreaView,
+  ScrollView,
+  StatusBar,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
 } from 'react-native';
 import {useFocusEffect} from '@react-navigation/native';
 import {useTranslation} from 'react-i18next';
 import ChartCardView from '../components/ChartCardView';
 import {Colors} from '../constants/Constants';
-import {getHistory} from '../storage/HistoryStorage';
-import {getChartDataFromBleHistory} from '../storage/BLEHistoryStorage';
+import {
+  getBleHistory,
+  getChartDataFromBleHistory,
+  HISTORY_KEYS,
+} from '../storage/BLEHistoryStorage';
 import BLEManager from '../services/BLEManagerNative';
 
 const CHART_HEIGHT = 140;
-const Y_AXIS_LABELS = ['0', '25', '50', '75', '100'];
 
-/** Start of local calendar day (ms) for `d`. */
-const startOfLocalDay = d => {
-  const x = new Date(d);
-  x.setHours(0, 0, 0, 0);
-  return x.getTime();
-};
+const roundToNearest5 = v => Math.round(v / 5) * 5;
 
-/**
- * Build last `dayCount` calendar days from `anchor` (inclusive anchor day = today).
- * Returns oldest → newest so the chart reads left‑to‑right across the week.
- */
-const buildDailyBuckets = (anchorDate, dayCount) => {
-  const anchor = startOfLocalDay(anchorDate);
-  const buckets = [];
-  for (let i = dayCount - 1; i >= 0; i--) {
-    const dayStart = anchor - i * 86400000;
-    buckets.push({
-      dayStart,
-      dayEnd: dayStart + 86400000,
-      label: '',
-    });
+const getCustomValues = entries => {
+  if (!entries || entries.length === 0) {
+    return ['0', '25', '50', '75', '100'];
   }
-  const fmt = new Intl.DateTimeFormat(undefined, {weekday: 'short'});
-  buckets.forEach(b => {
-    b.label = fmt.format(new Date(b.dayStart)).charAt(0);
-  });
-  return buckets;
+  const values = entries.map(e => e.hexPairValue || 0);
+  const highest = roundToNearest5(Math.max(...values, 0));
+  if (highest === 0) {
+    return ['0', '25', '50', '75', '100'];
+  }
+  return [
+    String(0),
+    String(roundToNearest5(highest / 4)),
+    String(roundToNearest5(highest / 2)),
+    String(roundToNearest5((highest * 3) / 4)),
+    String(highest),
+  ];
 };
 
-/** Ten zero bars + day labels when there is no live case data to show. */
-const emptyChartSeries = () => {
-  const buckets = buildDailyBuckets(new Date(), 10);
-  const dayLabels = buckets.map(b => b.label);
-  const bars = buckets.map(() => ({wallOutlet: 0, unoCase: 0}));
-  return {dayLabels, bars};
+const getChart2Labels = (solarEntries, usbEntries) => {
+  const maxSolar = Math.max(...(solarEntries.map(e => e.mWhValue || 0)), 0);
+  const maxUsb = Math.max(...(usbEntries.map(e => e.mWhValue || 0)), 0);
+  return maxSolar > maxUsb
+    ? getCustomValues(solarEntries)
+    : getCustomValues(usbEntries);
 };
 
 const ActivityHistoryScreen = ({navigation}) => {
   const {t} = useTranslation();
+
   const [caseData, setCaseData] = useState([]);
   const [phoneData, setPhoneData] = useState([]);
   const [dayLabels, setDayLabels] = useState([]);
-  const [hasAnySnapshots, setHasAnySnapshots] = useState(false);
+  const [chart1Labels, setChart1Labels] = useState(['0', '25', '50', '75', '100']);
+  const [chart2Labels, setChart2Labels] = useState(['0', '25', '50', '75', '100']);
+  const [hasData, setHasData] = useState(false);
   const [bleConnected, setBleConnected] = useState(() => !!BLEManager.isConnected);
 
-  const loadChartData = useCallback(async () => {
-    const connected = !!BLEManager.isConnected;
-    setBleConnected(connected);
+  const reloadTimer = useRef(null);
 
-    if (!connected) {
-      const {dayLabels: labels, bars} = emptyChartSeries();
-      setDayLabels(labels);
-      setCaseData(bars);
-      setPhoneData(bars);
-      setHasAnySnapshots(false);
-      return;
-    }
+  const applyStoredData = useCallback(async () => {
+    const [phoneEntries, solarEntries, usbEntries] = await Promise.all([
+      getBleHistory(HISTORY_KEYS.phone),
+      getBleHistory(HISTORY_KEYS.solar),
+      getBleHistory(HISTORY_KEYS.usb),
+    ]);
 
-    try {
-      await BLEManager.syncBleHistoryFromDevice();
-    } catch (e) {
-      console.warn('BLE history sync:', e?.message || e);
-    }
+    setChart1Labels(getCustomValues(phoneEntries));
+    setChart2Labels(getChart2Labels(solarEntries, usbEntries));
 
     const bleCharts = await getChartDataFromBleHistory(10);
     if (bleCharts.hasBleData && bleCharts.caseData.length > 0) {
       setDayLabels(bleCharts.dayLabels);
       setCaseData(bleCharts.caseData);
       setPhoneData(bleCharts.phoneData);
-      setHasAnySnapshots(true);
-      return;
+      setHasData(true);
+    } else {
+      setHasData(false);
+      setCaseData([]);
+      setPhoneData([]);
+      setDayLabels([]);
     }
-
-    const raw = await getHistory();
-    const entries = Array.isArray(raw) ? raw : [];
-
-    const buckets = buildDailyBuckets(new Date(), 10);
-
-    const daily = buckets.map(b => {
-      const slice = entries.filter(
-        e =>
-          typeof e.timestamp === 'number' &&
-          e.timestamp >= b.dayStart &&
-          e.timestamp < b.dayEnd,
-      );
-      if (slice.length === 0) {
-        return {
-          label: b.label,
-          avgCaseBat: 0,
-          avgSolarMa: 0,
-          phoneChargingRatio: 0,
-          count: 0,
-        };
-      }
-      let sumCase = 0;
-      let sumSolar = 0;
-      let chargeHits = 0;
-      for (const e of slice) {
-        sumCase += Number(e.caseBattery) || 0;
-        sumSolar += Number(e.solarCurrent) || 0;
-        if (e.phoneCharging === true) {
-          chargeHits += 1;
-        }
-      }
-      const n = slice.length;
-      return {
-        label: b.label,
-        avgCaseBat: sumCase / n,
-        avgSolarMa: sumSolar / n,
-        phoneChargingRatio: chargeHits / n,
-        count: n,
-      };
-    });
-
-    const any = daily.some(d => d.count > 0);
-    setHasAnySnapshots(any);
-
-    const maxCase = Math.max(...daily.map(d => d.avgCaseBat), 0);
-    const maxSolar = Math.max(...daily.map(d => d.avgSolarMa), 0);
-    const maxCharge = Math.max(...daily.map(d => d.phoneChargingRatio), 0);
-
-    const norm = (val, maxVal) => {
-      if (maxVal <= 0) {
-        return 0;
-      }
-      return Math.min(1, Math.max(0, val / maxVal));
-    };
-
-    const caseBars = daily.map(d => {
-      const v = norm(d.avgCaseBat, maxCase || 1);
-      return {wallOutlet: v, unoCase: v};
-    });
-
-    const phoneBars = daily.map(d => ({
-      wallOutlet: norm(d.avgSolarMa, maxSolar || 1),
-      unoCase: norm(d.phoneChargingRatio, maxCharge || 1),
-    }));
-
-    setDayLabels(daily.map(d => d.label));
-    setCaseData(caseBars);
-    setPhoneData(phoneBars);
   }, []);
+
+  const loadChartData = useCallback(async () => {
+    const connected = !!BLEManager.isConnected;
+    setBleConnected(connected);
+
+    // Show stored data immediately
+    await applyStoredData();
+
+    // Sync with device silently in background, then refresh
+    if (connected) {
+      BLEManager.syncBleHistoryFromDevice()
+        .then(applyStoredData)
+        .catch(e => console.warn('BLE history sync:', e?.message || e));
+    }
+  }, [applyStoredData]);
+
+  const scheduleReload = useCallback(() => {
+    if (reloadTimer.current) {
+      clearTimeout(reloadTimer.current);
+    }
+    reloadTimer.current = setTimeout(() => applyStoredData(), 500);
+  }, [applyStoredData]);
 
   useFocusEffect(
     useCallback(() => {
+      BLEManager.setDelegate({
+        onDataReceived: () => scheduleReload(),
+        onConnected: () => {
+          setBleConnected(true);
+          loadChartData();
+        },
+        onDisconnected: () => {
+          setBleConnected(false);
+          applyStoredData();
+        },
+        onConnectionFailed: () => {},
+        onDeviceDiscovered: () => {},
+      });
+
       loadChartData();
-      const {BLEManagerNative} = NativeModules;
-      if (!BLEManagerNative) {
-        return undefined;
-      }
-      const emitter = new NativeEventEmitter(BLEManagerNative);
-      const subs = [
-        emitter.addListener('onConnected', () => loadChartData()),
-        emitter.addListener('onDisconnected', () => loadChartData()),
-      ];
-      return () => subs.forEach(s => s.remove());
-    }, [loadChartData]),
+
+      return () => {
+        if (reloadTimer.current) {
+          clearTimeout(reloadTimer.current);
+        }
+      };
+    }, [loadChartData, scheduleReload, applyStoredData]),
   );
 
   return (
@@ -188,14 +142,14 @@ const ActivityHistoryScreen = ({navigation}) => {
 
       <Image
         source={require('../../assets/images/background.png')}
-        style={styles.backgroundImage}
+        style={styles.bgImage}
         resizeMode="cover"
       />
 
       <SafeAreaView style={styles.safeArea}>
         <View style={styles.header}>
           <TouchableOpacity
-            style={styles.backButton}
+            style={styles.backBtn}
             onPress={() => navigation.goBack()}
             activeOpacity={0.7}>
             <Image
@@ -209,23 +163,26 @@ const ActivityHistoryScreen = ({navigation}) => {
         </View>
 
         <ScrollView
-          style={styles.scrollView}
           contentContainerStyle={styles.scrollContent}
           showsVerticalScrollIndicator={false}>
-          {!bleConnected ? (
-            <Text style={styles.disconnectedBanner}>{t('history.noDeviceConnected')}</Text>
-          ) : null}
-          {bleConnected && !hasAnySnapshots ? (
-            <Text style={styles.emptyHint}>{t('history.noChartDataYet')}</Text>
-          ) : null}
 
-          <View style={styles.chartWrapper}>
+          {!bleConnected && (
+            <View style={styles.bannerBox}>
+              <Text style={styles.bannerText}>{t('history.noDeviceConnected')}</Text>
+            </View>
+          )}
+
+          {bleConnected && !hasData && (
+            <Text style={styles.emptyHint}>{t('history.noChartDataYet')}</Text>
+          )}
+
+          <View style={styles.chartCard}>
             <ChartCardView
               title={t('history.caseToDeviceCharging')}
               subtitle={t('history.last10Days')}
               wallOutletColor="rgba(0, 204, 230, 1)"
               unoCaseColor="transparent"
-              percentageLabels={Y_AXIS_LABELS}
+              percentageLabels={chart1Labels}
               chartHeight={CHART_HEIGHT}
               data={caseData}
               dayLabels={dayLabels}
@@ -233,13 +190,13 @@ const ActivityHistoryScreen = ({navigation}) => {
             />
           </View>
 
-          <View style={styles.chartWrapper}>
+          <View style={styles.chartCard}>
             <ChartCardView
               title={t('history.solarUsbToCaseCharging')}
-              subtitle={t('history.last10Days')}
+              subtitle=""
               wallOutletColor={Colors.progressYellow}
               unoCaseColor="rgba(0, 128, 255, 1)"
-              percentageLabels={Y_AXIS_LABELS}
+              percentageLabels={chart2Labels}
               chartHeight={CHART_HEIGHT}
               data={phoneData}
               dayLabels={dayLabels}
@@ -259,7 +216,7 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: 'rgba(173, 217, 230, 1)',
   },
-  backgroundImage: {
+  bgImage: {
     position: 'absolute',
     top: 0,
     left: 0,
@@ -280,7 +237,7 @@ const styles = StyleSheet.create({
     paddingTop: Platform.OS === 'android' ? 50 : 10,
     paddingBottom: 30,
   },
-  backButton: {
+  backBtn: {
     width: 24,
     height: 24,
     justifyContent: 'center',
@@ -301,13 +258,23 @@ const styles = StyleSheet.create({
   placeholder: {
     width: 24,
   },
-  scrollView: {
-    flex: 1,
-  },
   scrollContent: {
-    paddingTop: 10,
-    paddingBottom: 40,
     paddingHorizontal: 20,
+    paddingBottom: 40,
+  },
+  bannerBox: {
+    backgroundColor: 'rgba(255,255,255,0.92)',
+    borderRadius: 10,
+    borderWidth: 1,
+    borderColor: 'rgba(176,0,32,0.25)',
+    paddingVertical: 10,
+    paddingHorizontal: 12,
+    marginBottom: 12,
+  },
+  bannerText: {
+    fontSize: 14,
+    color: '#B00020',
+    fontWeight: '600',
   },
   emptyHint: {
     fontSize: 13,
@@ -315,19 +282,7 @@ const styles = StyleSheet.create({
     marginBottom: 12,
     fontWeight: '600',
   },
-  disconnectedBanner: {
-    fontSize: 14,
-    color: '#B00020',
-    marginBottom: 12,
-    fontWeight: '600',
-    paddingVertical: 10,
-    paddingHorizontal: 12,
-    backgroundColor: 'rgba(255,255,255,0.92)',
-    borderRadius: 10,
-    borderWidth: 1,
-    borderColor: 'rgba(176,0,32,0.25)',
-  },
-  chartWrapper: {
+  chartCard: {
     marginBottom: 20,
     backgroundColor: '#FFFFFF',
     borderRadius: 14,

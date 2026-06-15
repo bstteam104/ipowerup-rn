@@ -138,29 +138,29 @@ export const getChartDataFromBleHistory = async (targetDays = 10) => {
   const phoneData = [];
   const dayLabels = [];
 
+  // iOS: dayCount = 9, decrement each iteration (same as Swift getChartData)
+  let dayCount = targetDays - 1;
   for (let i = 0; i < len; i++) {
     const ph = phoneCharging[i];
     const usb = usbCharging[i];
     const sol = usbSolar[i];
     caseData.push({wallOutlet: ph, unoCase: ph});
     phoneData.push({wallOutlet: sol, unoCase: usb});
-    const dayOffset = len - i;
-    const date = Date.now() - dayOffset * 86400000;
-    dayLabels.push(weekdayLetter(date));
+    dayLabels.push(weekdayLetter(Date.now() - dayCount * 86400000));
+    dayCount--;
   }
 
+  // iOS rotates data only — labels stay sequential
   if (caseData.length > 0) {
     const c0 = caseData.shift();
     caseData.push(c0);
     const p0 = phoneData.shift();
     phoneData.push(p0);
-    const d0 = dayLabels.shift();
-    dayLabels.push(d0);
   }
 
   while (caseData.length < targetDays) {
     const padIdx = targetDays - caseData.length;
-    const date = Date.now() - (len + padIdx) * 86400000;
+    const date = Date.now() - (targetDays - 1 + padIdx) * 86400000;
     caseData.unshift({wallOutlet: 0, unoCase: 0});
     phoneData.unshift({wallOutlet: 0, unoCase: 0});
     dayLabels.unshift(weekdayLetter(date));

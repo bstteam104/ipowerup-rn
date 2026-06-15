@@ -29,7 +29,7 @@ const LoginScreen = ({navigation}) => {
   const [isLoading, setIsLoading] = useState(false);
   /** Matches native versionName (Android) / MARKETING_VERSION (iOS); bump in build.gradle + Xcode when releasing. */
   const appVersion = useMemo(
-    () => DeviceInfo.getVersion?.() || '1.2.2',
+    () => DeviceInfo.getVersion?.() || '1.2.3',
     [],
   );
 

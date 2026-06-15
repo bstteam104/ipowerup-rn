@@ -21,7 +21,7 @@ import PermissionModal from '../components/PermissionModal';
 
 const TOUR_SECTION_KEYS = ['feature1', 'feature2', 'feature3', 'feature4', 'feature5', 'feature6'];
 const TOUR_IMAGES = {
-  feature1: require('../../assets/tour/mobile scree-backgroundremove.png'),
+  feature1: require('../../assets/tour/App_Tour_FirstScreen-new.png'),
   feature3: require('../../assets/tour/Remote_Charging.png'),
   feature5: require('../../assets/tour/multi_charging.png'),
   feature6: require('../../assets/tour/Usage_History.png'),

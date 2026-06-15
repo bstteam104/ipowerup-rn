@@ -138,113 +138,63 @@ const PermissionModal = ({
           {/* Content */}
           <View style={styles.content}>
             <Text style={styles.question}>{getTitle()}</Text>
-            
             <Text style={styles.description}>{getDescription()}</Text>
 
-            {/* Map Background with Device Icons */}
-            <View style={styles.mapContainer}>
-              {/* Map-like background (light gray with grid pattern) */}
-              <View style={styles.mapBackground}>
-                {/* Central Bluetooth Icon with Pulse */}
-                <View style={styles.centerIconContainer}>
-                  <Animated.View
-                    style={[
-                      styles.pulseCircle,
-                      {
-                        transform: [{scale: pulseAnim}],
-                      },
-                    ]}
-                  />
-                  <View style={styles.bluetoothIconContainer}>
-                    <Text style={styles.bluetoothSymbol}>📶</Text>
+            {/* Scanning modal — show map + device count */}
+            {!showStaticDevices && (
+              <>
+                <View style={styles.mapContainer}>
+                  <View style={styles.mapBackground}>
+                    <View style={styles.centerIconContainer}>
+                      <Animated.View style={[styles.pulseCircle, {transform: [{scale: pulseAnim}]}]} />
+                      <View style={styles.bluetoothIconContainer}>
+                        <Text style={styles.bluetoothSymbol}>📶</Text>
+                      </View>
+                    </View>
+                    {hasPermissionGranted && iPowerUpDevice && iPowerUpDevice.name && (
+                      <TouchableOpacity
+                        activeOpacity={0.8}
+                        style={[styles.deviceIcon, styles.iPowerUpDevice]}
+                        onPress={() => {
+                          try {
+                            setClickError(null);
+                            if (onDevicePress && iPowerUpDevice) {
+                              onDevicePress({
+                                id: iPowerUpDevice.id,
+                                name: iPowerUpDevice.name,
+                                rssi: iPowerUpDevice.rssi,
+                              });
+                            }
+                          } catch (error) {
+                            setClickError(error?.message || 'Failed to connect to device');
+                          }
+                        }}>
+                        <View style={[styles.deviceBadge, styles.iPowerUpBadge]}>
+                          <Text style={[styles.deviceIconText, styles.iPowerUpBadgeText]}>
+                            {iPowerUpDevice.name.substring(0, 2).toUpperCase()}
+                          </Text>
+                        </View>
+                        <Text style={styles.deviceLabel} numberOfLines={1}>
+                          {iPowerUpDevice.name.length > 15
+                            ? iPowerUpDevice.name.substring(0, 15) + '...'
+                            : iPowerUpDevice.name}
+                        </Text>
+                      </TouchableOpacity>
+                    )}
                   </View>
                 </View>
-
-                {/* iPowerUp Device - Top Center (if found - only after permission) */}
-                {hasPermissionGranted && iPowerUpDevice && iPowerUpDevice.name && (
-                  <TouchableOpacity
-                    activeOpacity={0.8}
-                    style={[styles.deviceIcon, styles.iPowerUpDevice]}
-                    onPress={() => {
-                      try {
-                        console.log('📱 Device clicked:', iPowerUpDevice);
-                        setClickError(null);
-                        if (onDevicePress && iPowerUpDevice) {
-                          // Ensure we pass the correct format
-                          const deviceMeta = {
-                            id: iPowerUpDevice.id,
-                            name: iPowerUpDevice.name,
-                            rssi: iPowerUpDevice.rssi,
-                          };
-                          console.log('📤 Calling onDevicePress with:', deviceMeta);
-                          onDevicePress(deviceMeta);
-                        } else {
-                          console.error('❌ onDevicePress not available or device invalid');
-                          setClickError('Device handler not available');
-                        }
-                      } catch (error) {
-                        console.error('❌ Error in device click:', error);
-                        console.error('Error details:', {
-                          message: error?.message,
-                          stack: error?.stack,
-                          name: error?.name,
-                        });
-                        const errorMsg = error?.message || error?.toString() || 'Failed to connect to device';
-                        setClickError(errorMsg);
-                        
-                        // Also update connection status if delegate is available
-                        // This will be handled by the parent component's error handler
-                      }
-                    }}
-                  >
-                    <View style={[styles.deviceBadge, styles.iPowerUpBadge]}>
-                      <Text style={[styles.deviceIconText, styles.iPowerUpBadgeText]}>
-                        {iPowerUpDevice.name.substring(0, 2).toUpperCase()}
-                      </Text>
-                    </View>
-                    <Text style={styles.deviceLabel} numberOfLines={1}>
-                      {iPowerUpDevice.name.length > 15 
-                        ? iPowerUpDevice.name.substring(0, 15) + '...'
-                        : iPowerUpDevice.name}
-                    </Text>
-                  </TouchableOpacity>
-                )}
-
-                {/* No other devices shown - only iPowerUp Uno */}
-
-                {/* Static Placeholder Devices - Only show if showStaticDevices is true (First Modal) */}
-                {showStaticDevices && staticDevices.map((device, index) => {
-                  const positions = [styles.device1, styles.device2, styles.device3];
-                  const positionStyle = positions[index] || styles.device1;
-                  
-                  console.log('📱 Rendering static device:', device.name, 'at position', index);
-                  
-                  return (
-                    <View key={`static-${index}`} style={[styles.deviceIcon, positionStyle]}>
-                      <View style={styles.deviceBadge}>
-                        <Text style={styles.deviceIconText}>{device.initials}</Text>
-                      </View>
-                      <Text style={styles.deviceLabel} numberOfLines={1}>
-                        {device.name}
-                      </Text>
-                    </View>
-                  );
-                })}
-              </View>
-            </View>
-
-            {/* Device Count - Real-time */}
-            <Text style={styles.deviceCountText}>
-              {displayCount === 1
-                ? t('permissions.deviceFoundSingular', {deviceCount: displayCount})
-                : t('permissions.devicesFoundPlural', {deviceCount: displayCount})}
-            </Text>
-
-
-            {/* Additional Info */}
-            <Text style={styles.infoText}>
-              {t('permissions.bluetoothPrivacyInfo')}
-            </Text>
+                <Text style={styles.deviceCountText}>
+                  {displayCount === 0
+                    ? t('permissions.searchingDevices', 'Searching for devices...')
+                    : displayCount === 1
+                    ? t('permissions.deviceFoundSingular')
+                    : t('permissions.devicesFoundPlural', {deviceCount: displayCount})}
+                </Text>
+                <Text style={styles.infoText}>
+                  {t('permissions.bluetoothPrivacyInfo')}
+                </Text>
+              </>
+            )}
           </View>
 
           {/* Buttons - Only show on first modal (static UI) */}
@@ -268,13 +218,12 @@ const PermissionModal = ({
             </View>
           )}
           
-          {/* Close button - show on second modal (scanning) */}
+          {/* Second modal — Close button only */}
           {!showStaticDevices && (
             <TouchableOpacity
               style={styles.closeButton}
               onPress={onDontAllow}
-              activeOpacity={0.7}
-            >
+              activeOpacity={0.7}>
               <Text style={styles.closeButtonText}>{t('common.close', 'Close')}</Text>
             </TouchableOpacity>
           )}

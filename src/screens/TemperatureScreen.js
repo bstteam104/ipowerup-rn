@@ -33,11 +33,18 @@ const TemperatureScreen = ({navigation}) => {
 
   const loadTemperatureSetting = async () => {
     try {
-      const userData = await AsyncStorage.getItem('loggedInUser');
-      if (userData) {
-        const user = JSON.parse(userData);
-        const savedTemp = user.tempreture || 'fahrenheit';
-        setTempValue(savedTemp === 'celsius' ? 'celsius' : 'fahrenheit');
+      const saved = await AsyncStorage.getItem('@ipowerup:temperature_unit');
+      if (saved) {
+        setTempValue(saved === 'celsius' ? 'celsius' : 'fahrenheit');
+      } else {
+        // fallback: check old location
+        const userData = await AsyncStorage.getItem('loggedInUser');
+        if (userData) {
+          const user = JSON.parse(userData);
+          if (user.tempreture) {
+            setTempValue(user.tempreture === 'celsius' ? 'celsius' : 'fahrenheit');
+          }
+        }
       }
     } catch (error) {
       console.error('Error loading temperature setting:', error);
@@ -73,10 +80,11 @@ const TemperatureScreen = ({navigation}) => {
         userObj = JSON.parse(userData);
       }
       
-      // Update temperature setting in user object
+      // Save to dedicated key — survives login refreshes
+      await AsyncStorage.setItem('@ipowerup:temperature_unit', finalValue);
+
+      // Also update user object for backward compat
       userObj.tempreture = finalValue;
-      
-      // Save updated user object to AsyncStorage
       await AsyncStorage.setItem('loggedInUser', JSON.stringify(userObj));
       
       console.log('✅ Temperature setting saved to AsyncStorage:', finalValue);

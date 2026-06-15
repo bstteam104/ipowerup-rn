@@ -4,7 +4,9 @@ import {
   Text,
   StyleSheet,
   Image,
+  Animated,
   TouchableOpacity,
+  PanResponder,
   StatusBar,
   Dimensions,
   SafeAreaView,
@@ -22,6 +24,7 @@ import {BLE_CONSTANTS} from '../constants/BLEConstants';
 import {saveHistoryEntry} from '../storage/HistoryStorage';
 import PermissionModal from '../components/PermissionModal';
 import {showErrorToast, showInfoToast} from '../utils/toastHelper';
+import NotificationService from '../services/NotificationService';
 const {width, height} = Dimensions.get('window');
 
 // iOS HomeVC: after `queryChargerConfigStatus`, interaction is applied after ~2.5s.
@@ -79,10 +82,11 @@ const HomeScreen = ({navigation, route}) => {
   const [caseTemperature, setCaseTemperature] = useState(0);
   const [caseDeviceName, setCaseDeviceName] = useState('');
   const [caseMacLast4, setCaseMacLast4] = useState('');
-  const [temperatureUnit, setTemperatureUnit] = useState('celsius');
+  const [temperatureUnit, setTemperatureUnit] = useState('fahrenheit');
   const [isCharging, setIsCharging] = useState(false);
   const [isConnected, setIsConnected] = useState(false);
   const [hasBluetoothPermission, setHasBluetoothPermission] = useState(false);
+  const [showPermissionModal, setShowPermissionModal] = useState(false); // First modal — "Allow/Don't Allow" Bluetooth
   const [showScanningModal, setShowScanningModal] = useState(false); // Scanning modal after permission
   const [allDiscoveredDevices, setAllDiscoveredDevices] = useState([]); // Devices for scanning modal
   const [chargeConfigEnabled, setChargeConfigEnabled] = useState(false); // Phone charging enabled in config
@@ -93,7 +97,10 @@ const HomeScreen = ({navigation, route}) => {
   const [chargingCommandPending, setChargingCommandPending] = useState(false);
   const [phoneCharging, setPhoneCharging] = useState(false); // Actual phone charging status from PowerBankStatus
   const [usbCharging, setUsbCharging] = useState(false); // USB charging status from PowerBankStatus
+  const [bellIsRed, setBellIsRed] = useState(false);
   const batteryIntervalRef = useRef(null);
+  const lastBatteryAlertLevelRef = useRef(null);
+  const bleHistorySyncedRef = useRef(false);
   // Security alert flags (temp only — battery uses AsyncStorage thresholds like iOS)
   const [alertFlags, setAlertFlags] = useState({
     tcBelowMinShown: false,
@@ -150,6 +157,8 @@ const HomeScreen = ({navigation, route}) => {
     cancelChargingActionTimers();
     chargerConfigUiDelayCompletedRef.current = false;
     lastChargerConfigModeKeyRef.current = null;
+    lastBatteryAlertLevelRef.current = null;
+    bleHistorySyncedRef.current = false;
     setTransferButtonUiReady(false);
     setChargingCommandPending(false);
     setCaseBatteryLevel(0);
@@ -160,6 +169,7 @@ const HomeScreen = ({navigation, route}) => {
     setChargeConfigEnabled(false);
     setIsChargeConfigKnown(false);
     setCaseMacLast4('');
+    setBellIsRed(false);
   }, [cancelChargerConfigUiDelayTimer, cancelChargingActionTimers]);
 
   /** Last 4 hex digits of case MAC; works on reconnect when delegate missed onConnected. */
@@ -288,6 +298,56 @@ const HomeScreen = ({navigation, route}) => {
     [t],
   );
 
+  const BATTERY_ALERT_LEVELS = new Set([1, 5, 10, 20, 80, 90, 95, 100]);
+
+  const showBatteryLevelToastIfNeeded = useCallback((caseBatPct) => {
+    if (!BATTERY_ALERT_LEVELS.has(caseBatPct)) return;
+    if (lastBatteryAlertLevelRef.current === caseBatPct) return;
+    lastBatteryAlertLevelRef.current = caseBatPct;
+
+    let title = '', body = '', isCritical = false;
+    if (caseBatPct === 1 || caseBatPct === 5) {
+      title = 'Critical Battery Level';
+      body = `Case battery is critically low at ${caseBatPct}%. Please charge immediately.`;
+      isCritical = true;
+    } else if (caseBatPct === 10) {
+      title = 'Low Battery';
+      body = `Case battery is low at ${caseBatPct}%. Consider charging soon.`;
+      isCritical = true;
+    } else if (caseBatPct === 20) {
+      title = 'Battery Level Alert';
+      body = `Case battery is at ${caseBatPct}%.`;
+    } else if (caseBatPct === 80) {
+      title = 'Battery Level Good';
+      body = `Case battery is at ${caseBatPct}%.`;
+    } else if (caseBatPct === 90) {
+      title = 'Battery Almost Full';
+      body = `Case battery is almost full at ${caseBatPct}%.`;
+    } else if (caseBatPct === 95) {
+      title = 'Battery Full';
+      body = `Case battery is nearly full at ${caseBatPct}%.`;
+    } else if (caseBatPct === 100) {
+      title = 'Battery Fully Charged';
+      body = 'Case battery is fully charged at 100%.';
+    }
+    if (!title) return;
+
+    if (isCritical) {
+      showErrorToast(title, 6000, body);
+    } else {
+      showInfoToast(title, 5500, body);
+    }
+    NotificationService.sendBatteryNotification(title, body, isCritical);
+  }, []);
+
+  const updateBellIcon = useCallback((caseBatPct) => {
+    if (!isConnected || caseBatPct === 0) {
+      setBellIsRed(false);
+      return;
+    }
+    setBellIsRed(caseBatPct < 20 || caseBatPct > 80);
+  }, [isConnected]);
+
   const beginChargingActionWait = useCallback(
     expectedPhoneCharging => {
       cancelChargingActionTimers();
@@ -356,32 +416,25 @@ const HomeScreen = ({navigation, route}) => {
       if (Platform.OS === 'android') {
         const androidVersion = Platform.Version;
         if (androidVersion >= 31) {
-          // Android 12+ (API 31+) - Check permissions first
+          // Android 12+ — only BLE scan + connect needed, no location
           const scanCheck = await PermissionsAndroid.check(PermissionsAndroid.PERMISSIONS.BLUETOOTH_SCAN);
           const connectCheck = await PermissionsAndroid.check(PermissionsAndroid.PERMISSIONS.BLUETOOTH_CONNECT);
-          const locationCheck = await PermissionsAndroid.check(PermissionsAndroid.PERMISSIONS.ACCESS_FINE_LOCATION);
-          
-          if (scanCheck && connectCheck && locationCheck) {
+          if (scanCheck && connectCheck) {
             setHasBluetoothPermission(true);
             return true;
-          } else {
-            // Permission not granted - show modal
-            return false;
           }
+          return false;
         } else {
-          // Android 11 and below - Check location permission
-          const locationCheck = await PermissionsAndroid.check(PermissionsAndroid.PERMISSIONS.ACCESS_FINE_LOCATION);
-          
-          if (locationCheck) {
+          // Android 11 and below — BLE scan is sufficient, no location required
+          const scanCheck = await PermissionsAndroid.check(PermissionsAndroid.PERMISSIONS.BLUETOOTH_SCAN);
+          if (scanCheck) {
             setHasBluetoothPermission(true);
             return true;
-          } else {
-            // Permission not granted - show modal
-            return false;
           }
+          return false;
         }
       } else {
-        // Permissions are handled automatically via Info.plist
+        // iOS — handled via Info.plist, no runtime request needed
         setHasBluetoothPermission(true);
         return true;
       }
@@ -391,29 +444,23 @@ const HomeScreen = ({navigation, route}) => {
     }
   };
 
-  // Request Bluetooth permissions directly
+  // Request Bluetooth permissions (no location)
   const requestBluetoothPermissions = async () => {
     try {
       if (Platform.OS === 'android') {
         const androidVersion = Platform.Version;
         if (androidVersion >= 31) {
-          // Android 12+ (API 31+) - Direct native permission request
+          // Android 12+ — request only BLE permissions, no location
           const granted = await PermissionsAndroid.requestMultiple([
             PermissionsAndroid.PERMISSIONS.BLUETOOTH_SCAN,
             PermissionsAndroid.PERMISSIONS.BLUETOOTH_CONNECT,
-            PermissionsAndroid.PERMISSIONS.ACCESS_FINE_LOCATION,
           ]);
-          
-          const allGranted = 
+          const allGranted =
             granted[PermissionsAndroid.PERMISSIONS.BLUETOOTH_SCAN] === PermissionsAndroid.RESULTS.GRANTED &&
-            granted[PermissionsAndroid.PERMISSIONS.BLUETOOTH_CONNECT] === PermissionsAndroid.RESULTS.GRANTED &&
-            granted[PermissionsAndroid.PERMISSIONS.ACCESS_FINE_LOCATION] === PermissionsAndroid.RESULTS.GRANTED;
-          
+            granted[PermissionsAndroid.PERMISSIONS.BLUETOOTH_CONNECT] === PermissionsAndroid.RESULTS.GRANTED;
           if (allGranted) {
             setHasBluetoothPermission(true);
-            // Show scanning modal after permission granted
             setShowScanningModal(true);
-            // Check and enable Bluetooth, then setup BLE
             checkAndEnableBluetooth().then(() => {
               setupBLEManager();
             }).catch(() => {
@@ -421,21 +468,18 @@ const HomeScreen = ({navigation, route}) => {
             });
           } else {
             showErrorToast(
-              'Bluetooth permission required. Open system Settings to enable Bluetooth and Location.',
+              'Bluetooth permission required. Open system Settings to enable Bluetooth.',
               5000,
             );
           }
         } else {
-          // Android 11 and below - Direct native permission request
+          // Android 11 and below — request only BLE scan, no location
           const granted = await PermissionsAndroid.request(
-            PermissionsAndroid.PERMISSIONS.ACCESS_FINE_LOCATION
+            PermissionsAndroid.PERMISSIONS.BLUETOOTH_SCAN,
           );
-          
           if (granted === PermissionsAndroid.RESULTS.GRANTED) {
             setHasBluetoothPermission(true);
-            // Show scanning modal after permission granted
             setShowScanningModal(true);
-            // Check and enable Bluetooth, then setup BLE
             checkAndEnableBluetooth().then(() => {
               setupBLEManager();
             }).catch(() => {
@@ -443,15 +487,14 @@ const HomeScreen = ({navigation, route}) => {
             });
           } else {
             showErrorToast(
-              'Location permission required for Bluetooth. Open system Settings to enable it.',
+              'Bluetooth permission required. Open system Settings to enable it.',
               5000,
             );
           }
         }
       } else {
-        // Permissions handled automatically by system
+        // iOS — permissions handled by system
         setHasBluetoothPermission(true);
-        // Show scanning modal after permission granted
         setShowScanningModal(true);
         checkAndEnableBluetooth().then(() => {
           setupBLEManager();
@@ -489,7 +532,10 @@ const HomeScreen = ({navigation, route}) => {
   useEffect(() => {
     // Load user data
     loadUserData();
-    
+
+    // Request push notification permission on mount (regardless of allow/deny)
+    NotificationService.requestPermission();
+
     // Get initial phone battery
     getPhoneBatteryLevel();
     
@@ -505,16 +551,14 @@ const HomeScreen = ({navigation, route}) => {
       setIsConnected(!!BLEManager.isConnected);
     }
     
-    // Check permissions and request if needed
+    // Check permissions — if already granted skip modal, else show Allow/Don't Allow modal
     checkBluetoothPermissions().then((hasPermission) => {
       if (hasPermission) {
-        // Permission already granted - setup BLE and start scanning immediately
         console.log('✅ Permissions already granted, starting BLE scan...');
         setupBLEManager();
       } else {
-        // Request permissions directly
-        console.log('⏳ Requesting Bluetooth permissions...');
-        requestBluetoothPermissions();
+        console.log('⏳ Showing Bluetooth permission modal...');
+        setShowPermissionModal(true);
       }
     });
     
@@ -732,12 +776,21 @@ const HomeScreen = ({navigation, route}) => {
 
   const loadUserData = async () => {
     try {
+      // Always read temperature unit first — independent of login state
+      const savedTempUnit = await AsyncStorage.getItem('@ipowerup:temperature_unit');
+      if (savedTempUnit) {
+        setTemperatureUnit(savedTempUnit);
+      }
+
       const userData = await AsyncStorage.getItem('loggedInUser');
       if (userData) {
         const user = JSON.parse(userData);
-        setUserName(user.full_name || user.first_name || 'User');
+        setUserName((user.full_name || user.first_name || 'User').trim());
         setCaseDeviceName(user.case_device_name || '');
-        if (user.tempreture) setTemperatureUnit(user.tempreture);
+        // Fallback for old installs that saved temp inside user object
+        if (!savedTempUnit && user.tempreture) {
+          setTemperatureUnit(user.tempreture);
+        }
       }
       if (typeof DeviceInfo.getDeviceName === 'function') {
         const deviceName = await DeviceInfo.getDeviceName();
@@ -759,17 +812,12 @@ const HomeScreen = ({navigation, route}) => {
       onBluetoothStateChange: (state) => {
         console.log('📶 Bluetooth state changed to:', state);
         if (state === 'PoweredOff') {
-          // Hide devices popup and notify user
           setShowScanningModal(false);
           setIsConnected(false);
-          // Clear data when Bluetooth is off
           clearCaseTelemetry();
-          // Stop periodic queries
           BLEManager.stopPeriodicQueries();
-          showInfoToast(
-            'Bluetooth turned off. Enable Bluetooth to connect to your case.',
-            4500,
-          );
+          // Show the Allow/Don't Allow modal so user can re-enable Bluetooth
+          setShowPermissionModal(true);
         } else if (state === 'PoweredOn') {
           // As soon as Bluetooth turns ON, restart scanning if not connected
           if (!BLEManager.isConnected) {
@@ -1052,7 +1100,9 @@ const HomeScreen = ({navigation, route}) => {
           setCaseBatteryLevel(data.caseBatPct);
           batteryUpdated = true;
           console.log('✅ Updated case battery:', data.caseBatPct + '%');
-          
+          showBatteryLevelToastIfNeeded(data.caseBatPct);
+          updateBellIcon(data.caseBatPct);
+
           // Update debug with last valid battery
           setDebugInfo(prev => ({
             ...prev,
@@ -1201,26 +1251,24 @@ const HomeScreen = ({navigation, route}) => {
 
         if (data.tcBelowMin === true && !alertFlags.tcBelowMinShown) {
           setAlertFlags(prev => ({...prev, tcBelowMinShown: true}));
-          showInfoToast(
-            t(
-              'alerts.caseTempLow',
-              'Case temperature approaching low temperature shut-down.',
-            ),
-            5500,
+          showErrorToast(
+            t('alerts.temperatureAlert', 'Temperature Alert'),
+            6000,
+            t('alerts.caseTempLow', 'Case temperature approaching low temperature shut-down.'),
           );
+          NotificationService.sendTemperatureNotification('low');
         } else if (data.tcBelowMin === false && alertFlags.tcBelowMinShown) {
           setAlertFlags(prev => ({...prev, tcBelowMinShown: false}));
         }
 
         if (data.tcAboveMax === true && !alertFlags.tcAboveMaxShown) {
           setAlertFlags(prev => ({...prev, tcAboveMaxShown: true}));
-          showInfoToast(
-            t(
-              'alerts.caseTempHigh',
-              'Case temperature approaching high temperature shut-down.',
-            ),
-            5500,
+          showErrorToast(
+            t('alerts.temperatureAlert', 'Temperature Alert'),
+            6000,
+            t('alerts.caseTempHigh', 'Case temperature approaching high temperature shut-down.'),
           );
+          NotificationService.sendTemperatureNotification('high');
         } else if (data.tcAboveMax === false && alertFlags.tcAboveMaxShown) {
           setAlertFlags(prev => ({...prev, tcAboveMaxShown: false}));
         }
@@ -1294,6 +1342,17 @@ const HomeScreen = ({navigation, route}) => {
           chargerConfigUiDelayCompletedRef.current = true;
           setTransferButtonUiReady(true);
         }, IOS_CHARGER_CONFIG_UI_DELAY_MS);
+
+        // Trigger BLE history sync once per connection after charger config is received
+        if (!bleHistorySyncedRef.current && BLEManager.syncBleHistoryFromDevice) {
+          bleHistorySyncedRef.current = true;
+          setTimeout(() => {
+            BLEManager.syncBleHistoryFromDevice().catch(e => {
+              bleHistorySyncedRef.current = false;
+              console.warn('BLE history sync failed:', e?.message || e);
+            });
+          }, 500);
+        }
       },
       
       // Notification enabled callback - CRITICAL for data reception
@@ -1384,13 +1443,80 @@ const HomeScreen = ({navigation, route}) => {
     return `${Math.round(displayTemp)}° ${unit}`;
   };
 
+  const THUMB_SIZE = 48;
+  const THUMB_INSET = 6;
+  const SLIDER_HEIGHT = 56;
+  const SLIDER_BORDER = 2;
+  const THUMB_VERTICAL_INSET = (SLIDER_HEIGHT - SLIDER_BORDER * 2 - THUMB_SIZE) / 2;
+  const getThumbMaxX = (width) => width - SLIDER_BORDER * 2 - THUMB_SIZE - THUMB_INSET;
+  const [sliderBtnWidth, setSliderBtnWidth] = useState(0);
+  const sliderAnim = useRef(new Animated.Value(THUMB_INSET)).current;
+  const isDragging = useRef(false);
+  const [dragLabel, setDragLabel] = useState(null); // null = follow phoneCharging, 'stop'/'transfer' = drag override
+
+  useEffect(() => {
+    if (sliderBtnWidth === 0) return;
+    const toX = phoneCharging
+      ? getThumbMaxX(sliderBtnWidth)
+      : THUMB_INSET;
+    if (!isDragging.current) {
+      Animated.spring(sliderAnim, {toValue: toX, friction: 7, tension: 40, useNativeDriver: true}).start();
+    }
+  }, [phoneCharging, sliderBtnWidth]);
+
+  const thumbPanResponder = useMemo(() => PanResponder.create({
+    onStartShouldSetPanResponder: () => canPressTransferPower,
+    onMoveShouldSetPanResponder: () => canPressTransferPower,
+    onPanResponderGrant: () => {
+      isDragging.current = true;
+      sliderAnim.stopAnimation();
+    },
+    onPanResponderMove: (_, g) => {
+      const baseX = phoneCharging ? getThumbMaxX(sliderBtnWidth) : THUMB_INSET;
+      const minX = THUMB_INSET;
+      const maxX = getThumbMaxX(sliderBtnWidth);
+      const newX = Math.min(Math.max(minX, baseX + g.dx), maxX);
+      sliderAnim.setValue(newX);
+      // Arrow & label change when thumb center crosses button center (iOS exact)
+      const thumbCenterX = newX + THUMB_SIZE / 2;
+      setDragLabel(thumbCenterX > sliderBtnWidth / 2 ? 'stop' : 'transfer');
+    },
+    onPanResponderRelease: (_, g) => {
+      isDragging.current = false;
+      setDragLabel(null);
+      const baseX = phoneCharging ? getThumbMaxX(sliderBtnWidth) : THUMB_INSET;
+      const currentX = Math.min(Math.max(THUMB_INSET, baseX + g.dx), getThumbMaxX(sliderBtnWidth));
+      const thumbCenterX = currentX + THUMB_SIZE / 2;
+      const draggedPastCenter = thumbCenterX > sliderBtnWidth / 2;
+      const shouldToggle = (!phoneCharging && draggedPastCenter) || (phoneCharging && !draggedPastCenter);
+      if (shouldToggle) {
+        Animated.spring(sliderAnim, {
+          toValue: phoneCharging ? THUMB_INSET : getThumbMaxX(sliderBtnWidth),
+          friction: 7, tension: 40, useNativeDriver: true,
+        }).start();
+        handleTransferPower();
+      } else {
+        Animated.spring(sliderAnim, {
+          toValue: phoneCharging ? getThumbMaxX(sliderBtnWidth) : THUMB_INSET,
+          friction: 7, tension: 40, useNativeDriver: true,
+        }).start();
+      }
+    },
+    onPanResponderTerminate: () => {
+      isDragging.current = false;
+      setDragLabel(null);
+      const startX = phoneCharging ? getThumbMaxX(sliderBtnWidth) : THUMB_INSET;
+      Animated.spring(sliderAnim, {toValue: startX, friction: 7, tension: 40, useNativeDriver: true}).start();
+    },
+  }), [phoneCharging, sliderBtnWidth, canPressTransferPower]);
+
   const handleTransferPower = () => {
     if (!isConnected) {
       setDebugInfo(prev => ({
         ...prev,
         lastError: 'Button pressed but not connected',
       }));
-      showErrorToast('Please connect to your device first.', 4000);
+      showErrorToast('Case not connected', 4000, 'Connect your iPowerUp case first to transfer power.');
       return;
     }
     
@@ -1493,10 +1619,25 @@ const HomeScreen = ({navigation, route}) => {
     <View style={styles.container}>
       <StatusBar barStyle="dark-content" backgroundColor="transparent" translucent />
       
+      {/* Permission Modal — "Allow/Don't Allow" shown on first launch or when BT is off */}
+      <PermissionModal
+        visible={showPermissionModal}
+        onAllow={() => {
+          setShowPermissionModal(false);
+          requestBluetoothPermissions();
+        }}
+        onDontAllow={() => setShowPermissionModal(false)}
+        permissionType="bluetooth"
+        discoveredDevices={[]}
+        deviceCount={0}
+        hasPermissionGranted={false}
+        showStaticDevices={true}
+      />
+
       {/* Scanning Modal - Shows devices being discovered after permission granted */}
       <PermissionModal
         visible={showScanningModal}
-        onAllow={() => {}} // No action needed
+        onAllow={() => setShowScanningModal(false)}
         onDontAllow={() => setShowScanningModal(false)}
         permissionType="bluetooth"
         discoveredDevices={allDiscoveredDevices}
@@ -1521,11 +1662,11 @@ const HomeScreen = ({navigation, route}) => {
           {/* Header */}
           <View style={styles.header}>
             <Text style={styles.greetingText}>
-              {t('home.greetings')}, <Text style={styles.greetingName}>{userName}</Text>.
+              {t('home.greetings')}, <Text style={styles.greetingName}>{userName}</Text>
             </Text>
             <TouchableOpacity onPress={() => navigation.navigate('Notifications')}>
               <Image
-                source={require('../../assets/home/bell-icon.png')}
+                source={bellIsRed ? require('../../assets/home/bell-icon.png') : require('../../assets/home/bell-icon-blue.png')}
                 style={styles.bellIcon}
                 resizeMode="contain"
               />
@@ -1550,7 +1691,7 @@ const HomeScreen = ({navigation, route}) => {
           </View>
 
           {/* Your Case Section */}
-          <Text style={styles.sectionTitle}>{`${userName}'s ${caseSectionTitleSuffix}`}</Text>
+          <Text style={styles.sectionTitle}>{`${userName.trim()}'s ${caseSectionTitleSuffix}`}</Text>
           <View style={styles.card}>
             <View style={styles.cardRow}>
               <View style={styles.cardTextContainer}>
@@ -1566,7 +1707,7 @@ const HomeScreen = ({navigation, route}) => {
                 resizeMode="contain"
               />
             </View>
-            <Text style={styles.caseMacText}>{`Case MAC (last 4): ${caseMacLast4 || '----'}`}</Text>
+            <Text style={styles.caseMacText}>{isConnected ? `Case MAC (last 4): ${caseMacLast4 || '----'}` : 'No Case Connected'}</Text>
           </View>
 
           {/* Temperature Card */}
@@ -1598,34 +1739,48 @@ const HomeScreen = ({navigation, route}) => {
             - Button shows YELLOW (Stop Charging) when phoneCharging == true
             - Button shows WHITE (Start Charging) when phoneCharging == false
           */}
-          <TouchableOpacity 
-            style={styles.sliderButton}
-            onPress={handleTransferPower}
-            activeOpacity={0.9}
-            disabled={!canPressTransferPower}
-          >
-            <Image
-              source={
-                i18n.language === 'es'
-                  ? phoneCharging
-                    ? require('../../assets/home/Stop_Charging_spanish.png')
-                    : require('../../assets/home/Transfer_spanish.png')
-                  : i18n.language === 'fr'
-                    ? phoneCharging
-                      ? require('../../assets/home/Stop_Charging_french.png')
-                      : require('../../assets/home/Transfer_french.png')
-                    : i18n.language === 'de'
-                      ? phoneCharging
-                        ? require('../../assets/home/Stop_Charging_german.png')
-                        : require('../../assets/home/Transfer_german.png')
-                      : phoneCharging
-                        ? require('../../assets/home/newYellowSlider.png')
-                        : require('../../assets/home/newWhiteSlider.png')
-              }
-              style={[styles.sliderImage, !canPressTransferPower && {opacity: 0.4}]}
-              resizeMode="contain"
-            />
-          </TouchableOpacity>
+          {(() => {
+            const displayStop = dragLabel === 'stop' || (dragLabel === null && phoneCharging);
+            const sliderBg = displayStop ? '#fde037' : '#FFFFFF';
+            const labelText = displayStop
+              ? t('home.stopCharging', 'Stop Charging')
+              : t('home.transferPowerToPhone', 'Transfer Power To Phone');
+            return (
+              <View
+                style={[styles.sliderButton, {borderRadius: SLIDER_HEIGHT / 2, backgroundColor: sliderBg, overflow: 'hidden', borderWidth: 2, borderColor: '#FFFFFF', opacity: canPressTransferPower ? 1 : 0.4}]}
+                onLayout={e => setSliderBtnWidth(e.nativeEvent.layout.width)}
+              >
+                {/* Label centered with 60px padding each side (iOS: leading/trailing 60) */}
+                <Text style={{position: 'absolute', width: '100%', textAlign: 'center', fontSize: 16, fontWeight: '500', color: '#1A1A1A', paddingHorizontal: 60}}>
+                  {labelText}
+                </Text>
+                {/* Pan on thumb only — fixes accidental trigger on label tap */}
+                <Animated.View
+                  style={{
+                    position: 'absolute',
+                    top: THUMB_VERTICAL_INSET,
+                    left: 0,
+                    width: THUMB_SIZE,
+                    height: THUMB_SIZE,
+                    borderRadius: THUMB_SIZE / 2,
+                    backgroundColor: '#0097d9',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    transform: [{translateX: sliderAnim}],
+                  }}
+                  {...thumbPanResponder.panHandlers}
+                >
+                  <Image
+                    source={displayStop
+                      ? require('../../assets/icons/back-arrow-ios.png')
+                      : require('../../assets/icons/right-arrow-ios.png')}
+                    style={{width: 22, height: 22, tintColor: '#FFFFFF'}}
+                    resizeMode="contain"
+                  />
+                </Animated.View>
+              </View>
+            );
+          })()}
 
         </ScrollView>
       </SafeAreaView>
@@ -1675,7 +1830,7 @@ const styles = StyleSheet.create({
   },
   bellIcon: {
     width: 33,
-    height: 30,
+    height: 33,
   },
   sectionTitle: {
     fontSize: 20,
@@ -1737,7 +1892,7 @@ const styles = StyleSheet.create({
   sliderButton: {
     marginHorizontal: 20,
     marginTop: 15,
-    height: 55,
+    height: 56,
     alignItems: 'center',
     justifyContent: 'center',
   },

@@ -21,6 +21,13 @@ import {showSuccessToast, showErrorToast} from '../utils/toastHelper';
 
 const {width, height} = Dimensions.get('window');
 
+const formatPhone = (digits) => {
+  const d = (digits || '').replace(/\D/g, '').slice(0, 10);
+  if (d.length <= 3) {return d;}
+  if (d.length <= 6) {return `${d.slice(0, 3)} ${d.slice(3)}`;}
+  return `${d.slice(0, 3)} ${d.slice(3, 6)} ${d.slice(6)}`;
+};
+
 const AccountSettingsScreen = ({navigation}) => {
   const {t} = useTranslation();
   const [firstName, setFirstName] = useState('');
@@ -204,8 +211,8 @@ const AccountSettingsScreen = ({navigation}) => {
                 style={styles.input}
                 placeholder={t('accountSettings.phoneNumber')}
                 placeholderTextColor={Colors.grayColor}
-                value={phone}
-                onChangeText={setPhone}
+                value={formatPhone(phone)}
+                onChangeText={(text) => setPhone(text.replace(/\D/g, ''))}
                 keyboardType="phone-pad"
               />
             </View>
@@ -217,8 +224,8 @@ const AccountSettingsScreen = ({navigation}) => {
                 style={styles.input}
                 placeholder={t('accountSettings.emergencyNumber')}
                 placeholderTextColor={Colors.grayColor}
-                value={emergencyNumber}
-                onChangeText={setEmergencyNumber}
+                value={formatPhone(emergencyNumber)}
+                onChangeText={(text) => setEmergencyNumber(text.replace(/\D/g, ''))}
                 keyboardType="phone-pad"
               />
             </View>
@@ -283,7 +290,7 @@ const AccountSettingsScreen = ({navigation}) => {
               activeOpacity={0.8}
             >
               <Text style={styles.continueButtonText}>
-                {isLoading ? t('common.updating') : t('common.continue')}
+                {isLoading ? t('common.updating') : t('accountSettings.updateProfile', 'Update Profile')}
               </Text>
             </TouchableOpacity>
           </View>

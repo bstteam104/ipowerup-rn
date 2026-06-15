@@ -25,6 +25,7 @@ const SignUpScreen = ({navigation}) => {
   const [firstName, setFirstName] = useState('');
   const [lastName, setLastName] = useState('');
   const [caseDeviceName, setCaseDeviceName] = useState('');
+  const [serialNumber, setSerialNumber] = useState('');
   const [phoneNumber, setPhoneNumber] = useState('');
   const [occupation, setOccupation] = useState('');
   const [email, setEmail] = useState('');
@@ -102,6 +103,7 @@ const SignUpScreen = ({navigation}) => {
         firstName: firstName.trim(),
         lastName: lastName.trim(),
         caseDeviceName: caseDeviceName.trim(),
+        serialNumber: serialNumber.trim(),
         phoneNumber: phoneNumber.trim(),
         occupation: occupation.trim(),
         email: email.trim(),
@@ -232,6 +234,26 @@ const SignUpScreen = ({navigation}) => {
                   value={caseDeviceName}
                   onChangeText={setCaseDeviceName}
                   autoCapitalize="words"
+                  autoCorrect={false}
+                />
+              </View>
+            </View>
+
+            {/* Serial Number Field */}
+            <View style={styles.inputContainer}>
+              <View style={styles.inputWrapper}>
+                <Image
+                  source={require('../../assets/icons/profile-icon.png')}
+                  style={styles.inputIcon}
+                  resizeMode="contain"
+                />
+                <TextInput
+                  style={styles.input}
+                  placeholder={t('signup.serialNumberPlaceholder', 'Enter iPowerUp Device Serial Number (Optional)')}
+                  placeholderTextColor={Colors.grayColor}
+                  value={serialNumber}
+                  onChangeText={setSerialNumber}
+                  autoCapitalize="characters"
                   autoCorrect={false}
                 />
               </View>

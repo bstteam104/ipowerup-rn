@@ -43,7 +43,7 @@ const MenuItem = React.memo(({icon, title, onPress, showSwitch = false, switchVa
             isOn={switchValue}
             onColor="#000000"
             offColor="#E0E0E0"
-            size="small"
+            size="medium"
             thumbOnStyle={{backgroundColor: '#5CA3CC'}}
             thumbOffStyle={{backgroundColor: '#5CA3CC'}}
             onToggle={onSwitchChange}

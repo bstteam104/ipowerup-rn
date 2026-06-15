@@ -167,10 +167,10 @@ const styles = StyleSheet.create({
     opacity: 0.6,
   },
   logoContainer: {
-    width: width * 0.61,
+    width: '84%',
     height: height * 0.15,
     justifyContent: 'center',
-    alignItems: 'center',
+    alignItems: 'flex-start',
     marginTop: height * 0.1,
   },
   logo: {

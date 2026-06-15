@@ -1,5 +1,8 @@
-import React, {useState} from 'react';
+import React, {useState, useEffect} from 'react';
 import {useTranslation} from 'react-i18next';
+import {useIsFocused} from '@react-navigation/native';
+import BLEManager from '../services/BLEManagerNative';
+import SolarTimer from '../services/SolarTimerHandler';
 import {
   View,
   Text,
@@ -21,8 +24,40 @@ const SOLAR_CARD_SIDE_INSET = (width - SOLAR_CARD_WIDTH) / 2;
 
 const SolarScreen = ({navigation}) => {
   const {t, i18n} = useTranslation();
+  const isFocused = useIsFocused();
   const [solarMilliAmps, setSolarMilliAmps] = useState(0);
   const [selectedPanel, setSelectedPanel] = useState(1); // 1 or 2, matches radio buttons
+
+  // When focused + case connected: poll every 2s and update mA value
+  useEffect(() => {
+    if (!isFocused || !BLEManager.isConnected) {
+      SolarTimer.onTick = null;
+      SolarTimer.onCompleted = null;
+      return;
+    }
+
+    BLEManager.setDelegate({
+      onDataReceived: data => {
+        if (data && data.solarCurr !== undefined) {
+          setSolarMilliAmps(data.solarCurr);
+          setSelectedPanel(data.solarCurr >= 351 ? 2 : 1);
+        }
+      },
+      onConnected: () => BLEManager.queryPowerBankStatus().catch(() => {}),
+      onDisconnected: () => {},
+      onConnectionFailed: () => {},
+      onDeviceDiscovered: () => {},
+    });
+
+    SolarTimer.onTick = () => BLEManager.queryPowerBankStatus().catch(() => {});
+    SolarTimer.onCompleted = null;
+    SolarTimer.start();
+
+    return () => {
+      SolarTimer.onTick = null;
+      SolarTimer.stop();
+    };
+  }, [isFocused]);
 
   return (
     <View style={styles.container}>

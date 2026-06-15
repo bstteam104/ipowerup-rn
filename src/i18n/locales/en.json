@@ -117,8 +117,8 @@
   },
   "accountSettings": {
     "title": "Account Settings",
-    "firstName": "Enter First Name",
-    "lastName": "Enter Last Name",
+    "firstName": "First Name",
+    "lastName": "Last Name",
     "alternateEmail": "Alternate Email",
     "phoneNumber": "Phone Number",
     "emergencyNumber": "Emergency Number",
@@ -209,15 +209,14 @@
   },
   "options": {
     "title": "Options",
-    "powerTransferTitle": "Power Transfer Ratio",
-    "powerTransferSubtitle": "Allocation when charging",
-    "phone": "Phone",
-    "case": "Case",
-    "ledTitle": "LED Brightness",
-    "blue": "Blue",
-    "red": "Red",
-    "stepHint": "Adjust in 10% steps",
-    "fingerSwipingHint": "For finger swiping"
+    "displayBrightnessTitle": "Display Brightness",
+    "displayBrightnessSubtitle": "For Solar and Battery Display",
+    "dark": "Dark",
+    "bright": "Bright",
+    "displayBgColorTitle": "Display Background Color",
+    "displayBgColorSubtitle": "For Solar and Battery Display",
+    "lightBackground": "Light Background",
+    "darkBackground": "Dark Background"
   },
   "solar": {
     "title": "Solar",
@@ -250,16 +249,16 @@
     "tip4Question": "Can I charge my phone while the case is charging?",
     "tip4Answer": "Yes! The case supports pass-through charging, allowing you to charge your phone while the case itself is being charged via solar or USB.",
     "tip5Question": "How do I transfer power from case to phone?",
-    "tip5Answer": "Simply tap the \"Transfer Power To Phone\" button on the Home screen. Make sure your phone is connected to the case via the charging port."
+    "tip5Answer": "Simply tap the \"Transfer Power To Phone\" button on the Home screen. Or, with Mode button, use 2 Quick Clicks to turn \"Transfer Power\" on or off. Make sure your phone is connected to the case via the charging port."
   },
   "troubleshooting": {
     "title": "Help",
     "faq1Question": "Bluetooth pairing issues",
-    "faq1Answer": "Device not found: Close the iPowerUp app. Open Settings on your Android phone to ensure Bluetooth is on. Reopen the PowerUp app, tap the Connect New Device button, tap Allow when prompted, and tap your device name.",
+    "faq1Answer": "Device not found: Close the iPowerUp app. Open Settings on your Android phone to ensure Bluetooth is on. Reopen the iPowerUp app, tap the Connect New Device button, tap Allow when prompted, and type your device name.",
     "faq2Question": "Charging with the case Solar Panel",
-    "faq2Answer": "Place your Uno case in a sunny location, then aim the solar panel in a direction and angle that gets the good sunlight. View the screen above the solar panel for mA levels for the best results.",
+    "faq2Answer": "Place your iPowerUp case in a sunny location, then aim the solar panel in a direction and angle that gets the good sunlight. View the screen above the solar panel for mA levels for the best results.",
     "faq3Question": "Manually transfer power from the case to my phone",
-    "faq3Answer": "Press the Mode button at the bottom of the case two times quickly.",
+    "faq3Answer": "Use 2 Quick Clicks to turn Transfer Power on or off.",
     "faq4Question": "Charging Android phones",
     "faq4Answer": "Connect a USB-C cable from the case to the Android device."
   },
@@ -340,8 +339,9 @@
     "permissionRequired": "Permission Required",
     "bluetoothDescription": "This app requires Bluetooth to connect to BLE devices.",
     "permissionDescription": "This permission is required for the app to function properly.",
-    "deviceFoundSingular": "{{deviceCount}} device found",
-    "devicesFoundPlural": "More than {{deviceCount}} devices found",
+    "searchingDevices": "Searching for devices...",
+    "deviceFoundSingular": "1 device found",
+    "devicesFoundPlural": "{{deviceCount}} devices found",
     "bluetoothPrivacyInfo": "Information from Bluetooth devices can be used to determine your location and create a profile for you.",
     "dontAllow": "Don't Allow",
     "allow": "Allow"

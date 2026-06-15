@@ -9,165 +9,57 @@ import {
   ScrollView,
   Platform,
   PanResponder,
-  UIManager,
 } from 'react-native';
+import ToggleSwitch from 'toggle-switch-react-native';
 import LinearGradient from 'react-native-linear-gradient';
 import {useTranslation} from 'react-i18next';
 import {Colors, BorderRadius, FontSizes} from '../constants/Constants';
 
-/** Large thumb + thick track (mockup-style, not a thin system slider) */
-const THUMB_SIZE = 34;
-/** Filled bar — tall strip like sheet mockup (~15–18dp) */
+const THUMB_SIZE = 40;
 const TRACK_HEIGHT = 16;
-/** Square track ends (all sliders share this) */
 const TRACK_BORDER_RADIUS = 0;
-
-const LED_VALUE_LABEL_WIDTH = 44;
-const HAS_NATIVE_LINEAR_GRADIENT = !!UIManager.getViewManagerConfig?.('BVLinearGradient');
+const PCT_LABEL_WIDTH = 52;
 
 const clampStep10 = (n) => {
   const s = Math.round(n / 10) * 10;
   return Math.min(100, Math.max(0, s));
 };
 
-const SafeGradient = ({colors, style}) => {
-  if (HAS_NATIVE_LINEAR_GRADIENT) {
-    return (
-      <LinearGradient
-        colors={colors}
-        start={{x: 0, y: 0.5}}
-        end={{x: 1, y: 0.5}}
-        style={style}
-      />
-    );
-  }
-  return <View style={[style, {backgroundColor: colors?.[0] || '#EAF4FC'}]} />;
-};
-
-const getValueLabelLeft = (thumbLeft, trackWidth) => {
-  if (trackWidth <= 0) {
-    return 0;
-  }
-  const centered = thumbLeft + THUMB_SIZE / 2 - LED_VALUE_LABEL_WIDTH / 2;
-  return Math.min(trackWidth - LED_VALUE_LABEL_WIDTH, Math.max(0, centered));
-};
-
 const OptionsScreen = ({navigation}) => {
   const {t} = useTranslation();
-  const [phoneShare, setPhoneShare] = useState(80);
-  const [blueLed, setBlueLed] = useState(80);
-  const [redLed, setRedLed] = useState(100);
+  const [brightness, setBrightness] = useState(90);
+  const [lightBackground, setLightBackground] = useState(true);
+  const [darkBackground, setDarkBackground] = useState(false);
   const [trackWidth, setTrackWidth] = useState(0);
   const trackWidthRef = useRef(0);
   const trackLeftRef = useRef(0);
   const trackRowRef = useRef(null);
 
-  const [blueTrackWidth, setBlueTrackWidth] = useState(0);
-  const blueTrackWidthRef = useRef(0);
-  const blueTrackLeftRef = useRef(0);
-  const blueTrackRowRef = useRef(null);
-
-  const [redTrackWidth, setRedTrackWidth] = useState(0);
-  const redTrackWidthRef = useRef(0);
-  const redTrackLeftRef = useRef(0);
-  const redTrackRowRef = useRef(null);
-
-  const caseShare = 100 - phoneShare;
-
-  const applyPhoneFromPageX = useCallback((pageX) => {
+  const applyBrightnessFromPageX = useCallback((pageX) => {
     const W = trackWidthRef.current;
     const left = trackLeftRef.current;
-    if (W <= 0) {
-      return;
-    }
+    if (W <= 0) {return;}
     const localX = pageX - left;
     const x = Math.min(W, Math.max(0, localX));
-    setPhoneShare(clampStep10((x / W) * 100));
+    setBrightness(clampStep10((x / W) * 100));
   }, []);
 
   const syncTrackWindowMetrics = useCallback(
     (pageXAfterMeasure) => {
       trackRowRef.current?.measureInWindow((winX, _y, width) => {
-        if (width <= 0) {
-          return;
-        }
+        if (width <= 0) {return;}
         trackLeftRef.current = winX;
         trackWidthRef.current = width;
         setTrackWidth(width);
         if (typeof pageXAfterMeasure === 'number') {
-          applyPhoneFromPageX(pageXAfterMeasure);
+          applyBrightnessFromPageX(pageXAfterMeasure);
         }
       });
     },
-    [applyPhoneFromPageX],
+    [applyBrightnessFromPageX],
   );
 
-  const applyBlueFromPageX = useCallback((pageX) => {
-    const W = blueTrackWidthRef.current;
-    const left = blueTrackLeftRef.current;
-    if (W <= 0) {
-      return;
-    }
-    const localX = pageX - left;
-    const x = Math.min(W, Math.max(0, localX));
-    setBlueLed(clampStep10((x / W) * 100));
-  }, []);
-
-  const syncBlueWindowMetrics = useCallback(
-    (pageXAfterMeasure) => {
-      blueTrackRowRef.current?.measureInWindow((winX, _y, width) => {
-        if (width <= 0) {
-          return;
-        }
-        blueTrackLeftRef.current = winX;
-        blueTrackWidthRef.current = width;
-        setBlueTrackWidth(width);
-        if (typeof pageXAfterMeasure === 'number') {
-          applyBlueFromPageX(pageXAfterMeasure);
-        }
-      });
-    },
-    [applyBlueFromPageX],
-  );
-
-  const applyRedFromPageX = useCallback((pageX) => {
-    const W = redTrackWidthRef.current;
-    const left = redTrackLeftRef.current;
-    if (W <= 0) {
-      return;
-    }
-    const localX = pageX - left;
-    const x = Math.min(W, Math.max(0, localX));
-    setRedLed(clampStep10((x / W) * 100));
-  }, []);
-
-  const syncRedWindowMetrics = useCallback(
-    (pageXAfterMeasure) => {
-      redTrackRowRef.current?.measureInWindow((winX, _y, width) => {
-        if (width <= 0) {
-          return;
-        }
-        redTrackLeftRef.current = winX;
-        redTrackWidthRef.current = width;
-        setRedTrackWidth(width);
-        if (typeof pageXAfterMeasure === 'number') {
-          applyRedFromPageX(pageXAfterMeasure);
-        }
-      });
-    },
-    [applyRedFromPageX],
-  );
-
-  const thumbLeft =
-    trackWidth > THUMB_SIZE ? (phoneShare / 100) * (trackWidth - THUMB_SIZE) : 0;
-  const blueThumbLeft =
-    blueTrackWidth > THUMB_SIZE ? (blueLed / 100) * (blueTrackWidth - THUMB_SIZE) : 0;
-  const redThumbLeft =
-    redTrackWidth > THUMB_SIZE ? (redLed / 100) * (redTrackWidth - THUMB_SIZE) : 0;
-  const blueLedValueLeft = getValueLabelLeft(blueThumbLeft, blueTrackWidth);
-  const redLedValueLeft = getValueLabelLeft(redThumbLeft, redTrackWidth);
-
-  const powerPanResponder = useMemo(
+  const brightnessPanResponder = useMemo(
     () =>
       PanResponder.create({
         onStartShouldSetPanResponder: () => true,
@@ -177,43 +69,28 @@ const OptionsScreen = ({navigation}) => {
           syncTrackWindowMetrics(e.nativeEvent.pageX);
         },
         onPanResponderMove: (e) => {
-          applyPhoneFromPageX(e.nativeEvent.pageX);
+          applyBrightnessFromPageX(e.nativeEvent.pageX);
         },
       }),
-    [applyPhoneFromPageX, syncTrackWindowMetrics],
+    [applyBrightnessFromPageX, syncTrackWindowMetrics],
   );
 
-  const bluePanResponder = useMemo(
-    () =>
-      PanResponder.create({
-        onStartShouldSetPanResponder: () => true,
-        onMoveShouldSetPanResponder: () => true,
-        onPanResponderTerminationRequest: () => false,
-        onPanResponderGrant: (e) => {
-          syncBlueWindowMetrics(e.nativeEvent.pageX);
-        },
-        onPanResponderMove: (e) => {
-          applyBlueFromPageX(e.nativeEvent.pageX);
-        },
-      }),
-    [applyBlueFromPageX, syncBlueWindowMetrics],
-  );
+  const thumbLeft =
+    trackWidth > THUMB_SIZE ? (brightness / 100) * (trackWidth - THUMB_SIZE) : 0;
 
-  const redPanResponder = useMemo(
-    () =>
-      PanResponder.create({
-        onStartShouldSetPanResponder: () => true,
-        onMoveShouldSetPanResponder: () => true,
-        onPanResponderTerminationRequest: () => false,
-        onPanResponderGrant: (e) => {
-          syncRedWindowMetrics(e.nativeEvent.pageX);
-        },
-        onPanResponderMove: (e) => {
-          applyRedFromPageX(e.nativeEvent.pageX);
-        },
-      }),
-    [applyRedFromPageX, syncRedWindowMetrics],
-  );
+  const pctLabelLeft = trackWidth > 0
+    ? Math.min(trackWidth - PCT_LABEL_WIDTH, Math.max(0, thumbLeft + THUMB_SIZE / 2 - PCT_LABEL_WIDTH / 2))
+    : 0;
+
+  const handleLightToggle = (val) => {
+    setLightBackground(val);
+    if (val) {setDarkBackground(false);}
+  };
+
+  const handleDarkToggle = (val) => {
+    setDarkBackground(val);
+    if (val) {setLightBackground(false);}
+  };
 
   return (
     <View style={styles.container}>
@@ -236,24 +113,19 @@ const OptionsScreen = ({navigation}) => {
           <View style={styles.placeholder} />
         </View>
 
+        {/* Display Brightness */}
         <View style={styles.card}>
-          <Text style={styles.cardTitle}>{t('options.powerTransferTitle', 'Power Transfer Ratio')}</Text>
+          <Text style={styles.cardTitle}>
+            {t('options.displayBrightnessTitle', 'Display Brightness')}
+          </Text>
           <Text style={styles.cardSubtitle}>
-            {t('options.powerTransferSubtitle', 'Allocation when charging')}
+            {t('options.displayBrightnessSubtitle', 'For Solar and Battery Display')}
           </Text>
 
-          <View style={styles.legendAbove}>
-            <Text style={styles.legendPhone}>
-              {t('options.phone', 'Phone')}{' '}
-              <Text style={styles.legendValue}>{phoneShare}%</Text>
-            </Text>
-            <Text style={styles.legendPhone}>
-              {t('options.case', 'Case')}{' '}
-              <Text style={styles.legendValue}>{caseShare}%</Text>
-            </Text>
-          </View>
-
-          <View style={styles.sliderHitArea} {...powerPanResponder.panHandlers}>
+          <View style={styles.sliderHitArea} {...brightnessPanResponder.panHandlers}>
+            <View style={styles.pctLabelRow}>
+              <Text style={[styles.brightnessValue, {left: pctLabelLeft}]}>{brightness}%</Text>
+            </View>
             <View
               ref={trackRowRef}
               style={styles.trackRow}
@@ -265,84 +137,63 @@ const OptionsScreen = ({navigation}) => {
                 }
                 requestAnimationFrame(() => syncTrackWindowMetrics());
               }}>
-              <View style={styles.trackClip}>
-                <View style={[styles.trackBlue, {width: `${phoneShare}%`}]} />
-                <View style={styles.trackYellowFill} />
-              </View>
+              <LinearGradient
+                colors={['#FFF3A3', '#FFCC00']}
+                start={{x: 0, y: 0.5}}
+                end={{x: 1, y: 0.5}}
+                style={styles.trackClip}
+              />
               <View style={[styles.thumb, {left: thumbLeft}]} />
             </View>
           </View>
-          <View style={styles.ledScaleRow}>
-            <Text style={styles.ledScaleText}>0%</Text>
-            <Text style={styles.ledScaleText}>100%</Text>
-          </View>
 
-          <Text style={[styles.cardSubtitle, styles.powerTransferHint]}>
-            {t('options.fingerSwipingHint', 'For finger swiping')}
-          </Text>
+          <View style={styles.scaleRow}>
+            <Text style={styles.scaleText}>{t('options.dark', 'Dark')}</Text>
+            <Text style={styles.scaleText}>{t('options.bright', 'Bright')}</Text>
+          </View>
         </View>
 
+        {/* Display Background Color */}
         <View style={styles.card}>
-          <Text style={styles.cardTitle}>{t('options.ledTitle', 'LED Brightness')}</Text>
+          <Text style={styles.cardTitle}>
+            {t('options.displayBgColorTitle', 'Display Background Color')}
+          </Text>
+          <Text style={styles.cardSubtitle}>
+            {t('options.displayBgColorSubtitle', 'For Solar and Battery Display')}
+          </Text>
 
-          <View style={styles.ledSliderBlock}>
-            <Text style={styles.ledLabelBlue}>{t('options.blue', 'Blue')}</Text>
-            <View style={styles.ledValueTrackRow}>
-              <Text style={[styles.ledValuePctFollow, {left: blueLedValueLeft}]}>{blueLed}%</Text>
-            </View>
-            <View style={[styles.sliderHitArea, styles.ledSliderHitArea]} {...bluePanResponder.panHandlers}>
-              <View
-                ref={blueTrackRowRef}
-                style={styles.trackRow}
-                onLayout={(e) => {
-                  const w = e.nativeEvent.layout.width;
-                  if (w > 0) {
-                    blueTrackWidthRef.current = w;
-                    setBlueTrackWidth(w);
-                  }
-                  requestAnimationFrame(() => syncBlueWindowMetrics());
-                }}>
-                <View style={styles.trackClip}>
-                  <SafeGradient colors={['#4296D3', '#EAF4FC']} style={styles.ledGradientFill} />
-                </View>
-                <View style={[styles.thumbLedBlue, {left: blueThumbLeft}]} />
-              </View>
-            </View>
-            <View style={styles.ledScaleRow}>
-              <Text style={styles.ledScaleText}>0%</Text>
-              <Text style={styles.ledScaleText}>100%</Text>
-            </View>
+          <View style={{height: 8}} />
+
+          <View style={styles.toggleRow}>
+            <Text style={styles.toggleLabel}>
+              {t('options.lightBackground', 'Light Background')}
+            </Text>
+            <ToggleSwitch
+              isOn={lightBackground}
+              onColor="#000000"
+              offColor="#E0E0E0"
+              size="medium"
+              thumbOnStyle={{backgroundColor: '#5CA3CC'}}
+              thumbOffStyle={{backgroundColor: '#5CA3CC'}}
+              onToggle={handleLightToggle}
+            />
           </View>
 
-          <View style={styles.ledGap} />
+          <View style={{height: 8}} />
 
-          <View style={styles.ledSliderBlock}>
-            <Text style={styles.ledLabelRed}>{t('options.red', 'Red')}</Text>
-            <View style={styles.ledValueTrackRow}>
-              <Text style={[styles.ledValuePctFollow, {left: redLedValueLeft}]}>{redLed}%</Text>
-            </View>
-            <View style={[styles.sliderHitArea, styles.ledSliderHitArea]} {...redPanResponder.panHandlers}>
-              <View
-                ref={redTrackRowRef}
-                style={styles.trackRow}
-                onLayout={(e) => {
-                  const w = e.nativeEvent.layout.width;
-                  if (w > 0) {
-                    redTrackWidthRef.current = w;
-                    setRedTrackWidth(w);
-                  }
-                  requestAnimationFrame(() => syncRedWindowMetrics());
-                }}>
-                <View style={styles.trackClip}>
-                  <SafeGradient colors={['#E53935', '#FDECEC']} style={styles.ledGradientFill} />
-                </View>
-                <View style={[styles.thumbLedRed, {left: redThumbLeft}]} />
-              </View>
-            </View>
-            <View style={styles.ledScaleRow}>
-              <Text style={styles.ledScaleText}>0%</Text>
-              <Text style={styles.ledScaleText}>100%</Text>
-            </View>
+          <View style={styles.toggleRow}>
+            <Text style={styles.toggleLabel}>
+              {t('options.darkBackground', 'Dark Background')}
+            </Text>
+            <ToggleSwitch
+              isOn={darkBackground}
+              onColor="#000000"
+              offColor="#E0E0E0"
+              size="medium"
+              thumbOnStyle={{backgroundColor: '#5CA3CC'}}
+              thumbOffStyle={{backgroundColor: '#5CA3CC'}}
+              onToggle={handleDarkToggle}
+            />
           </View>
         </View>
       </ScrollView>
@@ -395,30 +246,26 @@ const styles = StyleSheet.create({
   cardSubtitle: {
     fontSize: FontSizes.regular,
     color: Colors.iosLatestSecondaryLabel,
-    marginBottom: 12,
+    marginBottom: 7,
   },
-  legendAbove: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    marginBottom: 10,
-  },
-  legendPhone: {fontSize: FontSizes.regular, fontWeight: '600', color: '#4296D3'},
-  legendValue: {color: Colors.lightBlackColor},
-  powerTransferHint: {
-    textAlign: 'center',
-    marginTop: 2,
-    marginBottom: 0,
-    color: '#D44A3A',
+  brightnessValue: {
+    position: 'absolute',
+    width: PCT_LABEL_WIDTH,
+    fontSize: FontSizes.large + 4,
     fontWeight: '700',
-    fontStyle: 'italic',
+    color: Colors.lightBlackColor,
+    textAlign: 'center',
+  },
+  pctLabelRow: {
+    height: 26,
+    position: 'relative',
+    width: '100%',
+    marginTop: 6,
+    marginBottom: 2,
   },
   sliderHitArea: {
-    paddingVertical: 10,
-    marginBottom: 0,
-    width: '100%',
-  },
-  ledSliderHitArea: {
     paddingVertical: 4,
+    width: '100%',
   },
   trackRow: {
     width: '100%',
@@ -430,18 +277,8 @@ const styles = StyleSheet.create({
     height: TRACK_HEIGHT,
     borderRadius: TRACK_BORDER_RADIUS,
     overflow: 'hidden',
-    flexDirection: 'row',
     width: '100%',
-  },
-  ledGradientFill: {width: '100%', height: TRACK_HEIGHT},
-  trackBlue: {
-    height: TRACK_HEIGHT,
-    backgroundColor: '#4296D3',
-  },
-  trackYellowFill: {
-    flex: 1,
-    height: TRACK_HEIGHT,
-    backgroundColor: Colors.progressYellow,
+    position: 'relative',
   },
   thumb: {
     position: 'absolute',
@@ -450,83 +287,43 @@ const styles = StyleSheet.create({
     borderRadius: THUMB_SIZE / 2,
     backgroundColor: '#4296D3',
     top: 0,
-    borderWidth: 0,
     shadowColor: '#000',
     shadowOffset: {width: 0, height: 2},
     shadowOpacity: 0.28,
     shadowRadius: 3,
     elevation: 4,
   },
-  thumbLedBlue: {
-    position: 'absolute',
-    width: THUMB_SIZE,
-    height: THUMB_SIZE,
-    borderRadius: THUMB_SIZE / 2,
-    backgroundColor: '#4296D3',
-    top: 0,
-    borderWidth: 0,
-    shadowColor: '#000',
-    shadowOffset: {width: 0, height: 2},
-    shadowOpacity: 0.28,
-    shadowRadius: 3,
-    elevation: 4,
-  },
-  thumbLedRed: {
-    position: 'absolute',
-    width: THUMB_SIZE,
-    height: THUMB_SIZE,
-    borderRadius: THUMB_SIZE / 2,
-    backgroundColor: '#E53935',
-    top: 0,
-    borderWidth: 0,
-    shadowColor: '#000',
-    shadowOffset: {width: 0, height: 2},
-    shadowOpacity: 0.28,
-    shadowRadius: 3,
-    elevation: 4,
-  },
-  ledSliderBlock: {
-    marginTop: 8,
-  },
-  ledLabelBlue: {
-    fontSize: FontSizes.regular,
-    fontWeight: '700',
-    color: '#4296D3',
-    alignSelf: 'flex-start',
-    marginBottom: 2,
-  },
-  ledLabelRed: {
-    fontSize: FontSizes.regular,
-    fontWeight: '700',
-    color: '#E53935',
-    alignSelf: 'flex-start',
-    marginBottom: 2,
-  },
-  ledScaleRow: {
+  scaleRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     marginTop: -2,
   },
-  ledScaleText: {
+  scaleText: {
     fontSize: FontSizes.regular,
-    fontWeight: '600',
+    fontWeight: '400',
+    color: Colors.iosLatestSecondaryLabel,
+  },
+  toggleRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingVertical: 4,
+  },
+  // eslint-disable-next-line react-native/no-unused-styles
+  toggleScale: {
+    // eslint-disable-next-line react-native/sort-styles
+    transform: [{scaleX: 1.0}, {scaleY: 1.0}], // keep at 1.0 — do not auto-format
+  },
+  toggleLabel: {
+    fontSize: FontSizes.regular + 1,
+    fontWeight: '400',
     color: Colors.lightBlackColor,
   },
-  ledValueTrackRow: {
-    marginTop: 0,
-    marginBottom: 1,
-    position: 'relative',
-    height: 18,
+  divider: {
+    height: 1,
+    backgroundColor: '#E0E0E0',
+    marginHorizontal: 0,
   },
-  ledValuePctFollow: {
-    position: 'absolute',
-    width: LED_VALUE_LABEL_WIDTH,
-    textAlign: 'center',
-    fontSize: FontSizes.regular,
-    fontWeight: '600',
-    color: Colors.lightBlackColor,
-  },
-  ledGap: {height: 8},
 });
 
 export default OptionsScreen;

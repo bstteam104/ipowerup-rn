@@ -23,13 +23,14 @@ export const showSuccessToast = (message, duration = 4000) => {
  * @param {string} message - Message to display
  * @param {number} duration - Duration in ms (default: 4000)
  */
-export const showErrorToast = (message, duration = 4000) => {
+export const showErrorToast = (message, duration = 4000, subtitle = '') => {
   Toast.show({
     type: 'error',
     text1: message,
+    text2: subtitle || undefined,
     position: 'top',
     visibilityTime: duration,
-    topOffset: 60, // Space from top
+    topOffset: 60,
   });
 };
 
@@ -38,13 +39,14 @@ export const showErrorToast = (message, duration = 4000) => {
  * @param {string} message - Message to display
  * @param {number} duration - Duration in ms (default: 4000)
  */
-export const showInfoToast = (message, duration = 4000) => {
+export const showInfoToast = (message, duration = 4000, subtitle = '') => {
   Toast.show({
     type: 'info',
     text1: message,
+    text2: subtitle || undefined,
     position: 'top',
     visibilityTime: duration,
-    topOffset: 60, // Space from top
+    topOffset: 60,
   });
 };
 
