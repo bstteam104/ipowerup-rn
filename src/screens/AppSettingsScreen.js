@@ -23,21 +23,23 @@ import {showSuccessToast} from '../utils/toastHelper';
 
 const {width, height} = Dimensions.get('window');
 
-const MenuItem = React.memo(({icon, title, onPress, showSwitch = false, switchValue, onSwitchChange, iconSize = 30, switchKey}) => (
-  <TouchableOpacity
-    style={styles.menuItem}
-    onPress={onPress}
-    activeOpacity={0.7}
-    disabled={showSwitch}
-  >
-    {icon && (
-      <View style={styles.menuIconContainer}>
-        <Image source={icon} style={[styles.menuIcon, {width: iconSize, height: 24}]} resizeMode="contain" />
-      </View>
-    )}
-    <Text style={styles.menuTitle} numberOfLines={1} ellipsizeMode="tail">{title}</Text>
+const MenuItem = React.memo(({icon, title, onPress, showSwitch = false, switchValue, onSwitchChange, iconSize = 30, switchKey}) => {
+  const rowContent = (
+    <>
+      {icon && (
+        <View style={styles.menuIconContainer}>
+          <Image source={icon} style={[styles.menuIcon, {width: iconSize, height: 24}]} resizeMode="contain" />
+        </View>
+      )}
+      <Text style={styles.menuTitle} numberOfLines={1} ellipsizeMode="tail">{title}</Text>
       {showSwitch ? (
-        <View style={styles.switchContainer}>
+        <View
+          style={styles.switchContainer}
+          accessible
+          accessibilityRole="switch"
+          accessibilityState={{checked: !!switchValue}}
+          accessibilityLabel={title}
+          importantForAccessibility="yes">
           <ToggleSwitch
             key={switchKey}
             isOn={switchValue}
@@ -50,14 +52,28 @@ const MenuItem = React.memo(({icon, title, onPress, showSwitch = false, switchVa
           />
         </View>
       ) : (
-      <Image
-        source={require('../../assets/icons/right-arrow-ios.png')}
-        style={styles.menuArrow}
-        resizeMode="contain"
-      />
-    )}
-  </TouchableOpacity>
-));
+        <Image
+          source={require('../../assets/icons/right-arrow-ios.png')}
+          style={styles.menuArrow}
+          resizeMode="contain"
+        />
+      )}
+    </>
+  );
+
+  if (showSwitch) {
+    return <View style={styles.menuItem}>{rowContent}</View>;
+  }
+
+  return (
+    <TouchableOpacity
+      style={styles.menuItem}
+      onPress={onPress}
+      activeOpacity={0.7}>
+      {rowContent}
+    </TouchableOpacity>
+  );
+});
 
 const AppSettingsScreen = ({navigation}) => {
   const {t, i18n} = useTranslation();

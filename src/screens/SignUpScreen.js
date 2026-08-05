@@ -249,7 +249,7 @@ const SignUpScreen = ({navigation}) => {
                 />
                 <TextInput
                   style={styles.input}
-                  placeholder={t('signup.serialNumberPlaceholder', 'Enter iPowerUp Device Serial Number (Optional)')}
+                  placeholder={t('signup.serialNumberPlaceholder')}
                   placeholderTextColor={Colors.grayColor}
                   value={serialNumber}
                   onChangeText={setSerialNumber}
@@ -290,7 +290,7 @@ const SignUpScreen = ({navigation}) => {
                 />
                 <TextInput
                   style={styles.input}
-                  placeholder={t('signup.phonePlaceholder', 'Enter Phone Number')}
+                  placeholder={t('signup.phonePlaceholder')}
                   placeholderTextColor={Colors.grayColor}
                   value={phoneNumber}
                   onChangeText={setPhoneNumber}
@@ -311,7 +311,7 @@ const SignUpScreen = ({navigation}) => {
                 />
                 <TextInput
                   style={styles.input}
-                  placeholder={t('signup.occupationPlaceholder', 'Enter Occupation')}
+                  placeholder={t('signup.occupationPlaceholder')}
                   placeholderTextColor={Colors.grayColor}
                   value={occupation}
                   onChangeText={setOccupation}

@@ -12,7 +12,6 @@ import RecreatePasswordScreen from '../screens/RecreatePasswordScreen';
 import AppBenefitsScreen from '../screens/AppBenefitsScreen';
 import PaidYourPhoneScreen from '../screens/PaidYourPhoneScreen';
 import NotificationsScreen from '../screens/NotificationsScreen';
-import NotificationDetailScreen from '../screens/NotificationDetailScreen';
 import AccountSettingsScreen from '../screens/AccountSettingsScreen';
 import AppSettingsScreen from '../screens/AppSettingsScreen';
 import ActivityHistoryScreen from '../screens/ActivityHistoryScreen';
@@ -72,7 +71,6 @@ const AppNavigator = () => {
         
         {/* Notification Screens */}
         <Stack.Screen name="Notifications" component={NotificationsScreen} />
-        <Stack.Screen name="NotificationDetail" component={NotificationDetailScreen} />
         
         {/* Settings Screens */}
         <Stack.Screen name="AccountSettings" component={AccountSettingsScreen} />

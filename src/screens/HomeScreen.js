@@ -25,6 +25,14 @@ import {saveHistoryEntry} from '../storage/HistoryStorage';
 import PermissionModal from '../components/PermissionModal';
 import {showErrorToast, showInfoToast} from '../utils/toastHelper';
 import NotificationService from '../services/NotificationService';
+import {clearAllBleHistory} from '../storage/BLEHistoryStorage';
+import {
+  ALERT_KEYS,
+  upsertActiveNotification,
+  autoResolveFromTelemetry,
+  clearNotificationHistory,
+  resolveByAlertKeys,
+} from '../storage/NotificationHistoryStorage';
 const {width, height} = Dimensions.get('window');
 
 // iOS HomeVC: after `queryChargerConfigStatus`, interaction is applied after ~2.5s.
@@ -99,7 +107,8 @@ const HomeScreen = ({navigation, route}) => {
   const [usbCharging, setUsbCharging] = useState(false); // USB charging status from PowerBankStatus
   const [bellIsRed, setBellIsRed] = useState(false);
   const batteryIntervalRef = useRef(null);
-  const lastBatteryAlertLevelRef = useRef(null);
+  const lastHighNotifiedRef = useRef(0);
+  const lastLowNotifiedRef = useRef(100);
   const bleHistorySyncedRef = useRef(false);
   // Security alert flags (temp only — battery uses AsyncStorage thresholds like iOS)
   const [alertFlags, setAlertFlags] = useState({
@@ -157,7 +166,8 @@ const HomeScreen = ({navigation, route}) => {
     cancelChargingActionTimers();
     chargerConfigUiDelayCompletedRef.current = false;
     lastChargerConfigModeKeyRef.current = null;
-    lastBatteryAlertLevelRef.current = null;
+    lastHighNotifiedRef.current = 0;
+    lastLowNotifiedRef.current = 100;
     bleHistorySyncedRef.current = false;
     setTransferButtonUiReady(false);
     setChargingCommandPending(false);
@@ -241,6 +251,19 @@ const HomeScreen = ({navigation, route}) => {
       );
       const title = t('alerts.criticalBatteryTitle', 'Critical battery');
       showErrorToast(`${title}: ${msg}`, 5500);
+      upsertActiveNotification({
+        alertKey: ALERT_KEYS.CASE_CRITICAL_MIN,
+        title: t('alerts.criticalBatteryTitle', 'Critical battery'),
+        body: msg,
+        level,
+      }).catch(() => {});
+      if (Platform.OS === 'ios') {
+        NotificationService.sendBatteryNotification(
+          'Critical Battery Alert',
+          'Case battery is below minimum threshold. Please charge immediately.',
+          true,
+        );
+      }
     },
     [t],
   );
@@ -290,55 +313,136 @@ const HomeScreen = ({navigation, route}) => {
       try {
         await AsyncStorage.setItem(STORAGE_LAST_MAX_BATTERY_ALERT, String(threshold));
       } catch (e) {}
-      showInfoToast(
-        t('alerts.caseBatteryHigh', 'Case battery above maximum. Stop charging.'),
-        5500,
+      const highMsg = t(
+        'alerts.caseBatteryHigh',
+        'Case battery above maximum. Stop charging.',
       );
+      showInfoToast(highMsg, 5500);
+      upsertActiveNotification({
+        alertKey: ALERT_KEYS.CASE_CRITICAL_MAX,
+        title: t('notifications.caseBatteryHigh', 'Case Battery: High'),
+        body: highMsg,
+        level,
+      }).catch(() => {});
+      if (Platform.OS === 'ios') {
+        NotificationService.sendBatteryNotification(
+          'Critical Battery Alert',
+          'Case battery is above maximum threshold. Please disconnect charger.',
+          true,
+        );
+      }
     },
     [t],
   );
 
-  const BATTERY_ALERT_LEVELS = new Set([1, 5, 10, 20, 80, 90, 95, 100]);
+  const getBatteryAlertCopy = (level) => {
+    if (level === 1 || level === 5 || level === 0) {
+      return {
+        title: 'Critical Battery Level',
+        body: `Case battery is critically low at ${level}%. Please charge immediately.`,
+        isCritical: true,
+      };
+    }
+    if (level === 10) {
+      return {
+        title: 'Low Battery',
+        body: `Case battery is low at ${level}%. Consider charging soon.`,
+        isCritical: true,
+      };
+    }
+    if (level === 20) {
+      return {
+        title: 'Battery Level Alert',
+        body: `Case battery is at ${level}%.`,
+        isCritical: false,
+      };
+    }
+    if (level === 80) {
+      return {
+        title: 'Battery Level Good',
+        body: `Case battery is at ${level}%.`,
+        isCritical: false,
+      };
+    }
+    if (level === 90) {
+      return {
+        title: 'Battery Almost Full',
+        body: `Case battery is almost full at ${level}%.`,
+        isCritical: false,
+      };
+    }
+    if (level === 95) {
+      return {
+        title: 'Battery Full',
+        body: `Case battery is nearly full at ${level}%.`,
+        isCritical: false,
+      };
+    }
+    if (level === 100) {
+      return {
+        title: 'Battery Fully Charged',
+        body: 'Case battery is fully charged at 100%.',
+        isCritical: false,
+      };
+    }
+    return null;
+  };
 
   const showBatteryLevelToastIfNeeded = useCallback((caseBatPct) => {
-    if (!BATTERY_ALERT_LEVELS.has(caseBatPct)) return;
-    if (lastBatteryAlertLevelRef.current === caseBatPct) return;
-    lastBatteryAlertLevelRef.current = caseBatPct;
+    const HIGH_BANDS = [80, 90, 95, 100];
+    const LOW_BANDS = [20, 10, 5, 1, 0];
+    let alertLevel = null;
 
-    let title = '', body = '', isCritical = false;
-    if (caseBatPct === 1 || caseBatPct === 5) {
-      title = 'Critical Battery Level';
-      body = `Case battery is critically low at ${caseBatPct}%. Please charge immediately.`;
-      isCritical = true;
-    } else if (caseBatPct === 10) {
-      title = 'Low Battery';
-      body = `Case battery is low at ${caseBatPct}%. Consider charging soon.`;
-      isCritical = true;
-    } else if (caseBatPct === 20) {
-      title = 'Battery Level Alert';
-      body = `Case battery is at ${caseBatPct}%.`;
-    } else if (caseBatPct === 80) {
-      title = 'Battery Level Good';
-      body = `Case battery is at ${caseBatPct}%.`;
-    } else if (caseBatPct === 90) {
-      title = 'Battery Almost Full';
-      body = `Case battery is almost full at ${caseBatPct}%.`;
-    } else if (caseBatPct === 95) {
-      title = 'Battery Full';
-      body = `Case battery is nearly full at ${caseBatPct}%.`;
-    } else if (caseBatPct === 100) {
-      title = 'Battery Fully Charged';
-      body = 'Case battery is fully charged at 100%.';
+    if (caseBatPct < 80) {
+      lastHighNotifiedRef.current = 0;
+    } else {
+      const band = [...HIGH_BANDS].reverse().find(b => caseBatPct >= b);
+      if (band != null && band > lastHighNotifiedRef.current) {
+        lastHighNotifiedRef.current = band;
+        alertLevel = band;
+      }
     }
-    if (!title) return;
 
+    if (caseBatPct > 20) {
+      lastLowNotifiedRef.current = 100;
+    } else if (alertLevel == null) {
+      const band = LOW_BANDS.find(b => caseBatPct <= b);
+      if (band != null && band < lastLowNotifiedRef.current) {
+        lastLowNotifiedRef.current = band;
+        alertLevel = band;
+      }
+    }
+
+    if (alertLevel == null) {
+      return;
+    }
+
+    const copy = getBatteryAlertCopy(alertLevel);
+    if (!copy) {
+      return;
+    }
+
+    const {title, body, isCritical} = copy;
     if (isCritical) {
       showErrorToast(title, 6000, body);
     } else {
       showInfoToast(title, 5500, body);
     }
-    NotificationService.sendBatteryNotification(title, body, isCritical);
-  }, []);
+
+    const bandKey =
+      alertLevel <= 20 ? ALERT_KEYS.CASE_BAND_LOW : ALERT_KEYS.CASE_BAND_HIGH;
+    upsertActiveNotification({
+      alertKey: bandKey,
+      title,
+      body,
+      level: alertLevel,
+    }).catch(() => {});
+
+    // Android: native Kotlin BatteryAlertNotifier handles push when minimized.
+    if (Platform.OS === 'ios') {
+      NotificationService.sendBatteryNotification(title, body, isCritical);
+    }
+  }, [t]);
 
   const updateBellIcon = useCallback((caseBatPct) => {
     if (!isConnected || caseBatPct === 0) {
@@ -378,6 +482,14 @@ const HomeScreen = ({navigation, route}) => {
     if (phoneCharging === expected) {
       cancelChargingActionTimers();
       setChargingCommandPending(false);
+      if (expected) {
+        resolveByAlertKeys([ALERT_KEYS.PHONE_LOW], 'user_action').catch(() => {});
+      } else {
+        resolveByAlertKeys(
+          [ALERT_KEYS.CASE_BAND_HIGH, ALERT_KEYS.CASE_CRITICAL_MAX],
+          'user_action',
+        ).catch(() => {});
+      }
     }
   }, [phoneCharging, chargingCommandPending, cancelChargingActionTimers]);
 
@@ -533,8 +645,8 @@ const HomeScreen = ({navigation, route}) => {
     // Load user data
     loadUserData();
 
-    // Request push notification permission on mount (regardless of allow/deny)
-    NotificationService.requestPermission();
+    // iOS HomeVC parity: request notification permission only if not determined yet.
+    NotificationService.requestAuthorizationIfNeeded();
 
     // Get initial phone battery
     getPhoneBatteryLevel();
@@ -1035,6 +1147,8 @@ const HomeScreen = ({navigation, route}) => {
         setIsConnected(false);
         // iOS-like behavior: disconnected case should immediately clear case values.
         clearCaseTelemetry();
+        clearAllBleHistory().catch(() => {});
+        clearNotificationHistory().catch(() => {});
         
         // CRITICAL: Stop periodic query on disconnect
         if (BLEManager.stopPeriodicQueries) {
@@ -1251,26 +1365,76 @@ const HomeScreen = ({navigation, route}) => {
 
         if (data.tcBelowMin === true && !alertFlags.tcBelowMinShown) {
           setAlertFlags(prev => ({...prev, tcBelowMinShown: true}));
+          const tempBody = t(
+            'alerts.caseTempLow',
+            'Case temperature approaching low temperature shut-down.',
+          );
           showErrorToast(
             t('alerts.temperatureAlert', 'Temperature Alert'),
             6000,
-            t('alerts.caseTempLow', 'Case temperature approaching low temperature shut-down.'),
+            tempBody,
           );
-          NotificationService.sendTemperatureNotification('low');
+          upsertActiveNotification({
+            alertKey: ALERT_KEYS.TEMP_LOW,
+            title: t('alerts.temperatureAlert', 'Temperature Alert'),
+            body: tempBody,
+          }).catch(() => {});
+          if (Platform.OS === 'ios') {
+            NotificationService.sendTemperatureNotification('low');
+          }
         } else if (data.tcBelowMin === false && alertFlags.tcBelowMinShown) {
           setAlertFlags(prev => ({...prev, tcBelowMinShown: false}));
         }
 
         if (data.tcAboveMax === true && !alertFlags.tcAboveMaxShown) {
           setAlertFlags(prev => ({...prev, tcAboveMaxShown: true}));
+          const tempBody = t(
+            'alerts.caseTempHigh',
+            'Case temperature approaching high temperature shut-down.',
+          );
           showErrorToast(
             t('alerts.temperatureAlert', 'Temperature Alert'),
             6000,
-            t('alerts.caseTempHigh', 'Case temperature approaching high temperature shut-down.'),
+            tempBody,
           );
-          NotificationService.sendTemperatureNotification('high');
+          upsertActiveNotification({
+            alertKey: ALERT_KEYS.TEMP_HIGH,
+            title: t('alerts.temperatureAlert', 'Temperature Alert'),
+            body: tempBody,
+          }).catch(() => {});
+          if (Platform.OS === 'ios') {
+            NotificationService.sendTemperatureNotification('high');
+          }
         } else if (data.tcAboveMax === false && alertFlags.tcAboveMaxShown) {
           setAlertFlags(prev => ({...prev, tcAboveMaxShown: false}));
+        }
+
+        await autoResolveFromTelemetry({
+          caseBatPct: data.caseBatPct,
+          phoneBatPct: phoneBattery,
+          phoneCharging: data.phoneCharging === true,
+          vcBelowMin: data.vcBelowMin === true,
+          vcAboveMax: data.vcAboveMax === true,
+          tcBelowMin: data.tcBelowMin === true,
+          tcAboveMax: data.tcAboveMax === true,
+        });
+
+        if (
+          isConnected &&
+          typeof phoneBattery === 'number' &&
+          phoneBattery <= 20 &&
+          data.phoneCharging !== true
+        ) {
+          const phoneBody = t(
+            'notifications.phoneBatteryLowDesc',
+            'Approximate charge level: 20% Action: Transfer energy from Case battery to Phone Battery',
+          );
+          upsertActiveNotification({
+            alertKey: ALERT_KEYS.PHONE_LOW,
+            title: t('notifications.phoneBatteryLow', 'Phone Battery: Low'),
+            body: phoneBody.replace('20%', `${phoneBattery}%`),
+            level: phoneBattery,
+          }).catch(() => {});
         }
       },
       
@@ -1749,6 +1913,20 @@ const HomeScreen = ({navigation, route}) => {
               <View
                 style={[styles.sliderButton, {borderRadius: SLIDER_HEIGHT / 2, backgroundColor: sliderBg, overflow: 'hidden', borderWidth: 2, borderColor: '#FFFFFF', opacity: canPressTransferPower ? 1 : 0.4}]}
                 onLayout={e => setSliderBtnWidth(e.nativeEvent.layout.width)}
+                accessible
+                accessibilityRole="button"
+                accessibilityLabel={labelText}
+                accessibilityHint={t(
+                  'home.transferPowerAccessibilityHint',
+                  'Double tap to toggle power transfer between case and phone',
+                )}
+                accessibilityState={{disabled: !canPressTransferPower}}
+                onAccessibilityTap={() => {
+                  if (canPressTransferPower) {
+                    handleTransferPower();
+                  }
+                }}
+                importantForAccessibility="yes"
               >
                 {/* Label centered with 60px padding each side (iOS: leading/trailing 60) */}
                 <Text style={{position: 'absolute', width: '100%', textAlign: 'center', fontSize: 16, fontWeight: '500', color: '#1A1A1A', paddingHorizontal: 60}}>
@@ -1768,13 +1946,17 @@ const HomeScreen = ({navigation, route}) => {
                     justifyContent: 'center',
                     transform: [{translateX: sliderAnim}],
                   }}
+                  importantForAccessibility="no-hide-descendants"
                   {...thumbPanResponder.panHandlers}
                 >
                   <Image
-                    source={displayStop
-                      ? require('../../assets/icons/back-arrow-ios.png')
-                      : require('../../assets/icons/right-arrow-ios.png')}
-                    style={{width: 22, height: 22, tintColor: '#FFFFFF'}}
+                    source={require('../../assets/icons/right-arrow-ios.png')}
+                    style={{
+                      width: 22,
+                      height: 22,
+                      tintColor: '#FFFFFF',
+                      transform: [{rotate: displayStop ? '180deg' : '0deg'}],
+                    }}
                     resizeMode="contain"
                   />
                 </Animated.View>

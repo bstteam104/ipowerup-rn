@@ -329,14 +329,18 @@
     "deleteAccountConfirm": "¿Estás seguro que deseas eliminar tu cuenta?"
   },
   "permissions": {
-    "bluetoothTitle": "¿Permitir que la aplicación \"iPowerUp\" busque dispositivos Bluetooth?",
-    "permissionRequired": "Permiso requerido",
-    "bluetoothDescription": "Esta aplicación requiere Bluetooth para conectarse a dispositivos BLE.",
-    "permissionDescription": "Este permiso es necesario para que la aplicación funcione correctamente.",
-    "deviceFoundSingular": "{{deviceCount}} dispositivo encontrado",
-    "devicesFoundPlural": "Se encontraron más de {{deviceCount}} dispositivos",
-    "bluetoothPrivacyInfo": "La información de los dispositivos Bluetooth se puede utilizar para determinar su ubicación y crear un perfil para usted.",
-    "dontAllow": "No permitir",
-    "allow": "Permitir"
+    "bluetoothTitle": "Allow iPowerUp App to find and pair with phones/devices?",
+    "permissionRequired": "Permission Required",
+    "bluetoothDescription": "This app requires wireless data communication to connect to compatible devices.",
+    "permissionDescription": "This permission is required for the app to function properly.",
+    "searchingDevices": "Searching for devices...",
+    "noDevicesFound": "No compatible devices found. Make sure your case is in pairing mode and try again.",
+    "devicesFoundOrMoreSingular": "1 or more devices found",
+    "devicesFoundOrMore": "{{deviceCount}} or more devices found",
+    "deviceFoundSingular": "1 device found",
+    "devicesFoundPlural": "{{deviceCount}} devices found",
+    "bluetoothPrivacyInfo": "Information from compatible devices can be used to determine your location and create a profile for you.",
+    "dontAllow": "Don't Allow",
+    "allow": "Allow"
   }
 }

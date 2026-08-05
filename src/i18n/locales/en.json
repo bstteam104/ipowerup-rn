@@ -2,8 +2,8 @@
   "login": {
     "title": "Log in to your Account",
     "subtitle": "Or Create a new App account. This is the same account used for iPowerUp.com",
-    "emailPlaceholder": "Enter Email Address",
-    "passwordPlaceholder": "Enter Password",
+    "emailPlaceholder": "Email Address",
+    "passwordPlaceholder": "Password",
     "forgotPassword": "Forgot Password?",
     "signIn": "Sign In",
     "createAccount": "Create an Account?",
@@ -12,14 +12,15 @@
   },
   "signup": {
     "title": "Create Account",
-    "subtitle": "Please enter your information below to create your account",
-    "firstNamePlaceholder": "Enter First Name Or Nickname",
-    "lastNamePlaceholder": "Enter Last Name (Optional)",
+    "subtitle": "Please provide your information below to create your account",
+    "firstNamePlaceholder": "First Name Or Nickname",
+    "lastNamePlaceholder": "Last Name (Optional)",
     "caseDeviceNamePlaceholder": "Name your case device (e.g., Sam's Case)",
-    "phonePlaceholder": "Enter Phone Number",
-    "occupationPlaceholder": "Enter Occupation (Optional)",
-    "emailPlaceholder": "Enter Email Address",
-    "passwordPlaceholder": "Enter Password",
+    "serialNumberPlaceholder": "iPowerUp Device Serial Number (Optional)",
+    "phonePlaceholder": "Phone Number",
+    "occupationPlaceholder": "Occupation (Optional)",
+    "emailPlaceholder": "Email Address",
+    "passwordPlaceholder": "Password",
     "countryPlaceholder": "Country/Region",
     "createAccount": "Create Account",
     "agreeTerms": "I agree to iPowerUp Terms & Conditions",
@@ -28,7 +29,7 @@
   },
   "forgotPassword": {
     "title": "Forgot Password",
-    "subtitle": "Please Enter Your Email Address To Receive Verification Code.",
+    "subtitle": "Please provide your email address to receive a verification code.",
     "emailLabel": "Email Address",
     "resendCode": "Resend Code",
     "backToSignIn": "Back to Sign In",
@@ -53,7 +54,7 @@
   },
   "recreatePassword": {
     "title": "Reset Password",
-    "subtitle": "Enter your new password below",
+    "subtitle": "Set your new password below",
     "newPassword": "New Password",
     "confirmPassword": "Confirm Password",
     "updatePassword": "Update Password",
@@ -107,7 +108,8 @@
     "caseTemperature": "Case Battery Temperature",
     "temperatureLevel": "Temperature Level",
     "transferPowerToPhone": "Transfer Power To Phone",
-    "stopCharging": "Stop Charging"
+    "stopCharging": "Stop Charging",
+    "transferPowerAccessibilityHint": "Double tap to toggle power transfer between case and phone"
   },
   "help": {
     "title": "Help and Support",
@@ -123,7 +125,7 @@
     "phoneNumber": "Phone Number",
     "emergencyNumber": "Emergency Number",
     "occupation": "Occupation",
-    "occupationPlaceholder": "Please enter occupation (optional)",
+    "occupationPlaceholder": "Occupation (optional)",
     "update": "Update",
     "submit": "Submit",
     "updated": "Profile Updated Successfully"
@@ -140,8 +142,10 @@
     "description": "Get peace of mind from a case and app that monitors your case and phone so you don't need to.",
     "batteryAlerts": "Get alerts at 5%, 20%, 80%, and 100% battery power levels, plus additional optional levels.",
     "bluetoothRange": "Enable case-to-phone communication even when the case is detached within Bluetooth range of up to 33 feet or 10 meters.",
-    "temperatureAlerts": "Get case temperature alerts to prevent your case and phone from extreme temperature damage.",
-    "history": "Check your battery usage history to understand opportunities for enhanced performance. <link to History screen>",
+    "transferPower": "Transfer power from your case to your phone when you need it. Or, with Mode button, use 2 Quick Clicks to turn \"Transfer Power\" on or off.",
+    "temperatureAlerts": "Get Case Battery Temperature alerts to prevent your case and phone from extreme temperature damage.",
+    "historyPrefix": "Check your battery usage history to understand opportunities for enhanced performance. ",
+    "historyLink": "View History",
     "enhancements": "Enjoy app enhancements throughout the year that provide continuous peace-of-mind improvements.",
     "select": "Select"
   },
@@ -246,6 +250,8 @@
     "tip1Answer": "Place your device in direct sunlight and ensure the solar panels are clean and unobstructed. The best charging occurs between 10 AM and 4 PM when sunlight is strongest.",
     "tip2Question": "What is the optimal temperature for charging?",
     "tip2Answer": "The case works best between 32°F (0°C) and 113°F (45°C). Avoid charging in extreme temperatures as it may affect battery life and charging efficiency.",
+    "tip3Question": "How do I pair my case with the app?",
+    "tip3Answer": "Set your iPowerUp case to Pairing by holding the Mode button down for 5 seconds. Open the app, tap Connect New Device, tap Allow, and select your case from the list.",
     "tip4Question": "Can I charge my phone while the case is charging?",
     "tip4Answer": "Yes! The case supports pass-through charging, allowing you to charge your phone while the case itself is being charged via solar or USB.",
     "tip5Question": "How do I transfer power from case to phone?",
@@ -263,7 +269,7 @@
     "faq4Answer": "Connect a USB-C cable from the case to the Android device."
   },
   "otp": {
-    "title": "Enter OTP",
+    "title": "OTP",
     "subtitle": "We've sent a verification code to",
     "yourEmail": "your email",
     "resend": "Resend OTP",
@@ -335,14 +341,17 @@
     "deleteAccountConfirm": "Are you sure you want to delete your account?"
   },
   "permissions": {
-    "bluetoothTitle": "Allow \"iPowerUp\" App to find Bluetooth devices?",
+    "bluetoothTitle": "Allow iPowerUp App to find and pair with phones/devices?",
     "permissionRequired": "Permission Required",
-    "bluetoothDescription": "This app requires Bluetooth to connect to BLE devices.",
+    "bluetoothDescription": "This app requires wireless data communication to connect to compatible devices.",
     "permissionDescription": "This permission is required for the app to function properly.",
     "searchingDevices": "Searching for devices...",
+    "noDevicesFound": "No compatible devices found. Make sure your case is in pairing mode and try again.",
+    "devicesFoundOrMoreSingular": "1 or more devices found",
+    "devicesFoundOrMore": "{{deviceCount}} or more devices found",
     "deviceFoundSingular": "1 device found",
     "devicesFoundPlural": "{{deviceCount}} devices found",
-    "bluetoothPrivacyInfo": "Information from Bluetooth devices can be used to determine your location and create a profile for you.",
+    "bluetoothPrivacyInfo": "Information from compatible devices can be used to determine your location and create a profile for you.",
     "dontAllow": "Don't Allow",
     "allow": "Allow"
   }

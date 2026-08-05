@@ -1,5 +1,6 @@
-import React, {useCallback, useRef, useState} from 'react';
+import React, {useCallback, useEffect, useRef, useState} from 'react';
 import {
+  DeviceEventEmitter,
   Image,
   Platform,
   SafeAreaView,
@@ -17,6 +18,7 @@ import {Colors} from '../constants/Constants';
 import {
   getBleHistory,
   getChartDataFromBleHistory,
+  getRecordedHistoryData,
   HISTORY_KEYS,
 } from '../storage/BLEHistoryStorage';
 import BLEManager from '../services/BLEManagerNative';
@@ -62,8 +64,6 @@ const ActivityHistoryScreen = ({navigation}) => {
   const [hasData, setHasData] = useState(false);
   const [bleConnected, setBleConnected] = useState(() => !!BLEManager.isConnected);
 
-  const reloadTimer = useRef(null);
-
   const applyStoredData = useCallback(async () => {
     const [phoneEntries, solarEntries, usbEntries] = await Promise.all([
       getBleHistory(HISTORY_KEYS.phone),
@@ -74,7 +74,7 @@ const ActivityHistoryScreen = ({navigation}) => {
     setChart1Labels(getCustomValues(phoneEntries));
     setChart2Labels(getChart2Labels(solarEntries, usbEntries));
 
-    const bleCharts = await getChartDataFromBleHistory(10);
+    const bleCharts = await getChartDataFromBleHistory();
     if (bleCharts.hasBleData && bleCharts.caseData.length > 0) {
       setDayLabels(bleCharts.dayLabels);
       setCaseData(bleCharts.caseData);
@@ -88,53 +88,40 @@ const ActivityHistoryScreen = ({navigation}) => {
     }
   }, []);
 
-  const loadChartData = useCallback(async () => {
+  const refreshFromDevice = useCallback(async () => {
     const connected = !!BLEManager.isConnected;
     setBleConnected(connected);
-
-    // Show stored data immediately
     await applyStoredData();
 
-    // Sync with device silently in background, then refresh
-    if (connected) {
-      BLEManager.syncBleHistoryFromDevice()
-        .then(applyStoredData)
-        .catch(e => console.warn('BLE history sync:', e?.message || e));
+    if (!connected) {
+      return;
     }
-  }, [applyStoredData]);
 
-  const scheduleReload = useCallback(() => {
-    if (reloadTimer.current) {
-      clearTimeout(reloadTimer.current);
+    try {
+      const recorded = await getRecordedHistoryData();
+      if (recorded && BLEManager.syncTodayBleHistory) {
+        await BLEManager.syncTodayBleHistory();
+      } else if (BLEManager.syncBleHistoryFromDevice) {
+        await BLEManager.syncBleHistoryFromDevice();
+      }
+      await applyStoredData();
+    } catch (e) {
+      console.warn('BLE history refresh:', e?.message || e);
     }
-    reloadTimer.current = setTimeout(() => applyStoredData(), 500);
   }, [applyStoredData]);
 
   useFocusEffect(
     useCallback(() => {
-      BLEManager.setDelegate({
-        onDataReceived: () => scheduleReload(),
-        onConnected: () => {
-          setBleConnected(true);
-          loadChartData();
-        },
-        onDisconnected: () => {
-          setBleConnected(false);
-          applyStoredData();
-        },
-        onConnectionFailed: () => {},
-        onDeviceDiscovered: () => {},
-      });
-
-      loadChartData();
-
-      return () => {
-        if (reloadTimer.current) {
-          clearTimeout(reloadTimer.current);
-        }
-      };
-    }, [loadChartData, scheduleReload, applyStoredData]),
+      refreshFromDevice();
+    }, [refreshFromDevice]),
   );
+
+  useEffect(() => {
+    const sub = DeviceEventEmitter.addListener('bleHistoryUpdated', () => {
+      applyStoredData();
+    });
+    return () => sub.remove();
+  }, [applyStoredData]);
 
   return (
     <View style={styles.container}>

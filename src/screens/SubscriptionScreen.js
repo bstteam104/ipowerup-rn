@@ -93,6 +93,10 @@ const SubscriptionScreen = ({navigation}) => {
               <Text style={styles.paragraph}>
                 {t('peaceOfMind.bluetoothRange')}
               </Text>
+
+              <Text style={styles.paragraph}>
+                {t('peaceOfMind.transferPower')}
+              </Text>
               
               <Text style={styles.paragraph}>
                 {t('peaceOfMind.temperatureAlerts')}
@@ -120,6 +124,16 @@ const SubscriptionScreen = ({navigation}) => {
             activeOpacity={0.8}
           >
             <Text style={styles.selectButtonText}>{t('peaceOfMind.select')}</Text>
+          </TouchableOpacity>
+
+          <TouchableOpacity
+            style={styles.optionsButton}
+            onPress={() => navigation.navigate('Options')}
+            activeOpacity={0.8}
+          >
+            <Text style={styles.optionsButtonText}>
+              {t('appSettings.options', 'Options')}
+            </Text>
           </TouchableOpacity>
         </View>
       </ScrollView>
@@ -225,6 +239,22 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: 'bold',
     color: Colors.black, // Black text on yellow
+  },
+  optionsButton: {
+    width: '100%',
+    height: 50,
+    backgroundColor: Colors.white,
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: Colors.cyanBlue,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginTop: 12,
+  },
+  optionsButtonText: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: Colors.cyanBlue,
   },
 });
 

@@ -109,7 +109,7 @@ const RecreatePasswordScreen = ({navigation, route}) => {
             {/* Title */}
             <Text style={styles.title}>{t('recreatePassword.title')}</Text>
             <Text style={styles.subtitle}>
-              {t('recreatePassword.subtitle', 'Enter your new password below')}
+              {t('recreatePassword.subtitle')}
             </Text>
 
             {/* New Password Field CustomPaswordTextField */}

@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "397621950021",
+    "project_id": "ipowerup-4b48c",
+    "storage_bucket": "ipowerup-4b48c.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:397621950021:android:03098ecae8029959b1d52c",
+        "android_client_info": {
+          "package_name": "com.ipowerupreactnative"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAWVAeK_ntyo-AxzWwCTQYAR9hkWnS4GOE"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

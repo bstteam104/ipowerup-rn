@@ -187,8 +187,14 @@ const PermissionModal = ({
                   {displayCount === 0
                     ? t('permissions.searchingDevices', 'Searching for devices...')
                     : displayCount === 1
-                    ? t('permissions.deviceFoundSingular')
-                    : t('permissions.devicesFoundPlural', {deviceCount: displayCount})}
+                    ? t(
+                        'permissions.devicesFoundOrMoreSingular',
+                        '1 or more devices found',
+                      )
+                    : t('permissions.devicesFoundOrMore', {
+                        deviceCount: displayCount,
+                        defaultValue: `${displayCount} or more devices found`,
+                      })}
                 </Text>
                 <Text style={styles.infoText}>
                   {t('permissions.bluetoothPrivacyInfo')}

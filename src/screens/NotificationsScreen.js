@@ -1,4 +1,4 @@
-import React, {useState, useEffect} from 'react';
+import React, {useState, useCallback} from 'react';
 import {
   View,
   Text,
@@ -9,71 +9,38 @@ import {
   StatusBar,
   SafeAreaView,
   Platform,
-  Dimensions,
-  Alert,
+  DeviceEventEmitter,
 } from 'react-native';
 import {useTranslation} from 'react-i18next';
-import {Colors, Constants, FontSizes} from '../constants/Constants';
-import {safeJsonParse} from '../utils/apiHelper';
-
-const {width, height} = Dimensions.get('window');
+import {useFocusEffect} from '@react-navigation/native';
+import {Colors, FontSizes} from '../constants/Constants';
+import {
+  getActiveNotifications,
+  formatNotificationDate,
+  NOTIFICATION_HISTORY_UPDATED,
+} from '../storage/NotificationHistoryStorage';
 
 const NotificationsScreen = ({navigation}) => {
   const {t} = useTranslation();
-  const [notifications, setNotifications] = useState([
-    {
-      id: '1',
-      date: 'yesterday at 11:44 pm',
-      message: 'Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy',
-      alertImage: 'alert3',
-    },
-    {
-      id: '2',
-      date: 'yesterday at 11:44 pm',
-      message: 'Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy',
-      alertImage: 'alert2',
-    },
-    {
-      id: '3',
-      date: 'yesterday at 11:44 pm',
-      message: 'Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy',
-      alertImage: 'alert1',
-    },
-  ]);
+  const [notifications, setNotifications] = useState([]);
 
-  useEffect(() => {
-    getNotifications();
+  const loadNotifications = useCallback(async () => {
+    const active = await getActiveNotifications();
+    setNotifications(active);
   }, []);
 
-  const getNotifications = async () => {
-    try {
-      const response = await fetch(`${Constants.baseURLDev}/notifications`, {
-        method: 'GET',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-      });
+  useFocusEffect(
+    useCallback(() => {
+      loadNotifications();
+      const sub = DeviceEventEmitter.addListener(
+        NOTIFICATION_HISTORY_UPDATED,
+        loadNotifications,
+      );
+      return () => sub.remove();
+    }, [loadNotifications]),
+  );
 
-      const data = await safeJsonParse(response);
-
-      // Check if there's an error in the response
-      if (data && data.error) {
-        console.error('API Error:', data.message);
-        // Don't show alert for API errors, just log and use default notifications
-        return;
-      }
-
-      if (data && data.data) {
-        setNotifications(data.data);
-      }
-    } catch (error) {
-      console.error('Error fetching notifications:', error);
-      // Don't show alert, just use default notifications
-    }
-  };
-
-  const getAlertImage = (imageName) => {
-    // Map alert image names to actual image sources
+  const getAlertImage = imageName => {
     const imageMap = {
       alert1: require('../../assets/Notification/alert1.png'),
       alert2: require('../../assets/Notification/alert2.png'),
@@ -83,44 +50,46 @@ const NotificationsScreen = ({navigation}) => {
   };
 
   const renderNotificationItem = ({item}) => (
-    <TouchableOpacity
-      style={styles.notificationItem}
-      onPress={() => navigation.navigate('NotificationDetail')}
-      activeOpacity={0.7}
-    >
+    <View style={styles.notificationItem}>
       <Image
         source={getAlertImage(item.alertImage)}
         style={styles.alertImage}
         resizeMode="contain"
       />
       <View style={styles.notificationContent}>
-        <Text style={styles.dateText}>{item.date}</Text>
+        <Text style={styles.dateText}>
+          {formatNotificationDate(item.updatedAt || item.createdAt)}
+        </Text>
+        <Text style={styles.titleText} numberOfLines={1}>
+          {item.title}
+        </Text>
         <Text style={styles.messageText} numberOfLines={3}>
-          {item.message}
+          {item.body}
         </Text>
       </View>
-    </TouchableOpacity>
+    </View>
   );
 
   return (
     <View style={styles.container}>
-      <StatusBar barStyle="dark-content" backgroundColor="transparent" translucent />
-      
-      {/* Background Image */}
+      <StatusBar
+        barStyle="dark-content"
+        backgroundColor="transparent"
+        translucent
+      />
+
       <Image
         source={require('../../assets/images/background.png')}
         style={styles.backgroundImage}
         resizeMode="cover"
       />
-      
+
       <SafeAreaView style={styles.safeArea}>
-        {/* Header */}
         <View style={styles.header}>
           <TouchableOpacity
             style={styles.backButton}
             onPress={() => navigation.goBack()}
-            activeOpacity={0.7}
-          >
+            activeOpacity={0.7}>
             <Image
               source={require('../../assets/icons/back-arrow-ios.png')}
               style={styles.backIcon}
@@ -131,15 +100,22 @@ const NotificationsScreen = ({navigation}) => {
           <View style={styles.placeholder} />
         </View>
 
-        {/* Notifications List UITableView */}
-        <FlatList
-          data={notifications}
-          renderItem={renderNotificationItem}
-          keyExtractor={item => item.id}
-          contentContainerStyle={styles.listContent}
-          showsVerticalScrollIndicator={false}
-          ItemSeparatorComponent={() => <View style={styles.separator} />}
-        />
+        {notifications.length === 0 ? (
+          <View style={styles.emptyCard}>
+            <Text style={styles.emptyText}>
+              {t('notifications.notAvailable', 'Notification not available.')}
+            </Text>
+          </View>
+        ) : (
+          <FlatList
+            data={notifications}
+            renderItem={renderNotificationItem}
+            keyExtractor={item => item.id}
+            contentContainerStyle={styles.listContent}
+            showsVerticalScrollIndicator={false}
+            ItemSeparatorComponent={() => <View style={styles.separator} />}
+          />
+        )}
       </SafeAreaView>
     </View>
   );
@@ -192,6 +168,22 @@ const styles = StyleSheet.create({
   placeholder: {
     width: 24,
   },
+  emptyCard: {
+    marginHorizontal: 40,
+    marginTop: '40%',
+    backgroundColor: Colors.white,
+    borderRadius: 10,
+    paddingVertical: 24,
+    paddingHorizontal: 20,
+    alignItems: 'center',
+    justifyContent: 'center',
+    minHeight: 70,
+  },
+  emptyText: {
+    fontSize: 20,
+    color: Colors.black,
+    textAlign: 'center',
+  },
   listContent: {
     paddingVertical: 10,
   },
@@ -214,7 +206,13 @@ const styles = StyleSheet.create({
   dateText: {
     fontSize: FontSizes.small,
     color: Colors.grayColor,
-    marginBottom: 8,
+    marginBottom: 4,
+  },
+  titleText: {
+    fontSize: FontSizes.regular,
+    fontWeight: '600',
+    color: Colors.lightBlackColor,
+    marginBottom: 4,
   },
   messageText: {
     fontSize: FontSizes.regular,
@@ -229,4 +227,3 @@ const styles = StyleSheet.create({
 });
 
 export default NotificationsScreen;
-

@@ -8,6 +8,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import DeviceInfo from 'react-native-device-info';
 import {Constants} from '../constants/Constants';
 import {safeJsonParse} from '../utils/apiHelper';
+import NotificationService from './NotificationService';
 
 // Storage keys
 const STORAGE_KEYS = {
@@ -24,14 +25,15 @@ const getDeviceInfo = async () => {
     const udid = await DeviceInfo.getUniqueId();
     const deviceBrand = DeviceInfo.getBrand();
     const deviceOS = Platform.OS === 'ios' ? 'ios' : 'android';
-    
+    const deviceToken = await NotificationService.getDeviceTokenAsync();
+
     return {
       udid: udid || Constants.UDID,
       device_type: deviceOS,
-      device_token: Constants.deviceToken, // Can be updated with push notification token later
+      device_token: deviceToken || Constants.deviceToken,
       device_brand: deviceBrand || Constants.deviceBrand,
       device_os: deviceOS,
-      app_version: DeviceInfo.getVersion() || '0.1',
+      app_version: DeviceInfo.getVersion() || '1.2.4',
     };
   } catch (error) {
     console.error('Error getting device info:', error);
@@ -39,10 +41,10 @@ const getDeviceInfo = async () => {
     return {
       udid: Constants.UDID,
       device_type: Constants.platform,
-      device_token: Constants.deviceToken,
+      device_token: NotificationService.getDeviceToken() || Constants.deviceToken,
       device_brand: Constants.deviceBrand,
       device_os: Constants.platform,
-      app_version: '0.1',
+      app_version: '1.2.4',
     };
   }
 };

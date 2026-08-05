@@ -41,7 +41,7 @@ export const parseBatteryHistory = (hex, completeHex = '') => {
   const now = Date.now();
 
   for (let i = 0; i + 1 < bytes.length; i += 2) {
-    const day = i + 1;
+    const day = Math.floor(i / 2) + 1;
     const low = bytes[i];
     const high = bytes[i + 1];
     const value = low | (high << 8);

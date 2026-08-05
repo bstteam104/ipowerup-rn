@@ -16,6 +16,7 @@ import android.bluetooth.le.ScanResult
 import android.bluetooth.le.ScanSettings
 import android.content.Context
 import android.os.Handler
+import android.os.HandlerThread
 import android.os.Looper
 import android.util.Log
 import com.facebook.react.bridge.Arguments
@@ -46,6 +47,8 @@ class BLEManagerNative(reactContext: ReactApplicationContext) : ReactContextBase
         
         // Timing - Exact match to iOS (1 second after connection initiated)
         private const val PASSWORD_DELAY_MS = 1000L
+        private const val STATUS_POLL_INTERVAL_MS = 5000L
+        private const val COMMAND_QUERY_POWER_BANK_STATUS = 0x04
     }
 
     private var bluetoothManager: BluetoothManager? = null
@@ -64,8 +67,74 @@ class BLEManagerNative(reactContext: ReactApplicationContext) : ReactContextBase
     private var notifyCharacteristic: BluetoothGattCharacteristic? = null
     
     private val mainHandler = Handler(Looper.getMainLooper())
+    private val pollHandlerThread = HandlerThread("BLEStatusPoll").apply { start() }
+    private val pollHandler = Handler(pollHandlerThread.looper)
     private var passwordTimer: Runnable? = null
     private var connectionVerificationTimer: Runnable? = null
+    private var statusPollRunnable: Runnable? = null
+    private var lastPhoneBatteryForQuery = 0
+    private var notificationsReady = false
+    private val batteryAlertNotifier by lazy { BatteryAlertNotifier(reactApplicationContext) }
+
+    private fun endBleBackgroundSession() {
+        stopStatusPolling()
+        notificationsReady = false
+        try {
+            BleForegroundService.stop(reactApplicationContext)
+        } catch (e: Exception) {
+            Log.w(TAG, "Could not stop BLE foreground service: ${e.message}")
+        }
+    }
+
+    private fun startStatusPolling() {
+        if (!notificationsReady || !isConnected) {
+            return
+        }
+        stopStatusPolling()
+        statusPollRunnable = object : Runnable {
+            override fun run() {
+                if (!isConnected || bluetoothGatt == null || writeCharacteristic == null) {
+                    return
+                }
+                val sent = sendQueryPowerBankStatusInternal(lastPhoneBatteryForQuery)
+                if (sent) {
+                    Log.d(TAG, "⏰ Native status poll sent (0x04)")
+                }
+                pollHandler.postDelayed(this, STATUS_POLL_INTERVAL_MS)
+            }
+        }
+        pollHandler.post(statusPollRunnable!!)
+        Log.d(TAG, "✅ Native background status polling started (every ${STATUS_POLL_INTERVAL_MS}ms)")
+    }
+
+    private fun stopStatusPolling() {
+        statusPollRunnable?.let { pollHandler.removeCallbacks(it) }
+        statusPollRunnable = null
+    }
+
+    private fun sendQueryPowerBankStatusInternal(phoneBattery: Int): Boolean {
+        return try {
+            if (!isConnected || writeCharacteristic == null || bluetoothGatt == null) {
+                false
+            } else if (!verifyActualConnectionState()) {
+                false
+            } else {
+                val packet = createCommandPacket(COMMAND_QUERY_POWER_BANK_STATUS, phoneBattery.coerceIn(0, 100))
+                writeCharacteristic!!.value = packet
+                writeCharacteristic!!.writeType = BluetoothGattCharacteristic.WRITE_TYPE_NO_RESPONSE
+                bluetoothGatt!!.writeCharacteristic(writeCharacteristic!!)
+            }
+        } catch (e: Exception) {
+            Log.w(TAG, "Native queryPowerBankStatus failed: ${e.message}")
+            false
+        }
+    }
+
+    override fun onCatalystInstanceDestroy() {
+        endBleBackgroundSession()
+        pollHandlerThread.quitSafely()
+        super.onCatalystInstanceDestroy()
+    }
 
     init {
         val context = reactApplicationContext.applicationContext
@@ -236,6 +305,8 @@ class BLEManagerNative(reactContext: ReactApplicationContext) : ReactContextBase
             writeCharacteristic = null
             notifyCharacteristic = null
 
+            endBleBackgroundSession()
+
             sendEvent("onDisconnected", null)
             promise.resolve(true)
             
@@ -265,7 +336,10 @@ class BLEManagerNative(reactContext: ReactApplicationContext) : ReactContextBase
                 return
             }
 
-            // Create command packet (you'll need to implement this based on your command structure)
+            if (commandType == COMMAND_QUERY_POWER_BANK_STATUS) {
+                lastPhoneBatteryForQuery = value.coerceIn(0, 100)
+            }
+
             val commandData = createCommandPacket(commandType, value)
             
             // iOS: peripheral.writeValue(data, for: writeCharacters, type: .withoutResponse)
@@ -642,6 +716,7 @@ class BLEManagerNative(reactContext: ReactApplicationContext) : ReactContextBase
                         Log.e(TAG, "Error closing GATT: ${e.message}")
                     }
                     bluetoothGatt = null
+                    endBleBackgroundSession()
                     
                     sendEvent("onConnectionFailed", Arguments.createMap().apply {
                         putString("error", "GATT error: $status")
@@ -691,6 +766,11 @@ class BLEManagerNative(reactContext: ReactApplicationContext) : ReactContextBase
                     // Add actual connection state to the event
                     deviceMap.putBoolean("actualGattConnected", actualState)
                     sendEvent("onConnected", deviceMap)
+                    try {
+                        BleForegroundService.start(reactApplicationContext)
+                    } catch (e: Exception) {
+                        Log.w(TAG, "Could not start BLE foreground service: ${e.message}")
+                    }
                     
                     // iOS line 203: connectedPeripheral?.discoverServices([Self.serviceUUID])
                     // CRITICAL: Discover services immediately - this keeps connection alive
@@ -701,6 +781,7 @@ class BLEManagerNative(reactContext: ReactApplicationContext) : ReactContextBase
                         if (!stillConnected) {
                             Log.e(TAG, "❌ Connection lost before service discovery")
                             isConnected = false
+                            endBleBackgroundSession()
                             sendEvent("onDisconnected", Arguments.createMap().apply {
                                 putString("reason", "Connection lost before service discovery")
                                 putInt("status", -1)
@@ -778,6 +859,7 @@ class BLEManagerNative(reactContext: ReactApplicationContext) : ReactContextBase
                         disconnectMap.putString("deviceName", deviceName)
                         disconnectMap.putString("deviceAddress", deviceAddress)
                         
+                        endBleBackgroundSession()
                         sendEvent("onDisconnected", disconnectMap)
                         
                         // Don't close GATT here - let it be closed explicitly or on reconnect
@@ -869,6 +951,9 @@ class BLEManagerNative(reactContext: ReactApplicationContext) : ReactContextBase
             if (status == BluetoothGatt.GATT_SUCCESS) {
                 Log.d(TAG, "✅ Notification descriptor written successfully - ready to receive data")
                 Log.d(TAG, "✅ Notifications are now ENABLED - device can send data")
+                notificationsReady = true
+                startStatusPolling()
+                sendQueryPowerBankStatusInternal(lastPhoneBatteryForQuery)
                 // Send event to JS to track notification setup success
                 val eventMap = Arguments.createMap()
                 eventMap.putString("status", "success")
@@ -1090,6 +1175,12 @@ class BLEManagerNative(reactContext: ReactApplicationContext) : ReactContextBase
                 dataMap.putString("data", hexString)
                 dataMap.putString("characteristicUuid", characteristic.uuid.toString())
                 dataMap.putInt("dataLength", value.size)
+                try {
+                    batteryAlertNotifier.handlePowerBankStatus(value)
+                } catch (e: Exception) {
+                    Log.w(TAG, "Battery alert handling failed: ${e.message}")
+                }
+
                 Log.d(TAG, "📤 Sending onDataReceived event to React Native (${value.size} bytes)")
                 sendEvent("onDataReceived", dataMap)
             } else {

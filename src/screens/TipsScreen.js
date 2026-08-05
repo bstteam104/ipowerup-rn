@@ -22,8 +22,9 @@ const TipsScreen = ({navigation}) => {
   const [tips, setTips] = useState([
     {id: '1', question: t('tips.tip1Question'), answer: t('tips.tip1Answer'), isExpanded: false},
     {id: '2', question: t('tips.tip2Question'), answer: t('tips.tip2Answer'), isExpanded: false},
-    {id: '3', question: t('tips.tip4Question'), answer: t('tips.tip4Answer'), isExpanded: false},
-    {id: '4', question: t('tips.tip5Question'), answer: t('tips.tip5Answer'), isExpanded: false},
+    {id: '3', question: t('tips.tip3Question'), answer: t('tips.tip3Answer'), isExpanded: false},
+    {id: '4', question: t('tips.tip4Question'), answer: t('tips.tip4Answer'), isExpanded: false},
+    {id: '5', question: t('tips.tip5Question'), answer: t('tips.tip5Answer'), isExpanded: false},
   ]);
 
   useEffect(() => {

@@ -13,6 +13,8 @@ export const HISTORY_KEYS = {
   solar: 'solarChargingHistory',
 };
 
+const RECORDED_HISTORY_KEY = '@ipowerup:recordedHistoryData';
+
 const startOfLocalDayMs = ts => {
   const x = new Date(ts);
   x.setHours(0, 0, 0, 0);
@@ -25,6 +27,33 @@ const sameLocalCalendarDay = (aTs, bTs) =>
 const sortHistoryDesc = list =>
   [...list].sort((a, b) => (b.date || 0) - (a.date || 0));
 
+export const getRecordedHistoryData = async () => {
+  try {
+    const raw = await AsyncStorage.getItem(RECORDED_HISTORY_KEY);
+    return raw === 'true';
+  } catch {
+    return false;
+  }
+};
+
+export const setRecordedHistoryData = async value => {
+  try {
+    await AsyncStorage.setItem(RECORDED_HISTORY_KEY, value ? 'true' : 'false');
+  } catch (e) {}
+};
+
+/** iOS AppDelegate + disconnect — wipe stale rows before fresh device fetch. */
+export const clearAllBleHistory = async () => {
+  try {
+    await AsyncStorage.multiRemove([
+      HISTORY_KEYS.phone,
+      HISTORY_KEYS.usb,
+      HISTORY_KEYS.solar,
+      RECORDED_HISTORY_KEY,
+    ]);
+  } catch (e) {}
+};
+
 export const getBleHistory = async typeKey => {
   try {
     const raw = await AsyncStorage.getItem(typeKey);
@@ -32,7 +61,7 @@ export const getBleHistory = async typeKey => {
       return [];
     }
     const arr = JSON.parse(raw);
-    return Array.isArray(arr) ? arr : [];
+    return Array.isArray(arr) ? sortHistoryDesc(arr) : [];
   } catch {
     return [];
   }
@@ -40,14 +69,14 @@ export const getBleHistory = async typeKey => {
 
 export const saveBleHistory = async (typeKey, list) => {
   try {
-    await AsyncStorage.setItem(typeKey, JSON.stringify(list));
+    await AsyncStorage.setItem(typeKey, JSON.stringify(sortHistoryDesc(list)));
     return true;
   } catch {
     return false;
   }
 };
 
-/** iOS `fetchAndSaveHistory` — merge device payload with saved same-day rows. */
+/** iOS `fetchAndSaveHistory` — merge device payload with saved same-day rows (today from 0x08). */
 export const mergeFetchedHistory = async (typeKey, rawHex) => {
   let parsed = parseBatteryHistory(rawHex, rawHex);
   const saved = await getBleHistory(typeKey);
@@ -56,11 +85,8 @@ export const mergeFetchedHistory = async (typeKey, rawHex) => {
     const idx = parsed.findIndex(p => sameLocalCalendarDay(p.date, savedEntry.date));
     if (idx >= 0) {
       parsed[idx] = savedEntry;
-    } else {
-      parsed.push(savedEntry);
     }
   }
-  parsed = sortHistoryDesc(parsed);
   await saveBleHistory(typeKey, parsed);
 };
 
@@ -73,7 +99,6 @@ export const saveTodayHistoryEntry = async (typeKey, today) => {
   } else {
     history.push(today);
   }
-  history = sortHistoryDesc(history);
   await saveBleHistory(typeKey, history);
 };
 
@@ -105,10 +130,9 @@ const weekdayLetter = ts => {
 };
 
 /**
- * Same pairing as iOS `BatteryDataManager.getChartData` + rotate first→last,
- * then pad/trim to `targetDays` bars for RN charts.
+ * iOS `BatteryDataManager.getChartData(for: 10)` — same zip, labels, rotate (no zero padding).
  */
-export const getChartDataFromBleHistory = async (targetDays = 10) => {
+export const getChartDataFromBleHistory = async () => {
   let phoneCharging = (await getBleHistory(HISTORY_KEYS.phone)).map(e => e.mWhValue || 0);
   let usbCharging = (await getBleHistory(HISTORY_KEYS.usb)).map(e => e.mWhValue || 0);
   let usbSolar = (await getBleHistory(HISTORY_KEYS.solar)).map(e => e.mWhValue || 0);
@@ -138,8 +162,7 @@ export const getChartDataFromBleHistory = async (targetDays = 10) => {
   const phoneData = [];
   const dayLabels = [];
 
-  // iOS: dayCount = 9, decrement each iteration (same as Swift getChartData)
-  let dayCount = targetDays - 1;
+  let dayCount = 9;
   for (let i = 0; i < len; i++) {
     const ph = phoneCharging[i];
     const usb = usbCharging[i];
@@ -147,29 +170,12 @@ export const getChartDataFromBleHistory = async (targetDays = 10) => {
     caseData.push({wallOutlet: ph, unoCase: ph});
     phoneData.push({wallOutlet: sol, unoCase: usb});
     dayLabels.push(weekdayLetter(Date.now() - dayCount * 86400000));
-    dayCount--;
+    dayCount -= 1;
   }
 
-  // iOS rotates data only — labels stay sequential
   if (caseData.length > 0) {
-    const c0 = caseData.shift();
-    caseData.push(c0);
-    const p0 = phoneData.shift();
-    phoneData.push(p0);
-  }
-
-  while (caseData.length < targetDays) {
-    const padIdx = targetDays - caseData.length;
-    const date = Date.now() - (targetDays - 1 + padIdx) * 86400000;
-    caseData.unshift({wallOutlet: 0, unoCase: 0});
-    phoneData.unshift({wallOutlet: 0, unoCase: 0});
-    dayLabels.unshift(weekdayLetter(date));
-  }
-  if (caseData.length > targetDays) {
-    const drop = caseData.length - targetDays;
-    caseData.splice(0, drop);
-    phoneData.splice(0, drop);
-    dayLabels.splice(0, drop);
+    caseData.push(caseData.shift());
+    phoneData.push(phoneData.shift());
   }
 
   return {caseData, phoneData, dayLabels, hasBleData: true};

@@ -8,9 +8,12 @@ import {
   createQueryChargerConfigCommand,
 } from '../utils/BLECommands';
 import {parsePowerBankStatus, parseChargerConfig} from '../utils/BLEParser';
+import {DeviceEventEmitter} from 'react-native';
 import {
   mergeFetchedHistory,
   mergeTodayFromStatus08,
+  getRecordedHistoryData,
+  setRecordedHistoryData,
   HISTORY_KEYS,
 } from '../storage/BLEHistoryStorage';
 
@@ -570,9 +573,10 @@ class BLEManagerNativeService {
   }
 
   /**
-   * Pull today + multi-day mWh history from the case (same sequence as iOS HomeVC), merge into AsyncStorage.
+   * Pull today + multi-day mWh history from the case (iOS HomeVC parity).
+   * 0x08 always; 0x06→0x07→0x05 only once per session until disconnect/app restart.
    */
-  async syncBleHistoryFromDevice() {
+  async syncBleHistoryFromDevice({forceFull = false} = {}) {
     if (!this.isConnected) {
       throw new Error('Not connected');
     }
@@ -587,14 +591,21 @@ class BLEManagerNativeService {
       const r08 = await sendAndWait(BLE_CONSTANTS.COMMAND_TODAY_STATUS);
       await mergeTodayFromStatus08(r08.rawHex);
       await pause(200);
-      const r06 = await sendAndWait(BLE_CONSTANTS.COMMAND_HISTORY_USB_CHARGING);
-      await mergeFetchedHistory(HISTORY_KEYS.usb, r06.rawHex);
-      await pause(200);
-      const r07 = await sendAndWait(BLE_CONSTANTS.COMMAND_HISTORY_PHONE_CHARGING);
-      await mergeFetchedHistory(HISTORY_KEYS.phone, r07.rawHex);
-      await pause(200);
-      const r05 = await sendAndWait(BLE_CONSTANTS.COMMAND_HISTORY_SOLAR_CHARGING);
-      await mergeFetchedHistory(HISTORY_KEYS.solar, r05.rawHex);
+
+      const alreadyRecorded = forceFull ? false : await getRecordedHistoryData();
+      if (!alreadyRecorded) {
+        const r06 = await sendAndWait(BLE_CONSTANTS.COMMAND_HISTORY_USB_CHARGING);
+        await mergeFetchedHistory(HISTORY_KEYS.usb, r06.rawHex);
+        await pause(200);
+        const r07 = await sendAndWait(BLE_CONSTANTS.COMMAND_HISTORY_PHONE_CHARGING);
+        await mergeFetchedHistory(HISTORY_KEYS.phone, r07.rawHex);
+        await pause(200);
+        const r05 = await sendAndWait(BLE_CONSTANTS.COMMAND_HISTORY_SOLAR_CHARGING);
+        await mergeFetchedHistory(HISTORY_KEYS.solar, r05.rawHex);
+        await setRecordedHistoryData(true);
+      }
+
+      DeviceEventEmitter.emit('bleHistoryUpdated');
       return true;
     } finally {
       if (this._historyWaiter) {
@@ -602,6 +613,21 @@ class BLEManagerNativeService {
         this._historyWaiter = null;
       }
     }
+  }
+
+  /** Today-only refresh (0x08) — safe while another screen is open. */
+  async syncTodayBleHistory() {
+    if (!this.isConnected) {
+      throw new Error('Not connected');
+    }
+    const r08 = await (async () => {
+      const pending = this.waitForHistoryResponse(BLE_CONSTANTS.COMMAND_TODAY_STATUS, 8000);
+      await this.sendCommand(BLE_CONSTANTS.COMMAND_TODAY_STATUS, 0);
+      return pending;
+    })();
+    await mergeTodayFromStatus08(r08.rawHex);
+    DeviceEventEmitter.emit('bleHistoryUpdated');
+    return true;
   }
   
   getDiscoveredDevices() {
